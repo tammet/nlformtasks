@@ -43,7 +43,7 @@ RUN_LLM_CONFIG = {
     "claude": {
         "model": "claude-sonnet-4-6", "api": "messages",
         "temperature": 0, "max_tokens": 8000, "extended_thinking": "off",
-        "notes": "System prompt sent with ephemeral prompt caching.",
+        "context_caching": "explicit: inline ephemeral cache_control on the system block",
     },
     "gpt": {
         "model": "gpt-5.1", "api": "/v1/responses",
@@ -51,23 +51,25 @@ RUN_LLM_CONFIG = {
         "max_output_tokens": 8000,
         "temperature": "n/a (not sent on the gpt-5 responses path)",
         "seed": "n/a (not sent on the gpt-5 responses path)",
+        "context_caching": "automatic provider-side (OpenAI prompt caching for "
+                           "prompts >=1024 tokens); not requested by the pipeline",
     },
     "gemini": {
         "model": "gemini-2.5-flash", "api": "generateContent",
         "temperature": 0, "max_output_tokens": 8000,
         "thinking_config": "not set",
-        "context_caching": "on (server-side cachedContents)",
+        "context_caching": "explicit: server-side cachedContents object "
+                           "(>=~16000-char system prompt, 30-min TTL, on by default)",
         "notes": "gemini-2.5-flash has default dynamic thinking that counts "
                  "against the output budget; on truncation the pipeline retries "
-                 "with a doubled budget (>=16000). Context caching ON by default "
-                 "for system prompts >=~16000 chars: the system prompt is uploaded "
-                 "to Google as a cachedContents object (30-min TTL) and referenced "
-                 "by name — distinct from Claude's inline ephemeral cache_control.",
+                 "with a doubled budget (>=16000).",
     },
     "deepseek": {
         "model": "deepseek-v4-flash", "api": "/v1/chat/completions",
         "temperature": 0, "max_tokens": 8000,
         "thinking": "none (non-reasoner; deepseek-reasoner not used)",
+        "context_caching": "automatic provider-side (DeepSeek disk context "
+                           "caching); not requested by the pipeline",
     },
 }
 

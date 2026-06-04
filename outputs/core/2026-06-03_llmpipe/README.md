@@ -70,20 +70,23 @@ Exact values are also in `meta.json` (`llms.<llm>.decoding`, `decoding_common`).
 
 | LLM | model | temperature | max output tokens | thinking / reasoning | context caching |
 |---|---|---|---|---|---|
-| claude | claude-sonnet-4-6 | 0 | 8000 | off | inline ephemeral `cache_control` on the system block |
-| gpt | gpt-5.1 | n/a* | 8000 | `reasoning.effort=none`, `text.verbosity=low` | — |
-| gemini | gemini-2.5-flash | 0 | 8000 | `thinkingConfig` not set** | on — server-side `cachedContents` |
-| deepseek | deepseek-v4-flash | 0 | 8000 | none (non-reasoner) | — |
+| claude | claude-sonnet-4-6 | 0 | 8000 | off | explicit — inline ephemeral `cache_control` |
+| gpt | gpt-5.1 | n/a* | 8000 | `reasoning.effort=none`, `text.verbosity=low` | automatic provider-side |
+| gemini | gemini-2.5-flash | 0 | 8000 | `thinkingConfig` not set** | explicit — server-side `cachedContents` |
+| deepseek | deepseek-v4-flash | 0 | 8000 | none (non-reasoner) | automatic provider-side |
 
 \* The gpt-5 `/v1/responses` path does not send `temperature` or `seed`.
 \** gemini-2.5-flash has default dynamic thinking that counts against the output budget; on a
 truncated response the pipeline retries with a doubled budget (≥16000).
 
-Gemini context caching uses different machinery from the others: when the system prompt is large
-(≥ ~16000 chars, true here), the pipeline uploads it to Google as a `cachedContents` object with a
-30-minute TTL and references it by name in each `generateContent` call (created via
-`POST /v1beta/cachedContents`). This is on by default. Claude instead caches the system block
-inline via ephemeral `cache_control`; gpt and deepseek use no context caching here.
+All four share one large system prompt across cases, so all four are cached — but by different
+machinery. The pipeline explicitly requests caching for two of them: Claude caches the system
+block inline via ephemeral `cache_control`, and Gemini uploads the system prompt to Google as a
+server-side `cachedContents` object (≥ ~16000 chars, 30-minute TTL, referenced by name, created
+via `POST /v1beta/cachedContents`; on by default). For gpt and deepseek the pipeline requests
+nothing, but both providers apply automatic server-side prompt-prefix caching on their end
+(OpenAI for prompts ≥1024 tokens; DeepSeek disk context caching), so the shared system prompt is
+cached there too.
 
 Common to all: seed 1234 (part of the cache key), HTTP timeout 60s, retry policy
 3 HTTP + 2 empty-response + up to 7 rate-limit backoff.
