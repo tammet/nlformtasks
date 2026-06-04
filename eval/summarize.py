@@ -28,6 +28,45 @@ PIPELINE_REPO = "https://github.com/tammet/nlpsolver"
 # 2026-06-03_llmpipe run. Update when a new run is ingested.
 PIPELINE_COMMIT = "585e8b04d36f3794990385dc955ef8facc4d3866"
 
+# Decoding configuration actually used for this run, recorded from
+# llmpipe@585e8b0/solver/llmcall.py. All four LLMs ran with thinking/reasoning
+# DISABLED (the parser calls them with think=False). Update per run if changed.
+RUN_LLM_CONFIG = {
+    "_common": {
+        "temperature": 0,
+        "max_tokens": 8000,
+        "thinking": "disabled",
+        "seed": 1234,
+        "http_timeout_s": 60,
+        "retries": "3 HTTP + 2 empty-response + up to 7 rate-limit backoff",
+    },
+    "claude": {
+        "model": "claude-sonnet-4-6", "api": "messages",
+        "temperature": 0, "max_tokens": 8000, "extended_thinking": "off",
+        "notes": "System prompt sent with ephemeral prompt caching.",
+    },
+    "gpt": {
+        "model": "gpt-5.1", "api": "/v1/responses",
+        "reasoning_effort": "none", "text_verbosity": "low",
+        "max_output_tokens": 8000,
+        "temperature": "n/a (not sent on the gpt-5 responses path)",
+        "seed": "n/a (not sent on the gpt-5 responses path)",
+    },
+    "gemini": {
+        "model": "gemini-2.5-flash", "api": "generateContent",
+        "temperature": 0, "max_output_tokens": 8000,
+        "thinking_config": "not set",
+        "notes": "gemini-2.5-flash has default dynamic thinking that counts "
+                 "against the output budget; on truncation the pipeline retries "
+                 "with a doubled budget (>=16000). Server-side context caching off.",
+    },
+    "deepseek": {
+        "model": "deepseek-v4-flash", "api": "/v1/chat/completions",
+        "temperature": 0, "max_tokens": 8000,
+        "thinking": "none (non-reasoner; deepseek-reasoner not used)",
+    },
+}
+
 
 def verdict(d):
     """pass / fail / error for one case result dict."""
@@ -104,21 +143,42 @@ def write_meta(run_dir, run_id, test_set, verdicts, models):
                       note="LLM answers served from the pipeline's SQLite cache; "
                            "pipeline answer-logic as of this commit."),
         cases=len(verdicts),
-        llms={llm: dict(model=models.get(llm), **rows[llm]) for llm in LLMS},
+        llms={llm: dict(model=models.get(llm), **rows[llm],
+                        decoding=RUN_LLM_CONFIG.get(llm, {})) for llm in LLMS},
+        decoding_common=RUN_LLM_CONFIG["_common"],
         generated_by="eval/summarize.py",
     )
     json.dump(meta, open(os.path.join(run_dir, "meta.json"), "w"), indent=2)
     return meta
 
 
-def write_manifest(run_dir, run_id, test_set, verdicts):
-    manifest = dict(
-        test_set=test_set, run_id=run_id, cases=len(verdicts), llms=LLMS,
-        verdicts={str(cid): [verdicts[cid].get(l, "missing") for l in LLMS]
-                  for cid in sorted(verdicts)},
-        legend={"order": LLMS, "values": ["pass", "fail", "error", "missing"]},
-    )
-    json.dump(manifest, open(os.path.join(run_dir, "MANIFEST.json"), "w"), indent=0)
+def write_models(run_dir, run_id):
+    """Human-readable MODELS.md describing the decoding config for this run."""
+    c = RUN_LLM_CONFIG
+    cm = c["_common"]
+    out = [f"# Models & decoding — run `{run_id}`", "",
+           "Configuration actually used, recorded from "
+           f"`llmpipe/solver/llmcall.py` @ `{PIPELINE_COMMIT[:7]}`. "
+           "All four LLMs ran with **thinking/reasoning disabled**.", "",
+           "| LLM | model | temperature | max output tokens | thinking | notes |",
+           "|---|---|---|---|---|---|"]
+    for llm in LLMS:
+        d = c[llm]
+        temp = d.get("temperature", "—")
+        mt = d.get("max_tokens", d.get("max_output_tokens", "—"))
+        think = (d.get("extended_thinking") or d.get("thinking")
+                 or d.get("thinking_config") or d.get("reasoning_effort") or "—")
+        note = d.get("notes", "")
+        if llm == "gpt":
+            note = (note + " reasoning.effort=none, text.verbosity=low.").strip()
+        out.append(f"| {llm} | {d['model']} | {temp} | {mt} | {think} | {note} |")
+    out += ["", "## Common", "",
+            f"- temperature: {cm['temperature']} (where the provider accepts it)",
+            f"- max tokens: {cm['max_tokens']}",
+            f"- thinking/reasoning: {cm['thinking']}",
+            f"- seed: {cm['seed']} (part of the cache key)",
+            f"- HTTP timeout: {cm['http_timeout_s']}s; retries: {cm['retries']}", ""]
+    open(os.path.join(run_dir, "MODELS.md"), "w").write("\n".join(out) + "\n")
 
 
 def md_summary(run_id, test_set, verdicts, models, subs):
@@ -150,7 +210,7 @@ def main():
     ap.add_argument("--tests", default=None,
                     help="test file for the per-subsection breakdown")
     ap.add_argument("--write", action="store_true",
-                    help="write meta.json + MANIFEST.json + summaries/<set>/<run-id>.md")
+                    help="write meta.json + MODELS.md + summaries/<set>/<run-id>.md")
     args = ap.parse_args()
 
     run_dir = args.run_dir.rstrip("/")
@@ -169,12 +229,12 @@ def main():
 
     if args.write:
         write_meta(run_dir, run_id, test_set, verdicts, models)
-        write_manifest(run_dir, run_id, test_set, verdicts)
+        write_models(run_dir, run_id)
         sumdir = os.path.join("summaries", test_set)
         os.makedirs(sumdir, exist_ok=True)
         path = os.path.join(sumdir, run_id + ".md")
         open(path, "w").write(md_summary(run_id, test_set, verdicts, models, subs))
-        print(f"wrote meta.json, MANIFEST.json, {path}")
+        print(f"wrote meta.json, MODELS.md, {path}")
 
 
 if __name__ == "__main__":

@@ -22,8 +22,8 @@ tests/
 outputs/
   core/
     2026-06-03_llmpipe/  # one immutable run
-      meta.json          # pipeline commit, LLM model strings, per-LLM totals
-      MANIFEST.json      # compact case_id -> [claude, gpt, gemini, deepseek] verdicts
+      meta.json          # pipeline commit, LLM model strings, per-LLM totals + decoding config
+      MODELS.md          # models & exact decoding settings used (temperature, tokens, thinking)
       claude/  gpt/  gemini/  deepseek/
         case_NNNN.json   # input, expected, answer, correctness, stage1/stage2, clauses, proof
         summary.json
