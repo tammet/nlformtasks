@@ -28,7 +28,7 @@ The third element of each row is the accepted answer:
 | a list of strings | any one of several acceptable surface phrasings |
 | a confidence phrase (e.g. `'Probably true.'`, `'Likely false.'`) | the expected graded answer |
 
-Grading compares the pipeline's answer against this value (lists mean "any element matches").
+Grading compares the pipeline's answer against this value.
 
 ## Phases
 

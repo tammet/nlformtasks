@@ -5,9 +5,9 @@ One run of the 1600-case core set through the nlpsolver pipeline
 that produced these answers (prompts, axioms, encoding scheme) alongside the outputs, because all
 of those change over time.
 
-The core set was built and curated during development and debugging of the parser. One design
-goal was that no case should be failed by more than one of the four LLMs; in this run that holds —
-every case is answered correctly by at least three of the four models.
+The core set was built during development and debugging of the parser, with one of the design
+goals being that no case should be failed by more than one of the four LLMs. That holds in this
+run — every case is answered correctly by at least three of the four.
 
 ## Contents
 
@@ -32,10 +32,9 @@ For each `(case, LLM)` the pipeline runs five stages:
 
 1. Stage 1 (LLM): English → abstract semantic units.
 2. Stage 2 (LLM): semantic units → first-order-logic JSON.
-3. Stage 3 (pipeline code): the Stage-2 JSON is heavily rewritten and extended before anything
-   reaches the prover — structural repair, context/tense injection, FOL→CNF clausification, and
-   dynamic axiom injection. This is a substantial transformation, not a thin compile, and much of
-   what the prover sees is added here rather than emitted by the LLM.
+3. Stage 3 (pipeline code): the Stage-2 JSON is rewritten and extended before reaching the prover
+   — structural repair, context/tense injection, FOL→CNF clausification, dynamic axiom injection.
+   Much of what the prover sees is added here, not emitted by the LLM.
 4. Stage 4 (`gk` prover): the resulting clauses plus the static axioms (`axioms_std.js`) are run.
 5. Stage 5 (pipeline code): the proof is post-processed into an English answer, graded against
    the case's expected value (`correctness`).
@@ -79,14 +78,11 @@ Exact values are also in `meta.json` (`llms.<llm>.decoding`, `decoding_common`).
 \** gemini-2.5-flash has default dynamic thinking that counts against the output budget; on a
 truncated response the pipeline retries with a doubled budget (≥16000).
 
-All four share one large system prompt across cases, so all four are cached — but by different
-machinery. The pipeline explicitly requests caching for two of them: Claude caches the system
-block inline via ephemeral `cache_control`, and Gemini uploads the system prompt to Google as a
-server-side `cachedContents` object (≥ ~16000 chars, 30-minute TTL, referenced by name, created
-via `POST /v1beta/cachedContents`; on by default). For gpt and deepseek the pipeline requests
-nothing, but both providers apply automatic server-side prompt-prefix caching on their end
-(OpenAI for prompts ≥1024 tokens; DeepSeek disk context caching), so the shared system prompt is
-cached there too.
+All four cache the shared system prompt, by different machinery. The pipeline requests caching for
+two: Claude inline via ephemeral `cache_control`, Gemini via a server-side `cachedContents` object
+(≥ ~16000 chars, 30-minute TTL, referenced by name; on by default). For gpt and deepseek the
+pipeline requests nothing, but both providers cache the prompt prefix automatically (OpenAI for
+prompts ≥1024 tokens; DeepSeek disk caching).
 
 Common to all: seed 1234 (part of the cache key), HTTP timeout 60s, retry policy
 3 HTTP + 2 empty-response + up to 7 rate-limit backoff.

@@ -52,11 +52,10 @@ that produced its answers. See the run's own `README.md` for the rest.
 | gemini | gemini-2.5-flash | 97.9% |
 | gpt | gpt-5.1 | 97.2% |
 
-The core set was built and curated during development and debugging of the parser, with one
-design goal that no case should be failed by more than one of the four LLMs. That property holds
-in this run: every one of the 1600 cases is answered correctly by at least three of the four
-models (no case has two or more wrong). The 100-case subset is stricter still — all four are
-correct on every case.
+The core set was built during development and debugging of the parser, with one of the design
+goals being that no case should be failed by more than one of the four LLMs. That holds in this
+run — every case is answered correctly by at least three of the four. The 100-case subset is
+stricter: all four are correct on every case.
 
 See `summaries/core/2026-06-03_llmpipe.md` for the full per-subsection breakdown, or regenerate
 any table with `python3 eval/summarize.py outputs/core/<run-id> --tests tests/core/core_tests.py`.
@@ -67,9 +66,9 @@ For each `(case, LLM)` the pipeline runs five stages:
 
 1. Stage 1 (LLM): English → abstract semantic units.
 2. Stage 2 (LLM): semantic units → first-order-logic JSON.
-3. Stage 3 (pipeline code): the Stage-2 JSON is heavily rewritten and extended — structural
-   repair, context/tense injection, FOL→CNF clausification, and dynamic axiom injection — before
-   anything reaches the prover. This is a substantial transformation, not a thin compile.
+3. Stage 3 (pipeline code): the Stage-2 JSON is rewritten and extended — structural repair,
+   context/tense injection, FOL→CNF clausification, dynamic axiom injection — before reaching the
+   prover. Much of what the prover sees is added here, not emitted by the LLM.
 4. Stage 4 (`gk` prover): the resulting clauses plus the static axioms (`axioms_std.js`) are run.
 5. Stage 5 (pipeline code): the proof is post-processed into an English answer, which is graded
    against the case's expected value.

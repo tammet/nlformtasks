@@ -23,7 +23,7 @@ Let `$LLMPIPE_DIR` be a checkout of nlpsolver at that commit, with its solver da
 in place (see that repo's `llmpipe/CLAUDE.md`). From this repository:
 
 ```bash
-# 1. Pin the pipeline
+# 1. Check out the exact pipeline commit
 git -C "$LLMPIPE_DIR" checkout 585e8b04d36f3794990385dc955ef8facc4d3866
 
 # 2. Install this repo's core test file under the name the runner expects
@@ -34,7 +34,7 @@ cd "$LLMPIPE_DIR/llmpipe"
 python3 runtests.py tests/tests_core.py -llms claude,gpt,gemini,deepseek -sequential
 # -> writes testresults/core/<llm>/case_NNNN.json + summary.json
 
-# 4. Ingest into a fresh, immutable run dir here (new date -> new RUN_ID)
+# 4. Ingest into a fresh run dir here (new date -> new RUN_ID)
 cd -                                   # back to this repo
 RUN_ID=2026-06-03_llmpipe              # do not overwrite an existing run dir
 for llm in claude gpt gemini deepseek; do
@@ -43,7 +43,7 @@ for llm in claude gpt gemini deepseek; do
   cp "$LLMPIPE_DIR/llmpipe/testresults/core/$llm/summary.json" "outputs/core/$RUN_ID/$llm/"
 done
 
-# 5. Regenerate meta.json, MANIFEST.json and the summary table
+# 5. Regenerate meta.json and the summary table
 python3 eval/summarize.py "outputs/core/$RUN_ID" --tests tests/core/core_tests.py --write
 ```
 
