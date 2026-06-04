@@ -1,17 +1,19 @@
 # core test set
 
-English reasoning problems for the `nlpsolver` semantic parser, ordered from simple to complex.
+English reasoning problems for the nlpsolver semantic parser
+(https://github.com/tammet/nlpsolver), in loose linguistic groups, roughly ordered from simple to
+complex.
 
 ## Files
 
-- **`core_tests.py`** — 1600 cases. A Python list of `[id, english_text, expected_answer]`.
+- `core_tests.py` — 1600 cases. A Python list of `[id, english_text, expected_answer]`.
   Organized into eight phases (FOUNDATIONS → REASONING) and finer `# == SUBSECTION ==` blocks;
   ids are sequential `1..1600`.
-- **`core_tests_100.py`** — a curated 100-case subset of `core_tests.py`, balanced across the
-  eight phases and answer types, chosen so that **all four LLMs answer every case correctly** in
-  the published run. Each row keeps its `core_tests.py` id, so the subset is graded against the
-  **same** `outputs/core/<run-id>/case_NNNN.json` files — no separate outputs. Its header comment
-  records the per-phase type targets.
+- `core_tests_100.py` — a curated 100-case subset of `core_tests.py`, balanced across the eight
+  phases and answer types, chosen so that all four LLMs answer every case correctly in the
+  published run. Each row keeps its `core_tests.py` id, so the subset is graded against the same
+  `outputs/core/<run-id>/case_NNNN.json` files — no separate outputs. Its header comment records
+  the per-phase type targets.
 
 ## Expected-answer semantics
 

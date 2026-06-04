@@ -1,10 +1,13 @@
 # Reproducing a run
 
-The outputs in this repository are produced by the `nlpsolver` pipeline, which is **not**
-included here. To regenerate a run you need a checkout of that pipeline plus the LLM API keys
-it expects (or a warm response cache).
+The outputs in this repository are produced by the nlpsolver pipeline
+(https://github.com/tammet/nlpsolver), which is not included here. To regenerate a run you need a
+checkout of that pipeline plus the LLM API keys it expects (or a warm response cache).
 
-## Pinned pipeline version
+## nlpsolver commit used
+
+Each run was produced with one specific nlpsolver commit, recorded here and in the run's
+`meta.json`. To reproduce, check out exactly that commit.
 
 | run-id | pipeline repo | commit |
 |---|---|---|
@@ -16,8 +19,8 @@ in the pipeline repo do not change cached LLM answers.)
 
 ## Steps
 
-Let `$LLMPIPE_DIR` be a checkout of `nlpsolver` at the pinned commit, with its solver data and
-API keys in place (see that repo's `llmpipe/CLAUDE.md`). From this repository:
+Let `$LLMPIPE_DIR` be a checkout of nlpsolver at that commit, with its solver data and API keys
+in place (see that repo's `llmpipe/CLAUDE.md`). From this repository:
 
 ```bash
 # 1. Pin the pipeline
@@ -45,11 +48,11 @@ python3 eval/summarize.py "outputs/core/$RUN_ID" --tests tests/core/core_tests.p
 ```
 
 The 100-case subset (`tests/core/core_tests_100.py`) is a selection of the same 1600 cases by id,
-so it is graded against the **same** `outputs/core/<run-id>/` JSONs — there is no separate run for it.
+so it is graded against the same `outputs/core/<run-id>/` JSONs — there is no separate run for it.
 
 ## Notes
 
-- **Never** disable the LLM cache (`-nollmcache`): it wastes API credits and is unnecessary for
+- Never disable the LLM cache (`-nollmcache`): it wastes API credits and is unnecessary for
   reproduction.
 - The model identifiers for a run are recorded in `outputs/core/<run-id>/meta.json`. A different
   model snapshot is a different run — give it a new run-id.
