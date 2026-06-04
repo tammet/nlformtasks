@@ -1,0 +1,338 @@
+{
+  "test_name": "core",
+  "case_id": 1479,
+  "input_text": "Birds fly and swim. John is a bird. John swims and flies?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds fly and swim.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.95
+        },
+        {
+          "unit_id": "S2",
+          "text": "Birds can swim.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "swim", "mode": "capability"}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a bird.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John swims and flies?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Can John 1 swim and fly?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "swim", "mode": "capability", "roles": {"actor": "John 1"}},
+            {"root": "fly", "mode": "capability", "roles": {"actor": "John 1"}}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","swim"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","person","John 1"], ["isa","bird","John 1"]]]],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","swim"],
+              ["has actor","E1","John 1"],
+              ["capability","E1"]
+            ]
+          ],
+          ["exists","E2",
+            ["and",
+              ["isa","activity","E2"],
+              ["has type","E2","fly"],
+              ["has actor","E2","John 1"],
+              ["capability","E2"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["has type", ["sk0","?:X"], "fly", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["capability", ["sk0","?:X"]],
+            ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Birds can swim."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"],
+            ["has type", ["sk1","?:X"], "swim", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Birds can swim."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"],
+            ["has actor", ["sk1","?:X"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Birds can swim."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"],
+            ["capability", ["sk1","?:X"]],
+            ["$block", ["$","bird",1], ["$not", ["capability", ["sk1","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can swim."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a bird."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bird","#:John 1"],
+ "@nl": "John 1 is a bird."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk2_activity"]],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk2_activity", "swim", ["$ctxt","?:Fv20","?:Fv19","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk2_activity", "#:John 1", ["$ctxt","?:Fv22","?:Fv21","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["capability","sk2_activity"]],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk3_activity"]],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk3_activity", "fly", ["$ctxt","?:Fv26","?:Fv25","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk3_activity", "#:John 1", ["$ctxt","?:Fv28","?:Fv27","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["capability","sk3_activity"]],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "swim", ["$ctxt","?:Fv34","?:Fv33","?:Fv11","?:Fv12"]],
+            ["-has actor", "?:E1", "#:John 1", ["$ctxt","?:Fv36","?:Fv35","?:Fv11","?:Fv12"]],
+            ["-capability","?:E1"],
+            ["-isa","activity","?:E2"],
+            ["-has type", "?:E2", "fly", ["$ctxt","?:Fv40","?:Fv39","?:Fv11","?:Fv12"]],
+            ["-has actor", "?:E2", "#:John 1", ["$ctxt","?:Fv42","?:Fv41","?:Fv11","?:Fv12"]],
+            ["-capability","?:E2"],
+            ["$defq0"]
+           ],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Can John 1 swim and fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv43"], ["has type","?:E","go","?:Fv43"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","swim","?:Fv44"], ["has type","?:E","go","?:Fv44"]],
+ "@confidence": 0.51,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","bird",1], ["$not", ["capability", ["sk1","#:John 1"]]]],
+          ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]]
+        ],
+        "confidence": 0.81,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk1","?:X"]]]], ["capability", ["sk1","?:X"]], ["-isa","bird","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","bird","#:John 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk1","#:John 1"]]]], ["capability", ["sk1","#:John 1"]]]],
+          [4, ["in","sent_S1","assumption",0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","?:X"]]]], ["capability", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [5, ["mp", [4,2], 2, "fromassumption", 0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]], ["capability", ["sk0","#:John 1"]]]],
+          [6, ["in","sent_S1","assumption",1], [["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [7, ["mp", [6,1], 2, "fromassumption", 1], [["has actor", ["sk0","#:John 1"], "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [8, ["in","sent_S1","assumption",1], [["has type", ["sk0","?:X"], "fly", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [9, ["mp", [8,1], 2, "fromassumption", 1], [["has type", ["sk0","#:John 1"], "fly", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [10, ["in","sent_S4","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has type", "?:X", "swim", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has type", "?:W", "fly", ["$ctxt","?:2006","?:2007","?:U","?:V"]], ["-has actor", "?:X", "#:John 1", ["$ctxt","?:2008","?:2009","?:U","?:V"]], ["-has actor", "?:W", "#:John 1", ["$ctxt","?:2010","?:2011","?:U","?:V"]], ["-isa","activity","?:X"], ["-isa","activity","?:W"], ["-capability","?:X"], ["-capability","?:W"]]],
+          [11, ["in","sent_S3","assumption",1], [["isa","person","#:John 1"]]],
+          [12, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [13, ["mp",10,11,12,"fromga",1], [["-has type", "?:X", "fly", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has type", "?:W", "swim", ["$ctxt","?:2006","?:2007","?:U","?:V"]], ["-has actor", "?:X", "#:John 1", ["$ctxt","?:2008","?:2009","?:U","?:V"]], ["-has actor", "?:W", "#:John 1", ["$ctxt","?:2010","?:2011","?:U","?:V"]], ["-isa","activity","?:X"], ["-isa","activity","?:W"], ["-capability","?:X"], ["-capability","?:W"]]],
+          [14, ["mp",9,13,"fromga",1], [["-isa", "activity", ["sk0","#:John 1"]], ["-capability", ["sk0","#:John 1"]], ["-has actor", ["sk0","#:John 1"], "#:John 1", ["$ctxt","?:W3","?:3006","?:U3","?:V3"]], ["-has type", "?:X3", "swim", ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["-has actor", "?:X3", "#:John 1", ["$ctxt","?:3007","?:3008","?:U3","?:V3"]], ["-isa","activity","?:X3"], ["-capability","?:X3"]]],
+          [15, ["in","sent_S1","assumption",1], [["isa", "activity", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [16, ["mp", [15,1], 2, "fromassumption", 1], [["isa", "activity", ["sk0","#:John 1"]]]],
+          [17, ["simp",14,16,"fromga",1], [["-capability", ["sk0","#:John 1"]], ["-has actor", ["sk0","#:John 1"], "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-has type", "?:V", "swim", ["$ctxt","?:W","?:2006","?:Z","?:U"]], ["-has actor", "?:V", "#:John 1", ["$ctxt","?:2007","?:2008","?:Z","?:U"]], ["-isa","activity","?:V"], ["-capability","?:V"]]],
+          [18, ["mp", 7, [17,1], "fromga", 1], [["-capability", ["sk0","#:John 1"]], ["-has type", "?:X", "swim", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has actor", "?:X", "#:John 1", ["$ctxt","?:W","?:2006","?:U","?:V"]], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [19, ["mp", [5,1], 18, "fromga", 0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]], ["-has type", "?:X", "swim", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has actor", "?:X", "#:John 1", ["$ctxt","?:W","?:2006","?:U","?:V"]], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [20, ["in","sent_S2","assumption",1], [["has type", ["sk1","?:X"], "swim", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [21, ["mp", [20,1], 2, "fromassumption", 1], [["has type", ["sk1","#:John 1"], "swim", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [22, ["mp", [19,1], 21, "fromga", 0.9], [["-isa", "activity", ["sk1","#:John 1"]], ["-capability", ["sk1","#:John 1"]], ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]], ["-has actor", ["sk1","#:John 1"], "#:John 1", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [23, ["in","sent_S2","assumption",1], [["has actor", ["sk1","?:X"], "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [24, ["mp", [23,1], 2, "fromassumption", 1], [["has actor", ["sk1","#:John 1"], "#:John 1", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [25, ["in","sent_S2","assumption",1], [["isa", "activity", ["sk1","?:X"]], ["-isa","bird","?:X"]]],
+          [26, ["mp", [25,1], 2, "fromassumption", 1], [["isa", "activity", ["sk1","#:John 1"]]]],
+          [27, ["simp",22,24,26,"fromga",0.9], [["-capability", ["sk1","#:John 1"]], ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]]]],
+          [28, ["mp", [3,1], 27, "fromga", 0.81], [["$block", ["$","bird",1], ["$not", ["capability", ["sk1","#:John 1"]]]], ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:John 1"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 81%.",
+"Sentences used:",
+"  (1) Birds fly and swim.",
+"  (2) John is a bird.",
+"  (3) John swims and flies?",
+"Proof steps:",
+"  (1) If some X is a bird then normally the swimming event sk1 of X is a capability  [sentence 1, confidence 90%]",
+"  (2) John is a bird  [sentence 2]",
+"  (3) Normally the swimming event sk1 of John 1 is a capability  [from steps 1, 2, confidence 90%]",
+"  (4) If some X is a bird then normally the flying event sk0 of X is a capability  [sentence 1, confidence 90%]",
+"  (5) Normally the flying event sk0 of John 1 is a capability  [from steps 4, 2, confidence 90%]",
+"  (6) If some X is a bird then X performs the flying event sk0 of X  [sentence 1]",
+"  (7) John performs the flying event sk0 of John 1  [from steps 6, 2]",
+"  (8) If some X is a bird then sk0 of X is a fly event  [sentence 1]",
+"  (9) sk0 of John 1 is a fly event  [from steps 8, 2]",
+"  (10) If John is a person and X is a swim event and W is a fly event and John performs X and John performs W and X is an activity and W is an activity and X is a capability and W is a capability then answer holds  [sentence 3]",
+"  (11) John is a person  [sentence 2]",
+"  (12) assume for contradiction: the answer is no  [from question]",
+"  (13) If X is a fly event and W is a swim event and John performs X and John performs W and X is an activity and W is an activity and W is a capability then X is not a capability  [from steps 10, 11, 12]",
+"  (14) If the flying event sk0 of John 1 is an activity and John performs sk0 of John 1 and X3 is a swim event and John performs X3 and X3 is an activity and X3 is a capability then sk0 of John 1 is not a capability  [from steps 9, 13]",
+"  (15) If some X is a bird then the flying event sk0 of X is an activity  [sentence 1]",
+"  (16) The flying event sk0 of John 1 is an activity  [from steps 15, 2]",
+"  (17) If John performs the flying event sk0 of John 1 and V is a swim event and John performs V and V is an activity and V is a capability then sk0 of John 1 is not a capability  [from steps 14, 16]",
+"  (18) If X is a swim event and John performs X and X is an activity and X is a capability then sk0 of John 1 is not a capability  [from steps 7, 17]",
+"  (19) If X is a swim event and John performs X and X is an activity then X is not a capability, except when the flying event sk0 of John 1 is not a capability  [from steps 5, 18, confidence 90%]",
+"  (20) If some X is a bird then sk1 of X is a swim event  [sentence 1]",
+"  (21) sk1 of John 1 is a swim event  [from steps 20, 2]",
+"  (22) If the swimming event sk1 of John 1 is an activity and John performs sk1 of John 1 then sk1 of John 1 is not a capability, except when the flying event sk0 of John 1 is not a capability  [from steps 19, 21, confidence 90%]",
+"  (23) If some X is a bird then X performs the swimming event sk1 of X  [sentence 1]",
+"  (24) John performs the swimming event sk1 of John 1  [from steps 23, 2]",
+"  (25) If some X is a bird then the swimming event sk1 of X is an activity  [sentence 1]",
+"  (26) The swimming event sk1 of John 1 is an activity  [from steps 25, 2]",
+"  (27) sk1 of John 1 is not a capability, except when the flying event sk0 of John 1 is not a capability  [from steps 22, 24, 26, confidence 90%]",
+"  (28) Outstanding exception: the swimming event sk1 of John 1 is not a capability and the flying event sk0 of John 1 is not a capability  [from steps 3, 27, confidence 81%]",
+"Exceptions checked and not holding:",
+"  the swimming event sk1 of John 1 is not a capability",
+"  the flying event sk0 of John 1 is not a capability"
+],
+  "timestamp": "2026-06-03T22:06:58Z"
+}

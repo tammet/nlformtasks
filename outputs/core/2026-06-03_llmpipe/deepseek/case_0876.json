@@ -1,0 +1,110 @@
+{
+  "test_name": "core",
+  "case_id": 876,
+  "input_text": "John is a man Eve liked. John is a man whom Mike liked?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is a man Eve liked.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is a man.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Eve 2 liked John 1.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Eve 2", "type": "concrete", "category": "person"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John is a man whom Mike liked?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 a man whom Mike 3 liked?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 3", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["isa","man","John 1"]]],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","Eve 2"],
+            ["is rel2","like","Eve 2","John 1"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and", ["isa","man","John 1"], ["@time", "past", ["is rel2","like","Mike 3","John 1"]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:Mike 3"],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a man."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Eve 2"],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv13", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","man","#:John 1"]],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree rel2", "like", "#:Mike 3", "#:John 1", "none", "?:Fv19", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","man","#:John 1"],
+            ["-has degree rel2", "like", "#:Mike 3", "#:John 1", "none", "?:Fv20", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2", "like", "#:Mike 3", "#:John 1", "none", "?:Fv16", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree rel2", "like", "#:Mike 3", "#:John 1", "none", "?:Fv17", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "like", "#:Mike 3", "#:John 1", "none", "?:Fv18", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 a man whom Mike 3 liked?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-03T21:40:31Z"
+}

@@ -1,0 +1,253 @@
+{
+  "test_name": "core",
+  "case_id": 1477,
+  "input_text": "If X1 eats berries, it is a bear. John eats red berries. John is a bear?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If X1 eats berries, it is a bear.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If X1 eats berries, X1 is a bear.",
+          "type": "normal_rule",
+          "entities": [{"id": "X1", "type": "generic"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John eats red berries.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 eats red berries.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}],
+          "adjectives": [["red","none","none"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 a bear?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","X"],
+                  ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                  ["typical","E"]
+                ]
+              ],
+              ["normally", ["isa","bear","X"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","berry","Y"],
+                      ["has degree property","red","Y","none","none"],
+                      ["has target","E","Y"]
+                    ]
+                  ],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["question", ["isa","bear","John 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","berry","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa","bear","?:X"],
+            ["$block", ["$","berry",4], ["$not", ["isa","bear","?:X"]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If X1 eats berries, X1 is a bear."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has type", "sk0_activity", "eat", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has actor", "sk0_activity", "#:John 1", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","berry","sk1_berry"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "red", "sk1_berry", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has target", "sk0_activity", "sk1_berry", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": [["typical", "sk0_activity", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","$generic",1], ["$not", ["typical", "sk0_activity", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","bear","#:John 1"]],
+ "@nl": "Is John 1 a bear?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","bear","#:John 1"], ["$defq0"]],
+ "@nl": "Is John 1 a bear?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 a bear?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "red", "$some_red", ["$ctxt","?:Fv50","?:Fv47","?:Fv48","?:Fv49"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "red", "$some_not_red", ["$ctxt","?:Fv54","?:Fv51","?:Fv52","?:Fv53"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv17","?:Fv18","?:Fv19"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","berry",4], ["$not", ["isa","bear","#:John 1"]]]],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["$block", ["$","berry",4], ["$not", ["isa","bear","?:X"]]], ["-has type", "?:Y", "eat", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-has actor", "?:Y", "?:X", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-has target", "?:Y", "?:2006", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","berry","?:2006"], ["-isa","activity","?:Y"], ["isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has type", "sk0_activity", "eat", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-isa","activity","sk0_activity"], ["$block", ["$","berry",4], ["$not", ["isa","bear","?:X3"]]], ["-has actor", "sk0_activity", "?:X3", ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["-has target", "sk0_activity", "?:W3", ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["-isa","berry","?:W3"], ["isa","bear","?:X3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","activity","sk0_activity"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["$block", ["$","berry",4], ["$not", ["isa","bear","?:X"]]], ["-has actor", "sk0_activity", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has target", "sk0_activity", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","berry","?:W"], ["isa","bear","?:X"]]],
+          [6, ["in","sent_S2","assumption",1], [["has target", "sk0_activity", "sk1_berry", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", [5,2], 6, "fromassumption", 0.9], [["-isa","berry","sk1_berry"], ["$block", ["$","berry",4], ["$not", ["isa","bear","?:X3"]]], ["-has actor", "sk0_activity", "?:X3", ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["isa","bear","?:X3"]]],
+          [8, ["in","sent_S2","assumption",1], [["isa","berry","sk1_berry"]]],
+          [9, ["simp",7,8,"fromassumption",0.9], [["$block", ["$","berry",4], ["$not", ["isa","bear","?:X"]]], ["-has actor", "sk0_activity", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["isa","bear","?:X"]]],
+          [10, ["in","sent_S2","assumption",1], [["has actor", "sk0_activity", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["mp", [9,1], 10, "fromassumption", 0.9], [["$block", ["$","berry",4], ["$not", ["isa","bear","#:John 1"]]], ["isa","bear","#:John 1"]]],
+          [12, ["in","sent_S3","assumption",1], [["-isa","bear","#:John 1"], ["$defq0"]]],
+          [13, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [14, ["mp", [11,1], 12, 13, "fromga", 0.9], [["$block", ["$","berry",4], ["$not", ["isa","bear","#:John 1"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) If X1 eats berries, it is a bear.",
+"  (2) John eats red berries.",
+"  (3) John is a bear?",
+"Proof steps:",
+"  (1) If Y is a eat event and some X performs Y and Y targets some E1 and E1 is a berry and Y is an activity then normally X is a bear  [sentence 1, confidence 90%]",
+"  (2) The event act1 is a eat event  [sentence 2]",
+"  (3) If the event act1 is an activity and some X3 performs the act1 and the act1 targets some W3 and W3 is a berry then normally X3 is a bear  [from steps 1, 2, confidence 90%]",
+"  (4) The event act1 is an activity  [sentence 2]",
+"  (5) If some X performs the event act1 and the act1 targets some W and W is a berry then normally X is a bear  [from steps 3, 4, confidence 90%]",
+"  (6) The event act1 targets some berry ber1  [sentence 2]",
+"  (7) If ber1 is a berry and some X3 performs the event act1 then normally X3 is a bear  [from steps 5, 6, confidence 90%]",
+"  (8) Ber1 is a berry  [sentence 2]",
+"  (9) If some X performs the event act1 then normally X is a bear  [from steps 7, 8, confidence 90%]",
+"  (10) John performs the event act1  [sentence 2]",
+"  (11) Normally John is a bear  [from steps 9, 10, confidence 90%]",
+"  (12) If John is a bear then answer holds  [sentence 3]",
+"  (13) assume for contradiction: the answer is no  [from question]",
+"  (14) Outstanding exception: John is not a bear  [from steps 11, 12, 13, confidence 90%]",
+"Exceptions checked and not holding:",
+"  John is not a bear"
+],
+  "timestamp": "2026-06-03T22:06:54Z"
+}

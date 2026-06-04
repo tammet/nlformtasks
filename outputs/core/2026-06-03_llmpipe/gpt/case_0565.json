@@ -1,0 +1,172 @@
+{
+  "test_name": "core",
+  "case_id": 565,
+  "input_text": "Elephants and sparrows are either animals or birds. John is a sparrow. John is a bird. John is an animal?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants and sparrows are either animals or birds.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants are either animals or birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Sparrows are either animals or birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "sparrows", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a sparrow.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a sparrow.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "sparrow", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is an animal?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is John 1 an animal?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","elephant","X"], ["xor", ["isa","animal","X"], ["isa","bird","X"]]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","sparrow","X"], ["xor", ["isa","animal","X"], ["isa","bird","X"]]]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","sparrow","John 1"]]],
+    ["@id", "S4", ["holds", "W0", ["isa","bird","John 1"]]],
+    ["@id", "S5", ["question", ["isa","animal","John 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa","animal","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Elephants are either animals or birds."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["-isa","animal","?:X"], ["-isa","bird","?:X"]],
+ "@nl": "Elephants are either animals or birds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","sparrow","?:X"], ["isa","animal","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Sparrows are either animals or birds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","sparrow","?:X"], ["-isa","animal","?:X"], ["-isa","bird","?:X"]],
+ "@nl": "Sparrows are either animals or birds."},
+{"@name": "sent_S3",
+ "@logic": ["isa","sparrow","#:John 1"],
+ "@nl": "John 1 is a sparrow."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bird","#:John 1"],
+ "@nl": "John 1 is a bird."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","animal","#:John 1"]],
+ "@nl": "Is John 1 an animal?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","animal","#:John 1"], ["$defq0"]],
+ "@nl": "Is John 1 an animal?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 an animal?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","sparrow","$some_not_sparrow"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-isa","sparrow","?:X"], ["-isa","bird","?:X"], ["-isa","animal","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","sparrow","#:John 1"]]],
+          [3, ["in","sent_S5","assumption",1], [["-$defq0"], ["isa","animal","#:John 1"]]],
+          [4, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [5, ["mp",3,4,"fromga",1], [["isa","animal","#:John 1"]]],
+          [6, ["mp",1,2,5,"fromga",1], [["-isa","bird","#:John 1"]]],
+          [7, ["in","sent_S4","assumption",1], [["isa","bird","#:John 1"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Elephants and sparrows are either animals or birds.",
+"  (2) John is a sparrow.",
+"  (3) John is a bird.",
+"  (4) John is an animal?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a sparrow and X is a bird then X is not an animal  [sentence 1]",
+"  (2) John is a sparrow  [sentence 2]",
+"  (3) If answer holds then John is an animal  [sentence 4]",
+"  (4) Answer holds  [assumption]",
+"  (5) John is an animal  [from steps 3, 4]",
+"  (6) John is not a bird  [from steps 1, 2, 5]",
+"  (7) John is a bird  [sentence 3]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-03T21:35:32Z"
+}

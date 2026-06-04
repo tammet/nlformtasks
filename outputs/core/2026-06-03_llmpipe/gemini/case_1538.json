@@ -1,0 +1,108 @@
+{
+  "test_name": "core",
+  "case_id": 1538,
+  "input_text": "John is an elephant with a probability 90 percent . John is an elephant?",
+  "expected_answer": "Likely true.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is an elephant with a probability 90 percent .",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is an elephant.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ],
+          "confidence": 0.9
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is John 1 an elephant?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally", ["and", ["isa","person","John 1"], ["isa","elephant","John 1"]]]
+        ],
+        ["@p","S1",0.9]
+      ]
+    ],
+    ["@id", "S2", ["question", ["and", ["isa","person","John 1"], ["isa","elephant","John 1"]]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["isa","elephant","#:John 1"],
+            ["$block", ["$","$generic",1], ["$not", ["isa","elephant","#:John 1"]]]
+           ],
+ "@confidence": 0.8,
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:John 1"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"], ["-isa","elephant","#:John 1"], ["$defq0"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 an elephant?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","$generic",1], ["$not", ["isa","elephant","#:John 1"]]]],
+        "confidence": 0.8,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.8], [["$block", ["$","$generic",1], ["$not", ["isa","elephant","#:John 1"]]], ["isa","elephant","#:John 1"]]],
+          [2, ["in","sent_S2","assumption",1], [["-isa","elephant","#:John 1"], ["-isa","person","#:John 1"], ["$defq0"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 0.8], [["-isa","person","#:John 1"], ["$block", ["$","$generic",1], ["$not", ["isa","elephant","#:John 1"]]]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [6, ["mp",4,5,"fromga",0.8], [["$block", ["$","$generic",1], ["$not", ["isa","elephant","#:John 1"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 80%.",
+"Sentences used:",
+"  (1) John is an elephant with a probability 90 percent .",
+"  (2) John is an elephant?",
+"Proof steps:",
+"  (1) Normally John is an elephant  [sentence 1, confidence 80%]",
+"  (2) If John is an elephant and John is a person then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) John is not a person, except when John is not an elephant  [from steps 1, 2, 3, confidence 80%]",
+"  (5) John is a person  [sentence 1]",
+"  (6) Outstanding exception: John is not an elephant  [from steps 4, 5, confidence 80%]",
+"Exceptions checked and not holding:",
+"  John is not an elephant"
+],
+  "timestamp": "2026-06-03T22:08:11Z"
+}
