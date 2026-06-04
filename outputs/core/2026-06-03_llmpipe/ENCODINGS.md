@@ -1,6 +1,6 @@
-<!-- Synced from llmpipe@585e8b0 (https://github.com/tammet/nlpsolver, path llmpipe/ENCODINGS.md) on 2026-06-04.
-     This is a copy for reference; the authoritative version lives in the pipeline repo and may drift.
-     Re-sync per release and note it in CHANGELOG.md. -->
+<!-- Snapshot of the logic encodings used for the 2026-06-03_llmpipe run.
+     Taken from llmpipe@585e8b0 (https://github.com/tammet/nlpsolver, llmpipe/ENCODINGS.md).
+     Each run keeps its own ENCODINGS snapshot, since the encoding scheme evolves. -->
 
 # llmpipe — Encoding Reference
 

@@ -21,9 +21,12 @@ tests/
     README.md            # what the set covers; expected-value semantics
 outputs/
   core/
-    2026-06-03_llmpipe/  # one immutable run
+    2026-06-03_llmpipe/  # one immutable run, self-describing
+      README.md          # how the run was made + how each LLM was called + prompt mechanism
       meta.json          # pipeline commit, LLM model strings, per-LLM totals + decoding config
-      MODELS.md          # models & exact decoding settings used (temperature, tokens, thinking)
+      ENCODINGS.md       # snapshot of the logic-encoding scheme used for THIS run
+      axioms_std.js      # snapshot of the prover axiom file used for THIS run
+      prompts/           # snapshot of the six prompt components fed to the LLMs
       claude/  gpt/  gemini/  deepseek/
         case_NNNN.json   # input, expected, answer, correctness, stage1/stage2, clauses, proof
         summary.json
@@ -32,10 +35,13 @@ eval/
 summaries/
   core/
     2026-06-03_llmpipe.md  # the pasteable results table for this run
-ENCODINGS.md             # logic-encoding reference, synced from the pipeline repo
 REPRODUCE.md             # pinned commit + exact commands to regenerate a run
 CHANGELOG.md  LICENSE
 ```
+
+Each run folder carries its own `ENCODINGS.md`, `axioms_std.js`, and `prompts/` snapshot, because
+the encoding scheme, axioms, and prompts all evolve — a run must record the exact inputs that
+produced its answers. See the run's own `README.md` for full provenance.
 
 ## Results at a glance (run `2026-06-03_llmpipe`, 1600 core cases)
 

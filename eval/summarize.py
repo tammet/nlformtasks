@@ -4,7 +4,7 @@
 Self-contained: walks outputs/<set>/<run-id>/<llm>/case_*.json and produces
   - a per-LLM pass/fail/error table (printed),
   - an optional per-subsection breakdown (when --tests points at the test file),
-  - meta.json + MANIFEST.json written into the run dir (with --write),
+  - meta.json written into the run dir (with --write; includes the decoding config),
   - a markdown summary written under summaries/<set>/<run-id>.md (with --write).
 
 No dependency on the pipeline (llmpipe) code — it only reads the JSON outputs
@@ -56,9 +56,13 @@ RUN_LLM_CONFIG = {
         "model": "gemini-2.5-flash", "api": "generateContent",
         "temperature": 0, "max_output_tokens": 8000,
         "thinking_config": "not set",
+        "context_caching": "on (server-side cachedContents)",
         "notes": "gemini-2.5-flash has default dynamic thinking that counts "
                  "against the output budget; on truncation the pipeline retries "
-                 "with a doubled budget (>=16000). Server-side context caching off.",
+                 "with a doubled budget (>=16000). Context caching ON by default "
+                 "for system prompts >=~16000 chars: the system prompt is uploaded "
+                 "to Google as a cachedContents object (30-min TTL) and referenced "
+                 "by name — distinct from Claude's inline ephemeral cache_control.",
     },
     "deepseek": {
         "model": "deepseek-v4-flash", "api": "/v1/chat/completions",
@@ -152,35 +156,6 @@ def write_meta(run_dir, run_id, test_set, verdicts, models):
     return meta
 
 
-def write_models(run_dir, run_id):
-    """Human-readable MODELS.md describing the decoding config for this run."""
-    c = RUN_LLM_CONFIG
-    cm = c["_common"]
-    out = [f"# Models & decoding — run `{run_id}`", "",
-           "Configuration actually used, recorded from "
-           f"`llmpipe/solver/llmcall.py` @ `{PIPELINE_COMMIT[:7]}`. "
-           "All four LLMs ran with **thinking/reasoning disabled**.", "",
-           "| LLM | model | temperature | max output tokens | thinking | notes |",
-           "|---|---|---|---|---|---|"]
-    for llm in LLMS:
-        d = c[llm]
-        temp = d.get("temperature", "—")
-        mt = d.get("max_tokens", d.get("max_output_tokens", "—"))
-        think = (d.get("extended_thinking") or d.get("thinking")
-                 or d.get("thinking_config") or d.get("reasoning_effort") or "—")
-        note = d.get("notes", "")
-        if llm == "gpt":
-            note = (note + " reasoning.effort=none, text.verbosity=low.").strip()
-        out.append(f"| {llm} | {d['model']} | {temp} | {mt} | {think} | {note} |")
-    out += ["", "## Common", "",
-            f"- temperature: {cm['temperature']} (where the provider accepts it)",
-            f"- max tokens: {cm['max_tokens']}",
-            f"- thinking/reasoning: {cm['thinking']}",
-            f"- seed: {cm['seed']} (part of the cache key)",
-            f"- HTTP timeout: {cm['http_timeout_s']}s; retries: {cm['retries']}", ""]
-    open(os.path.join(run_dir, "MODELS.md"), "w").write("\n".join(out) + "\n")
-
-
 def md_summary(run_id, test_set, verdicts, models, subs):
     rows = per_llm_table(verdicts)
     out = [f"# {test_set} — run `{run_id}`", "",
@@ -210,7 +185,7 @@ def main():
     ap.add_argument("--tests", default=None,
                     help="test file for the per-subsection breakdown")
     ap.add_argument("--write", action="store_true",
-                    help="write meta.json + MODELS.md + summaries/<set>/<run-id>.md")
+                    help="write meta.json + summaries/<set>/<run-id>.md")
     args = ap.parse_args()
 
     run_dir = args.run_dir.rstrip("/")
@@ -229,12 +204,11 @@ def main():
 
     if args.write:
         write_meta(run_dir, run_id, test_set, verdicts, models)
-        write_models(run_dir, run_id)
         sumdir = os.path.join("summaries", test_set)
         os.makedirs(sumdir, exist_ok=True)
         path = os.path.join(sumdir, run_id + ".md")
         open(path, "w").write(md_summary(run_id, test_set, verdicts, models, subs))
-        print(f"wrote meta.json, MODELS.md, {path}")
+        print(f"wrote meta.json, {path}")
 
 
 if __name__ == "__main__":
