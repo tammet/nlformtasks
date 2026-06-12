@@ -1,5 +1,5 @@
 <!-- Snapshot of the logic encodings used for the 2026-06-03_llmpipe run.
-     Taken from llmpipe@585e8b0 (https://github.com/tammet/nlpsolver, llmpipe/ENCODINGS.md).
+     Taken from llmpipe@585e8b0 = tag core-2026-06-03 (https://github.com/tammet/nlpsolver, llmpipe/ENCODINGS.md).
      Each run keeps its own ENCODINGS snapshot, since the encoding scheme evolves. -->
 
 # llmpipe — Encoding Reference

@@ -27,6 +27,8 @@ PIPELINE_REPO = "https://github.com/tammet/nlpsolver"
 # Pipeline commit whose answer-logic produced the cached LLM answers for the
 # 2026-06-03_llmpipe run. Update when a new run is ingested.
 PIPELINE_COMMIT = "585e8b04d36f3794990385dc955ef8facc4d3866"
+# Git tag in the pipeline repo pointing at that commit.
+PIPELINE_TAG = "core-2026-06-03"
 
 # Decoding configuration actually used for this run, recorded from
 # llmpipe@585e8b0/solver/llmcall.py. All four LLMs ran with thinking/reasoning
@@ -145,7 +147,7 @@ def write_meta(run_dir, run_id, test_set, verdicts, models):
     rows = per_llm_table(verdicts)
     meta = dict(
         test_set=test_set, run_id=run_id, date=run_id.split("_")[0],
-        pipeline=dict(repo=PIPELINE_REPO, commit=PIPELINE_COMMIT,
+        pipeline=dict(repo=PIPELINE_REPO, tag=PIPELINE_TAG, commit=PIPELINE_COMMIT,
                       note="LLM answers served from the pipeline's SQLite cache; "
                            "pipeline answer-logic as of this commit."),
         cases=len(verdicts),
@@ -162,7 +164,7 @@ def md_summary(run_id, test_set, verdicts, models, subs):
     rows = per_llm_table(verdicts)
     out = [f"# {test_set} — run `{run_id}`", "",
            f"Cases: **{len(verdicts)}**.  LLM answers served from the pipeline cache "
-           f"(`{PIPELINE_REPO}` @ `{PIPELINE_COMMIT[:7]}`).", "",
+           f"(`{PIPELINE_REPO}` @ tag `{PIPELINE_TAG}` = `{PIPELINE_COMMIT[:7]}`).", "",
            "## Per-LLM accuracy", "",
            "| LLM | model | pass | fail | error | accuracy |",
            "|---|---|---:|---:|---:|---:|"]

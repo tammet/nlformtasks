@@ -13,6 +13,6 @@
   - All four LLMs ran with thinking disabled; Gemini used server-side `cachedContents` context
     caching (distinct from Claude's inline ephemeral caching).
   - Accuracy on 1600 cases: claude 98.9%, deepseek 98.6%, gemini 97.9%, gpt 97.2%.
-  - Pipeline: `nlpsolver` @ `585e8b0`.
+  - Pipeline: `nlpsolver` @ `585e8b0` (later tagged `core-2026-06-03`).
 - Added `eval/summarize.py` (per-LLM and per-subsection tables) and
   `summaries/core/2026-06-03_llmpipe.md`.
