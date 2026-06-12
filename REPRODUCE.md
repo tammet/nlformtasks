@@ -7,11 +7,12 @@ checkout of that pipeline plus the LLM API keys it expects (or a warm response c
 ## nlpsolver commit used
 
 Each run was produced with one specific nlpsolver commit, recorded here and in the run's
-`meta.json`. To reproduce, check out exactly that commit.
+`meta.json`, and marked with a git tag in the pipeline repository. To reproduce, check out
+exactly that commit (or its tag).
 
-| run-id | pipeline repo | commit |
-|---|---|---|
-| `2026-06-03_llmpipe` | https://github.com/tammet/nlpsolver | `585e8b04d36f3794990385dc955ef8facc4d3866` |
+| run-id | pipeline repo | tag | commit |
+|---|---|---|---|
+| `2026-06-03_llmpipe` | https://github.com/tammet/nlpsolver | `core-2026-06-03` | `585e8b04d36f3794990385dc955ef8facc4d3866` |
 
 The recorded answers were served from the pipeline's SQLite response cache; the commit above is
 the state of the answer-affecting pipeline logic for this run. (Later edits to test files or docs
@@ -23,8 +24,8 @@ Let `$LLMPIPE_DIR` be a checkout of nlpsolver at that commit, with its solver da
 in place (see that repo's `llmpipe/CLAUDE.md`). From this repository:
 
 ```bash
-# 1. Check out the exact pipeline commit
-git -C "$LLMPIPE_DIR" checkout 585e8b04d36f3794990385dc955ef8facc4d3866
+# 1. Check out the exact pipeline state (the tag points at commit 585e8b04...)
+git -C "$LLMPIPE_DIR" checkout core-2026-06-03
 
 # 2. Install this repo's core test file under the name the runner expects
 cp tests/core/core_tests.py "$LLMPIPE_DIR/llmpipe/tests/tests_core.py"

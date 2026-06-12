@@ -22,7 +22,7 @@ run — every case is answered correctly by at least three of the four.
 
 ## How this run was created
 
-- Pipeline: nlpsolver @ `585e8b04d36f3794990385dc955ef8facc4d3866`
+- Pipeline: nlpsolver @ tag `core-2026-06-03` (commit `585e8b04d36f3794990385dc955ef8facc4d3866`)
   (https://github.com/tammet/nlpsolver, parser under `llmpipe/`).
 - Test file: `tests/core/core_tests.py` (1600 cases `[id, english, expected]`).
 - Command (the pipeline's batch runner):

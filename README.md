@@ -9,7 +9,8 @@ logic and calls the `gk` theorem prover. This repository holds the cases and the
 outputs, not the pipeline code.
 
 - Pipeline (the code that produces these answers): https://github.com/tammet/nlpsolver — the
-  parser lives under `llmpipe/`.
+  parser lives under `llmpipe/`. The exact pipeline state for each run is marked with a git
+  tag there (run `2026-06-03_llmpipe` → tag `core-2026-06-03`); see [REPRODUCE.md](REPRODUCE.md).
 
 ## What's here
 
