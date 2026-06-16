@@ -1,0 +1,345 @@
+{
+  "test_name": "folio_v2_ultracoarse_prenorm_v4",
+  "case_id": 107,
+  "input_text": "It costs $205 to take the GRE test, which is cheaper than $300. ETS provides financial aid to those GRE applicants who prove economic hardship. Those living in single-parent families or having few resources available to them can prove economic hardship. Tom lives in a single-parent family. Tom's dad has been out of work, and Tom has few resources available to them. Tom is applying to take the GRE test. No one taking the GRE test has financial aid provided to them by something?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "It costs $205 to take the GRE test, which is cheaper than $300.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The price 2 of the GRE test 1 is $205.",
+          "type": "real",
+          "entities": [{"id": "GRE test 1", "type": "concrete", "category": "abstract"},
+            {"id": "price 2", "type": "concrete", "text": "price"},
+            {"id": "205 dollars", "type": "concrete", "category": "measure"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The price 2 of the GRE test 1 is less than 300 dollars.",
+          "type": "real",
+          "entities": [{"id": "price 2", "type": "concrete", "text": "price"},
+            {"id": "GRE test 1", "type": "concrete", "category": "abstract"},
+            {"id": "300 dollars", "type": "concrete", "category": "measure"}
+          ]
+        },
+        {
+          "unit_id": "S3",
+          "text": "The price 2 is the price of the GRE test 1.",
+          "type": "real",
+          "entities": [{"id": "price 2", "type": "concrete", "text": "price"},
+            {"id": "GRE test 1", "type": "concrete", "category": "abstract"}
+          ],
+          "definites": [["price of","price 2","GRE test 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "ETS provides financial aid to those GRE applicants who prove economic hardship.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a GRE applicant proves economic hardship, ETS provides financial aid to that applicant.",
+          "type": "normal_rule",
+          "entities": [{"id": "GRE applicant", "type": "generic", "category": "person"},
+            {
+              "id": "ETS",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/Educational_Testing_Service"
+            },
+            {"id": "financial aid", "type": "generic", "category": "abstract"},
+            {"id": "economic hardship", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "provide",
+              "mode": "habitual",
+              "roles": {"actor": "ETS", "recipient": "GRE applicant", "target": "financial aid"}
+            }
+          ],
+          "confidence": 0.98
+        }
+      ]
+    },
+    {
+      "raw": "Those who live in a single-parent family or have few resources available to them can prove economic hardship.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If a person lives in a single-parent family or has few resources available, that person can prove economic hardship.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "single-parent family", "type": "generic", "category": "abstract"},
+            {"id": "resources", "type": "generic", "category": "abstract", "scope": "dependent"},
+            {"id": "economic hardship", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "prove",
+              "mode": "capability",
+              "roles": {"actor": "person", "target": "economic hardship"}
+            }
+          ],
+          "confidence": 0.98
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage_1_retries": ["json-fail retry: Expecting value: line 1 column 1 (char 0)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","gre test","GRE test 1"],
+          ["isa","price","price 2"],
+          ["=", ["$measure_of","price","GRE test 1","W0"], ["$measure",205,"dollar"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","price","price 2"],
+          ["<", ["$measure_of","price","GRE test 1","W0"], ["$measure",300,"dollar"]]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","price","price 2"],
+          ["isa","gre test","GRE test 1"],
+          ["is rel2","price of","price 2","GRE test 1"]
+        ]
+      ],
+      ["@definite","S3","W0","price of","GRE test 1","price 2"]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","gre applicant","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","prove"],
+                    ["has actor","E1","X"],
+                    ["exists","V",
+                      ["and", ["isa","economic hardship","V"], ["has target","E1","V"]]
+                    ]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","provide"],
+                    ["has actor","E2","https://en.wikipedia.org/wiki/Educational_Testing_Service"],
+                    ["has recipient","E2","X"],
+                    ["exists", "W", ["and", ["isa","financial aid","W"], ["has target","E2","W"]]],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.98]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["or",
+                  ["exists","Y",
+                    ["and", ["isa","single-parent family","Y"], ["is rel2","lives in","X","Y"]]
+                  ],
+                  ["exists", "Z", ["and", ["isa","resource","Z"], ["have","X","Z"]]]
+                ]
+              ],
+              ["normally",
+                ["exists","E3",
+                  ["and",
+                    ["isa","activity","E3"],
+                    ["has type","E3","prove"],
+                    ["has actor","E3","X"],
+                    ["exists","U",
+                      ["and", ["isa","economic hardship","U"], ["has target","E3","U"]]
+                    ],
+                    ["capability","E3"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S5",0.98]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class, constant_vs_class"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","measure","205 dollars"],
+ "@nl": "The price 2 of the GRE test 1 is $205."},
+{"@name": "entity_S2",
+ "@logic": ["isa","measure","300 dollars"],
+ "@nl": "The price 2 of the GRE test 1 is less than 300 dollars."},
+{"@name": "entity_S4",
+ "@logic": ["isa","organization","ETS"],
+ "@nl": "If a GRE applicant proves economic hardship, ETS provides financial aid to that applicant."},
+{"@name": "sent_S1",
+ "@logic": ["isa","gre test","#:GRE test 1"],
+ "@nl": "The price 2 of the GRE test 1 is $205."},
+{"@name": "sent_S1",
+ "@logic": ["isa","price","#:price 2"],
+ "@nl": "The price 2 of the GRE test 1 is $205."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$measure_of","price","#:GRE test 1","W0"], ["$list",205,"#:dollar"]],
+ "@nl": "The price 2 of the GRE test 1 is $205."},
+{"@name": "sent_S2",
+ "@logic": ["isa","price","#:price 2"],
+ "@nl": "The price 2 of the GRE test 1 is less than 300 dollars."},
+{"@name": "sent_S2",
+ "@logic": ["less_measure", ["$measure_of","price","#:GRE test 1","W0"], ["$list",300,"#:dollar"]],
+ "@nl": "The price 2 of the GRE test 1 is less than 300 dollars."},
+{"@name": "sent_S3",
+ "@logic": ["isa","price","#:price 2"],
+ "@nl": "The price 2 is the price of the GRE test 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","gre test","#:GRE test 1"],
+ "@nl": "The price 2 is the price of the GRE test 1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2","price of","#:price 2","#:GRE test 1","?:Cu11"],
+ "@nl": "The price 2 is the price of the GRE test 1."},
+{"@name": "sent_S4",
+ "@logic": [["-is rel2","prove","?:X","economic hardship","?:Cu12"],
+            ["is rel2","provide","https://en.wikipedia.org/wiki/Educational_Testing_Service","?:X","?:Cu12"]
+           ],
+ "@confidence": 0.96,
+ "@nl": "If a GRE applicant proves economic hardship, ETS provides financial aid to that applicant."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","single-parent family","?:Y"],
+            ["-is rel2","lives in","?:X","?:Y","?:Cu13"],
+            ["is rel2","prove","?:X","economic hardship","?:Cu13"]
+           ],
+ "@confidence": 0.9798,
+ "@nl": "If a person lives in a single-parent family or has few resources available, that person can prove economic hardship."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","resource","?:Z"],
+            ["-have","?:X","?:Z","?:Cu14"],
+            ["is rel2","prove","?:X","economic hardship","?:Cu14"]
+           ],
+ "@confidence": 0.9798,
+ "@nl": "If a person lives in a single-parent family or has few resources available, that person can prove economic hardship."},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","price","?:S","?:W"], "?:Cu15"],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "price", ["$measure_of","price","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","single-parent family","$some_single-parent_family"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","single-parent family","$some_not_single-parent_family"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","resource","$some_resource"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","resource","$some_not_resource"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","gre test","?:X"], ["isa","test","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","gre","?:X"], ["-isa","test","?:X"], ["isa","gre test","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","single-parent family","?:X"], ["isa","family","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","single-parent","?:X"],
+            ["-isa","family","?:X"],
+            ["isa","single-parent family","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","provide","?:Fv15"], ["has type","?:E","give","?:Fv15"]],
+ "@confidence": 0.84,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","resource","?:X"], ["isa","keep","?:X"]],
+ "@confidence": 0.75,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","keep","?:X"], ["isa","resource","?:X"]],
+ "@confidence": 0.75,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_measure_rel_bridge",
+ "@logic": [["-=", ["$measure_of","price","?:S","?:W"], "?:V"],
+            ["is rel2","price of","?:V","?:S","?:Ctxt"]
+           ],
+ "@nl": "[generated: frm_measure_rel_bridge]"},
+{"@name": "sent_S3",
+ "@logic": ["have","#:GRE test 1","#:price 2","?:Cu36"],
+ "@nl": "The price 2 is the price of the GRE test 1."}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-14T14:53:16Z"
+}

@@ -1,0 +1,101 @@
+{
+  "test_name": "core_minimal_pure",
+  "case_id": 130,
+  "input_text": "Mary was in a room. She was in the room?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "combined": {
+    "instr": "prompts/combined_minimal_instructions_full.txt",
+    "examples": "prompts/combined_examples_pure.txt",
+    "checklist": null
+  },
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","room","room 2"],
+            ["is rel2","in","Mary 1","room 2"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S2", ["question", ["@time", "past", ["is rel2","in","Mary 1","room 2"]]]]
+  ],
+  "stage_2_retries": ["sanity #1: state_time_in_body"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","Mary 1"],
+ "@nl": "[generated: sent_S1]"},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","room 2"],
+ "@nl": "[generated: sent_S1]"},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: sent_S1]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "[generated: sent_S2]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "[generated: sent_S2]"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "[generated: sent_S2]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "Mary 1", "room 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "[generated: sent_S2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.95,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "in", "Mary 1", "room 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",0.95], [["$block", 0, ["$not", ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["-is rel2", "in", "Mary 1", "room 2", ["$ctxt","present","?:X","?:Y","?:Z"]], ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 0.95], [["$block", 0, ["$not", ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","W0","?:X","?:Y"]]]], ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S2","assumption",1], [["$defq0"], ["-is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,1], 5, "fromga", 0.95], [["$block", 0, ["$not", ["is rel2", "in", "Mary 1", "room 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) sent_S1",
+"  (2) sent_S2",
+"Proof steps:",
+"  (1) Mary is in the room B  [sentence 1]",
+"  (2) If Mary is in the room B then normally Mary is in the room B  [sentence 2, confidence 95%]",
+"  (3) Normally Mary is in the room B  [from steps 1, 2, confidence 95%]",
+"  (4) If Mary is in the room B then answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Outstanding exception: Mary is not in the room B  [from steps 3, 4, 5, confidence 95%]",
+"Exceptions checked and not holding:",
+"  Mary is not in room B"
+],
+  "timestamp": "2026-06-07T12:24:07Z"
+}

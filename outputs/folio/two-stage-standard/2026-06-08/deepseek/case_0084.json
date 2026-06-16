@@ -1,0 +1,174 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 84,
+  "input_text": "If a restaurant is listed in Yelp’s recommendations, then the restaurant has not received many negative reviews. All restaurants with a rating greater than four are listed in Yelp’s recommendations. Some restaurants that do not provide take-out service receive many negative reviews. All restaurants that are popular among local residents have ratings greater than four. The Hamden Plaza Subway store has a rating greater than four, or it is popular among local residents. If the Hamden Plaza Subway store provides take-out service and receives many negative reviews, then its rating is greater than 4 and it does not provide take-out service?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "If a restaurant is listed in Yelps recommendations, then the restaurant has not received many negative reviews.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a restaurant is listed in Yelp's recommendations 1, then the restaurant has not received many negative reviews.",
+          "type": "normal_rule",
+          "entities": [{"id": "restaurant", "type": "generic", "category": "place"},
+            {"id": "Yelp's recommendations 1", "type": "concrete", "category": "abstract"},
+            {"id": "reviews", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "adjectives": [["negative","none","review"]]
+        }
+      ]
+    },
+    {
+      "raw": "All restaurants with a rating greater than four are listed in Yelps recommendations.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All restaurants that have a rating greater than four are listed in Yelp's recommendations 1.",
+          "type": "normal_rule",
+          "entities": [{"id": "restaurant", "type": "generic", "category": "place"},
+            {"id": "rating", "type": "generic", "scope": "dependent", "category": "number"},
+            {"id": "Yelp's recommendations 1", "type": "concrete", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Some restaurants that do not provide take-out service receive many negative reviews.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Some restaurants that do not provide take-out service receive many negative reviews.",
+          "type": "normal_rule",
+          "entities": [{"id": "restaurant", "type": "generic", "category": "place"},
+            {"id": "take-out service", "type": "generic", "scope": "kind", "category": "abstract"},
+            {"id": "reviews", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "adjectives": [["negative","none","review"]],
+          "actions": [{"root": "receive", "mode": "habitual", "roles": {"target": "reviews"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All restaurants that are popular among local residents have ratings greater than four.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All restaurants that are popular among local residents have ratings greater than four.",
+          "type": "normal_rule",
+          "entities": [{"id": "restaurant", "type": "generic", "category": "place"},
+            {"id": "local residents", "type": "generic", "category": "person"},
+            {"id": "rating", "type": "generic", "scope": "dependent", "category": "number"}
+          ],
+          "adjectives": [["popular","none","restaurant"]]
+        }
+      ]
+    },
+    {
+      "raw": "The Hamden Plaza Subway store has a rating greater than four, or it is popular among local residents.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "The Hamden Plaza Subway store 1 has a rating greater than four, or the Hamden Plaza Subway store 1 is popular among local residents.",
+          "type": "real",
+          "entities": [{"id": "Hamden Plaza Subway store 1", "type": "concrete", "category": "place"},
+            {"id": "rating", "type": "generic", "scope": "dependent", "category": "number"},
+            {"id": "local residents", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["popular","none","place"]]
+        }
+      ]
+    },
+    {
+      "raw": "If the Hamden Plaza Subway store provides take-out service and receives many negative reviews, then its rating is greater than 4 and it does not provide take-out service?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If the Hamden Plaza Subway store 1 provides take-out service and receives many negative reviews, then its rating is greater than 4 and it does not provide take-out service?",
+          "type": "query",
+          "entities": [{"id": "Hamden Plaza Subway store 1", "type": "concrete", "category": "place"},
+            {"id": "take-out service", "type": "generic", "scope": "kind", "category": "abstract"},
+            {"id": "reviews", "type": "generic", "scope": "kind", "category": "abstract"},
+            {"id": "rating", "type": "generic", "scope": "dependent", "category": "number"}
+          ],
+          "adjectives": [["negative","none","review"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","restaurant","X"],
+              ["normally",
+                ["implies",
+                  ["is rel2","listed in","X","Yelp's recommendations 1"],
+                  ["not",
+                    ["exists","E",
+                      ["and",
+                        ["isa","activity","E"],
+                        ["has type","E","receive"],
+                        ["has actor","E","X"],
+                        ["has target","E","reviews"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["forall", "X", ["implies", ["and", ["isa","restaurant","X"]]]]]]
+  ],
+  "stage_2_fixes": ["json: stripped non-JSON wrapper text","json: added 11 closing bracket(s)","json: stripped non-JSON wrapper text","json: added 6 closing bracket(s)"],
+  "stage_2_retries": ["json-fail retry: Expecting value: line 1 column 1 (char 0)","sanity #1: missing_question"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","abstract","#:Yelp's recommendations 1"],
+ "@nl": "If a restaurant is listed in Yelp's recommendations 1, then the restaurant has not received many negative reviews."},
+{"@name": "entity_S5",
+ "@logic": ["isa","place","#:Hamden Plaza Subway store 1"],
+ "@nl": "The Hamden Plaza Subway store 1 has a rating greater than four, or the Hamden Plaza Subway store 1 is popular among local residents."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","restaurant","?:X"],
+            ["-is rel2", "listed in", "?:X", "#:Yelp's recommendations 1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "give", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has recipient", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","review","?:Gobj0"],
+            ["-has target", "?:E", "?:Gobj0", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-actuality","?:E"],
+            ["$block", ["$","restaurant",5], ["actuality","?:E"]]
+           ],
+ "@nl": "If a restaurant is listed in Yelp's recommendations 1, then the restaurant has not received many negative reviews."},
+{"@name": "sent_S2",
+ "@logic": ["implies", ["isa","restaurant","?:X"]],
+ "@nl": "All restaurants that have a rating greater than four are listed in Yelp's recommendations 1."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","restaurant","$some_restaurant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","restaurant","$some_not_restaurant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv9"], ["has type","?:E","give","?:Fv9"]],
+ "@confidence": 0.91,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-08T08:57:52Z"
+}

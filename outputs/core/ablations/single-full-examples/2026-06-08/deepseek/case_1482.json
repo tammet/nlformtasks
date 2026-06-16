@@ -1,0 +1,98 @@
+{
+  "test_name": "core_v2_pure",
+  "case_id": 1482,
+  "input_text": "Probably elephants are animals. John is an elephant. John is an animal?",
+  "expected_answer": "Probably true.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Likely true.",
+  "correctness": true,
+  "combined": {
+    "instr": "prompts/combined_v2_instructions_full.txt",
+    "examples": "prompts/combined_examples_pure.txt",
+    "checklist": null
+  },
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall", "X", ["normally", ["implies", ["isa","elephant","X"], ["isa","animal","X"]]]]
+        ],
+        ["@p","S1",0.8]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id", "S3", ["question", ["isa","animal","John 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["isa","animal","?:X"],
+            ["$block", ["$","elephant",1], ["$not", ["isa","animal","?:X"]]]
+           ],
+ "@confidence": 0.6,
+ "@nl": "[generated: sent_S1]"},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","John 1"],
+ "@nl": "[generated: sent_S2]"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","animal","John 1"]],
+ "@nl": "[generated: sent_S3]"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","animal","John 1"], ["$defq0"]],
+ "@nl": "[generated: sent_S3]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "[generated: sent_S3]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["isa","animal","John 1"]]]],
+        "confidence": 0.6,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.6], [["$block", ["$","elephant",1], ["$not", ["isa","animal","?:X"]]], ["-isa","elephant","?:X"], ["isa","animal","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","elephant","John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.6], [["$block", ["$","elephant",1], ["$not", ["isa","animal","John 1"]]], ["isa","animal","John 1"]]],
+          [4, ["in","sent_S3","assumption",1], [["-isa","animal","John 1"], ["$defq0"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], 4, 5, "fromga", 0.6], [["$block", ["$","elephant",1], ["$not", ["isa","animal","John 1"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 60%.",
+"Sentences used:",
+"  (1) sent_S1",
+"  (2) sent_S2",
+"  (3) sent_S3",
+"Proof steps:",
+"  (1) If some X is an elephant then normally X is an animal  [sentence 1, confidence 60%]",
+"  (2) John is an elephant  [sentence 2]",
+"  (3) Normally John is an animal  [from steps 1, 2, confidence 60%]",
+"  (4) If John is an animal then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Outstanding exception: John is not an animal  [from steps 3, 4, 5, confidence 60%]",
+"Exceptions checked and not holding:",
+"  John is not an animal"
+],
+  "timestamp": "2026-06-08T18:44:23Z"
+}

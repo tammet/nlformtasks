@@ -1,0 +1,689 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 3,
+  "input_text": "People in this club who perform in school talent shows often attend and are very engaged with school events. People in this club either perform in school talent shows often or are inactive and disinterested community members. People in this club who chaperone high school dances are not students who attend the school. All people in this club who are inactive and disinterested members of their community chaperone high school dances. All young children and teenagers in this club who wish to further their academic careers and educational opportunities are students who attend the school. Bonnie is in this club and she either both attends and is very engaged with school events and is a student who attends the school or is not someone who both attends and is very engaged with school events and is not a student who attends the school. If Bonnie either chaperones high school dances or, if she does not, she performs in school talent shows often, then Bonnie is both a young child or teenager who wishes to further her academic career and educational opportunities and an inactive and disinterested member of the community?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "People in this club who perform in school talent shows often attend and are very engaged with school events.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a person in this club performs in school talent shows often, then the person attends school events often.",
+          "type": "normal_rule",
+          "entities": [{"id": "person_in_club", "type": "generic", "category": "person"},
+            {"id": "club 1", "type": "concrete", "category": "organization"},
+            {"id": "school talent shows", "type": "generic", "category": "event"},
+            {"id": "school events", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "perform",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "school talent shows"}
+            },
+            {
+              "root": "attend",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "school events"}
+            }
+          ],
+          "confidence": 0.98
+        },
+        {
+          "unit_id": "S2",
+          "text": "If a person in this club performs in school talent shows often, then the person is very engaged with school events.",
+          "type": "normal_rule",
+          "entities": [{"id": "person_in_club", "type": "generic", "category": "person"},
+            {"id": "club 1", "type": "concrete", "category": "organization"},
+            {"id": "school talent shows", "type": "generic", "category": "event"},
+            {"id": "school events", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "perform",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "school talent shows"}
+            }
+          ],
+          "adjectives": [["engaged","high","person"]],
+          "confidence": 0.98
+        }
+      ]
+    },
+    {
+      "raw": "People in this club either perform in school talent shows often or are inactive and disinterested community members.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member.",
+          "type": "strict_rule",
+          "entities": [{"id": "person_in_club", "type": "generic", "category": "person"},
+            {"id": "club 1", "type": "concrete", "category": "organization"},
+            {"id": "school talent shows", "type": "generic", "category": "event"},
+            {"id": "community_member", "type": "generic", "category": "person"}
+          ],
+          "actions": [{
+              "root": "perform",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "school talent shows"}
+            }
+          ],
+          "adjectives": [["inactive","none","community_member"], ["disinterested","none","community_member"]]
+        }
+      ]
+    },
+    {
+      "raw": "People in this club who chaperone high school dances are not students who attend the school.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a person in this club chaperones high school dances, then the person is not a student who attends the school.",
+          "type": "strict_rule",
+          "entities": [{"id": "person_in_club", "type": "generic", "category": "person"},
+            {"id": "club 1", "type": "concrete", "category": "organization"},
+            {"id": "high school dances", "type": "generic", "category": "event"},
+            {"id": "student", "type": "generic", "category": "person"},
+            {"id": "school 1", "type": "concrete", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "chaperone",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "high school dances"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All people in this club who are inactive and disinterested members of their community chaperone high school dances.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances.",
+          "type": "strict_rule",
+          "entities": [{"id": "person_in_club", "type": "generic", "category": "person"},
+            {"id": "club 1", "type": "concrete", "category": "organization"},
+            {"id": "community_member", "type": "generic", "category": "person"},
+            {"id": "high school dances", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "chaperone",
+              "mode": "habitual",
+              "roles": {"actor": "person_in_club", "target": "high school dances"}
+            }
+          ],
+          "adjectives": [["inactive","none","community_member"], ["disinterested","none","community_member"]]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage_1_retries": ["json-fail retry: Expecting value: line 1 column 1 (char 0)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","person_in_club","X"],
+              ["normally",
+                ["implies",
+                  ["exists","Y",
+                    ["and",
+                      ["isa","school talent shows","Y"],
+                      ["exists","E1",
+                        ["and",
+                          ["isa","activity","E1"],
+                          ["has type","E1","perform"],
+                          ["has actor","E1","X"],
+                          ["has target","E1","Y"],
+                          ["typical","E1"]
+                        ]
+                      ]
+                    ]
+                  ],
+                  ["exists","Z",
+                    ["and",
+                      ["isa","school events","Z"],
+                      ["exists","E2",
+                        ["and",
+                          ["isa","activity","E2"],
+                          ["has type","E2","attend"],
+                          ["has actor","E2","X"],
+                          ["has target","E2","Z"],
+                          ["typical","E2"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.98]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","person_in_club","X"],
+              ["normally",
+                ["implies",
+                  ["exists","Y",
+                    ["and",
+                      ["isa","school talent shows","Y"],
+                      ["exists","E1",
+                        ["and",
+                          ["isa","activity","E1"],
+                          ["has type","E1","perform"],
+                          ["has actor","E1","X"],
+                          ["has target","E1","Y"],
+                          ["typical","E1"]
+                        ]
+                      ]
+                    ]
+                  ],
+                  ["has degree property","engaged","X","high","person"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.98]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person_in_club","X"],
+            ["xor",
+              ["exists","Y",
+                ["and",
+                  ["isa","school talent shows","Y"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","perform"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","Y"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ]
+              ],
+              ["and",
+                ["isa","community_member","X"],
+                ["has degree property","inactive","X","none","community_member"],
+                ["has degree property","disinterested","X","none","community_member"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person_in_club","X"],
+            ["implies",
+              ["exists","Y",
+                ["and",
+                  ["isa","high school dances","Y"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","chaperone"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","Y"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ]
+              ],
+              ["not", ["and", ["isa","student","X"], ["is rel2","attends","X","school 1"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person_in_club","X"],
+            ["implies",
+              ["and",
+                ["isa","community_member","X"],
+                ["has degree property","inactive","X","none","community_member"],
+                ["has degree property","disinterested","X","none","community_member"]
+              ],
+              ["exists","Y",
+                ["and",
+                  ["isa","high school dances","Y"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","chaperone"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","Y"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","organization","#:club 1"],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "entity_S1",
+ "@logic": ["isa","club","#:club 1"],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "entity_S4",
+ "@logic": ["isa","organization","#:school 1"],
+ "@nl": "If a person in this club chaperones high school dances, then the person is not a student who attends the school."},
+{"@name": "entity_S4",
+ "@logic": ["isa","school","#:school 1"],
+ "@nl": "If a person in this club chaperones high school dances, then the person is not a student who attends the school."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa", "school event", ["sk0","?:X"]]
+           ],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa", "activity", ["sk1","?:X"]]
+           ],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has type", ["sk1","?:X"], "attend", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has actor", ["sk1","?:X"], "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has target", ["sk1","?:X"], ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["typical", ["sk1","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","school talent shows",4], ["$not", ["typical", ["sk1","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.96,
+ "@nl": "If a person in this club performs in school talent shows often, then the person attends school events often."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has property", "busy", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","school talent shows",4], ["$not", ["has property", "busy", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.96,
+ "@nl": "If a person in this club performs in school talent shows often, then the person is very engaged with school events."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "school talent show", ["sk2","?:X"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "school talent show", ["sk2","?:X"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "school talent show", ["sk2","?:X"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "activity", ["sk3","?:X"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "activity", ["sk3","?:X"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["isa", "activity", ["sk3","?:X"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has type", ["sk3","?:X"], "perform", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has type", ["sk3","?:X"], "perform", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has type", ["sk3","?:X"], "perform", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has actor", ["sk3","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has actor", ["sk3","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has actor", ["sk3","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has target", ["sk3","?:X"], ["sk2","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has target", ["sk3","?:X"], ["sk2","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["has target", ["sk3","?:X"], ["sk2","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["typical", ["sk3","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","community_member","?:X"]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["typical", ["sk3","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["typical", ["sk3","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","school talent show","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "perform", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-typical", "?:E1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "A person in this club either performs in school talent shows often or is an inactive and disinterested community member."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","high school dances","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "chaperone", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-isa","student","?:X"],
+            ["-is rel2", "attends", "?:X", "#:school 1", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "If a person in this club chaperones high school dances, then the person is not a student who attends the school."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["isa", "high school dances", ["sk4","?:X"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["isa", "activity", ["sk5","?:X"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["has type", ["sk5","?:X"], "chaperone", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["has actor", ["sk5","?:X"], "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["has target", ["sk5","?:X"], ["sk4","?:X"], ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person_in_club","?:X"],
+            ["-isa","community_member","?:X"],
+            ["has property", "active", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has property", "disinterested", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["typical", ["sk5","?:X"], ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If a person in this club is an inactive and disinterested community member, then the person chaperones high school dances."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person_in_club","$some_person_in_club"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person_in_club","$some_not_person_in_club"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","school talent show","$some_school_talent_shows"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","school talent show","$some_not_school_talent_shows"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","school event","$some_school_events"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","school event","$some_not_school_events"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","community_member","$some_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","community_member","$some_not_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","high school dances","$some_high_school_dances"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","high school dances","$some_not_high_school_dances"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","student","$some_student"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","student","$some_not_student"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "busy", "$some_engaged_person", ["$ctxt","?:Fv80","?:Fv77","?:Fv78","?:Fv79"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_engaged_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "busy", "$some_not_engaged_person", ["$ctxt","?:Fv88","?:Fv85","?:Fv86","?:Fv87"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "active", "$some_inactive_community_member", ["$ctxt","?:Fv92","?:Fv89","?:Fv90","?:Fv91"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","community_member","$some_inactive_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "active", "$some_not_inactive_community_member", ["$ctxt","?:Fv100","?:Fv97","?:Fv98","?:Fv99"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "disinterested", "$some_disinterested_community_member", ["$ctxt","?:Fv104","?:Fv101","?:Fv102","?:Fv103"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","community_member","$some_disinterested_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "disinterested", "$some_not_disinterested_community_member", ["$ctxt","?:Fv112","?:Fv109","?:Fv110","?:Fv111"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","community_member","$some_inactive_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "active", "$some_inactive_community_member", ["$ctxt","?:Fv120","?:Fv117","?:Fv118","?:Fv119"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","community_member","$some_disinterested_community_member"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "disinterested", "$some_disinterested_community_member", ["$ctxt","?:Fv128","?:Fv125","?:Fv126","?:Fv127"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","high school dances","?:X"], ["isa","dances","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","high school","?:X"],
+            ["-isa","dances","?:X"],
+            ["isa","high school dances","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","school event","?:X"], ["isa","event","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","school","?:X"], ["-isa","event","?:X"], ["isa","school event","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","school talent show","?:X"], ["isa","show","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","school talent","?:X"],
+            ["-isa","show","?:X"],
+            ["isa","school talent show","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-15T15:53:04Z"
+}

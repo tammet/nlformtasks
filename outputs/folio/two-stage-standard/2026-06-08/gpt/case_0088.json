@@ -1,0 +1,508 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 88,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. Walden contains knowledge?",
+  "expected_answer": "True.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Books contain tons of knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain a large amount of knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, that person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, they become smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person becomes smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "adjectives": [["smart","none","person"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Harry read the book “Walden” by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {"id": "book 2", "type": "concrete", "category": "artifact"},
+            {"id": "Walden", "type": "concrete", "category": "artifact"},
+            {
+              "id": "Henry Thoreau 3",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Henry_David_Thoreau"
+            }
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "book 2"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S5",
+          "text": "The book 2 is named Walden.",
+          "type": "situation",
+          "entities": [{"id": "book 2", "type": "concrete", "category": "artifact"},
+            {"id": "Walden", "type": "concrete", "category": "artifact"}
+          ],
+          "time": "past"
+        },
+        {
+          "unit_id": "S6",
+          "text": "Henry Thoreau 3 wrote the book 2.",
+          "type": "situation",
+          "entities": [{
+              "id": "Henry Thoreau 3",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Henry_David_Thoreau"
+            },
+            {"id": "book 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "event",
+              "roles": {"actor": "Henry Thoreau 3", "target": "book 2"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Walden contains knowledge?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Does Walden contain knowledge?",
+          "type": "query",
+          "entities": [{"id": "Walden", "type": "concrete", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies", ["isa","book","X"], ["normally", ["is rel2","in","knowledge","X"]]]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["isa","person","X"],
+                ["forall","Y",
+                  ["implies",
+                    ["isa","book","Y"],
+                    ["and",
+                      ["exists","E1",
+                        ["and",
+                          ["isa","activity","E1"],
+                          ["has type","E1","read"],
+                          ["has actor","E1","X"],
+                          ["has target","E1","Y"],
+                          ["typical","E1"]
+                        ]
+                      ],
+                      ["exists","E2",
+                        ["and",
+                          ["isa","activity","E2"],
+                          ["has type","E2","gain"],
+                          ["has actor","E2","X"],
+                          ["has target","E2","knowledge"],
+                          ["typical","E2"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","gain"],
+                      ["has actor","E","X"],
+                      ["has target","E","knowledge"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ],
+                ["has degree property","smart","X","none","person"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Harry 1"],
+          ["isa","book","book 2"],
+          ["isa","book","Walden"],
+          ["isa","person","https://en.wikipedia.org/wiki/Henry_David_Thoreau"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","read"],
+              ["has actor","E","Harry 1"],
+              ["has target","E","book 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and", ["isa","book","book 2"], ["isa","book","Walden"], ["=","book 2","Walden"]]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","person","https://en.wikipedia.org/wiki/Henry_David_Thoreau"],
+          ["isa","book","book 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","https://en.wikipedia.org/wiki/Henry_David_Thoreau"],
+              ["has target","E","book 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["question", ["and", ["isa","book","Walden"], ["is rel2","in","knowledge","Walden"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S4",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"],
+            ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Books contain a large amount of knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["isa", "activity", ["sk0","?:X","?:Y"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has type", ["sk0","?:X","?:Y"], "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has actor", ["sk0","?:X","?:Y"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has target", ["sk0","?:X","?:Y"], "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["typical", ["sk0","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["isa", "activity", ["sk1","?:X","?:Y"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has type", ["sk1","?:X","?:Y"], "gain", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has actor", ["sk1","?:X","?:Y"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["isa", "knowledge", ["sk2","?:X","?:Y"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["has target", ["sk1","?:X","?:Y"], ["sk2","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["typical", ["sk1","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","person",1], ["$not", ["typical", ["sk1","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "gain", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has degree property", "smart", "?:X", "none", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","person",4], ["$not", ["has degree property", "smart", "?:X", "none", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","Walden"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","https://en.wikipedia.org/wiki/Henry_David_Thoreau"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk3_activity"],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has type", "sk3_activity", "read", ["$ctxt","past","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has actor", "sk3_activity", "#:Harry 1", ["$ctxt","past","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has target", "sk3_activity", "#:book 2", ["$ctxt","past","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk3_activity", "past", "in", ["$ctxt","past","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 read the book 2 named Walden written by Henry Thoreau 3."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "The book 2 is named Walden."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","Walden"],
+ "@nl": "The book 2 is named Walden."},
+{"@name": "sent_S5",
+ "@logic": ["=","#:book 2","Walden"],
+ "@nl": "The book 2 is named Walden."},
+{"@name": "sent_S6",
+ "@logic": ["isa","person","https://en.wikipedia.org/wiki/Henry_David_Thoreau"],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["isa","activity","sk4_activity"],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["has type", "sk4_activity", "write", ["$ctxt","past","W0","?:Fv17","?:Fv18"]],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["has actor", "sk4_activity", "https://en.wikipedia.org/wiki/Henry_David_Thoreau", ["$ctxt","past","W0","?:Fv17","?:Fv18"]],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["has target", "sk4_activity", "#:book 2", ["$ctxt","past","W0","?:Fv17","?:Fv18"]],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["has time", "sk4_activity", "past", "in", ["$ctxt","past","W0","?:Fv17","?:Fv18"]],
+ "@nl": "Henry Thoreau 3 wrote the book 2."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","book","Walden"]],
+ "@nl": "Does Walden contain knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:Fv21","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Does Walden contain knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","book","Walden"],
+            ["-is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:Fv21","?:Fv19","?:Fv20"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Walden contain knowledge?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Does Walden contain knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "knowledge", "Walden", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does Walden contain knowledge?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "smart", "$some_smart_person", "none", "person", ["$ctxt","?:Fv52","?:Fv49","?:Fv50","?:Fv51"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_smart_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "smart", "$some_not_smart_person", "none", "person", ["$ctxt","?:Fv60","?:Fv57","?:Fv58","?:Fv59"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "smart", "?:X", "none", "?:Fv61", ["$ctxt","past","?:Fv27","?:Fv28","?:Fv29"]],
+            ["has degree property", "smart", "?:X", "none", "?:Fv62", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "none", "?:Fv63", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "smart", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv30","?:Fv31","?:Fv32"]],
+            ["has degree property", "smart", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["isa","book","Walden"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "Walden", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "Walden", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S7","assumption",1], [["-isa","book","Walden"], ["$defq0"], ["-is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S7","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,2], 5, "fromga", 0.98], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["-isa","book","Walden"]]],
+          [7, ["in","sent_S4","assumption",1], [["isa","book","Walden"]]],
+          [8, ["simp",6,7,"fromga",0.98], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "Walden", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Books contain tons of knowledge.",
+"  (2) Harry read the book “Walden” by Henry Thoreau.",
+"  (3) Walden contains knowledge?",
+"Proof steps:",
+"  (1) If some X is a book then normally the knowledge is in X  [sentence 1, confidence 98%]",
+"  (2) The named Walden is a book  [sentence 2]",
+"  (3) Normally the knowledge is in the named Walden  [from steps 1, 2, confidence 98%]",
+"  (4) If the named Walden is a book and the knowledge is in the named Walden then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) The named Walden is not a book, except when the knowledge is not in the named Walden  [from steps 3, 4, 5, confidence 98%]",
+"  (7) The named Walden is a book  [sentence 2]",
+"  (8) Outstanding exception: the knowledge is not in the named Walden  [from steps 6, 7, confidence 98%]",
+"Exceptions checked and not holding:",
+"  the knowledge is not in the named Walden"
+],
+  "timestamp": "2026-06-07T18:54:03Z"
+}

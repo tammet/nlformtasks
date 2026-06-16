@@ -1,0 +1,285 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 116,
+  "input_text": "If a man is taller than another man, the taller one can block the other's shooting. Michael is a man who is taller than everyone else in his class. If person x is taller than person y, and person y is taller than person z, then x is taller than z Peter is a man who is taller than Michael. Michael can block any shooting from a person as long as the person does not jump when shooting. Michael cannot block Windy's shooting. Every shooter who can jump when shooting is a great shooter. Windy is a great shooter?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "If a man is taller than another man, the taller one can block the other's shooting.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2.",
+          "type": "normal_rule",
+          "entities": [{"id": "man 1", "type": "generic", "category": "person"},
+            {"id": "man 2", "type": "generic", "category": "person"},
+            {"id": "shooting", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "block",
+              "mode": "capability",
+              "roles": {"actor": "man 1", "target": "shooting"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Michael is a man who is taller than everyone else in his class.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Michael 1 is a man.",
+          "type": "real",
+          "entities": [{"id": "Michael 1", "type": "concrete", "category": "person"}]
+        },
+        {
+          "unit_id": "S3",
+          "text": "Michael 1 is taller than every other person in the class 2 of Michael 1.",
+          "type": "real",
+          "entities": [{"id": "Michael 1", "type": "concrete", "category": "person"},
+            {"id": "class 2", "type": "concrete", "category": "place"},
+            {"id": "person", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["tall","high","person"]]
+        },
+        {
+          "unit_id": "S4",
+          "text": "The class 2 is the class of Michael 1.",
+          "type": "real",
+          "entities": [{"id": "class 2", "type": "concrete", "category": "place"},
+            {"id": "Michael 1", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["class of","class 2","Michael 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "If person x is taller than person y, and person y is taller than person z, then x is taller than z",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If person x is taller than person y, and person y is taller than person z, then person x is taller than person z.",
+          "type": "strict_rule",
+          "entities": [{"id": "person x", "type": "generic", "category": "person"},
+            {"id": "person y", "type": "generic", "category": "person"},
+            {"id": "person z", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage_1_retries": ["json-fail retry: Expecting value: line 1 column 1 (char 0)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["implies",
+              ["and", ["isa","man","X"], ["isa","man","Y"], ["is rel2","taller than","X","Y"]],
+              ["normally",
+                ["exists","S",
+                  ["and",
+                    ["isa","shooting","S"],
+                    ["is rel2","of","S","Y"],
+                    ["exists","E",
+                      ["and",
+                        ["isa","activity","E"],
+                        ["has type","E","block"],
+                        ["has actor","E","X"],
+                        ["has target","E","S"],
+                        ["capability","E"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","man","Michael 1"]]],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","Y",
+          ["implies",
+            ["and",
+              ["isa","person","Y"],
+              ["not", ["=","Y","Michael 1"]],
+              ["is rel2","in","Y","class 2"]
+            ],
+            ["has degree rel2","tall","Michael 1","Y","high","person"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and", ["isa","class","class 2"], ["is rel2","class of","class 2","Michael 1"]]
+      ],
+      ["@definite","S4","W0","class of","Michael 1","class 2"]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["forall","Z",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["isa","person","Y"],
+                  ["isa","person","Z"],
+                  ["is rel2","taller than","X","Y"],
+                  ["is rel2","taller than","Y","Z"]
+                ],
+                ["is rel2","taller than","X","Z"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Michael 1"],
+ "@nl": "Michael 1 is a man."},
+{"@name": "entity_S3",
+ "@logic": ["isa","class","#:class 2"],
+ "@nl": "Michael 1 is taller than every other person in the class 2 of Michael 1."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa", "shooting", ["sk0","?:X","?:Y"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["is rel2", "of", ["sk0","?:X","?:Y"], "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa", "activity", ["sk1","?:X","?:Y"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has type", ["sk1","?:X","?:Y"], "block", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has actor", ["sk1","?:X","?:Y"], "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has target", ["sk1","?:X","?:Y"], ["sk0","?:X","?:Y"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","man","?:Y"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["capability", ["sk1","?:X","?:Y"]],
+            ["$block", ["$","man",2], ["$not", ["capability", ["sk1","?:X","?:Y"]]]]
+           ],
+ "@nl": "If a man 1 is taller than a man 2, the man 1 can block the shooting of the man 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","man","#:Michael 1"],
+ "@nl": "Michael 1 is a man."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:Y"],
+            ["=","?:Y","#:Michael 1"],
+            ["-is rel2", "in", "?:Y", ["$theof1", "class", "#:Michael 1", ["$ctxt","present","W0","?:Fv11","?:Fv12"]], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["has degree rel2", "tall", "#:Michael 1", "?:Y", "high", "person", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Michael 1 is taller than every other person in the class 2 of Michael 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa", "class", ["$theof1", "class", "#:Michael 1", ["$ctxt","present","W0","?:Fv11","?:Fv12"]]],
+ "@nl": "The class 2 is the class of Michael 1."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","person","?:Y"],
+            ["-isa","person","?:Z"],
+            ["-is rel2", "taller than", "?:X", "?:Y", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-is rel2", "taller than", "?:Y", "?:Z", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["is rel2", "taller than", "?:X", "?:Z", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "If person x is taller than person y, and person y is taller than person z, then person x is taller than person z."},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Michael 1", ["$theof1", "class", "#:Michael 1", ["$ctxt","present","W0","?:Fv11","?:Fv12"]], ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "class of", ["$theof1","class","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "class", ["$theof1","class","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","man","$some_not_man"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","shooting","$some_shooting"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","shooting","$some_not_shooting"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person_in_class"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "in", "$some_person_in_class", "#:class 2", ["$ctxt","?:Fv54","?:Fv51","?:Fv52","?:Fv53"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has degree property","tall","?:X","none","?:Fv55","?:Fv17"],
+            ["has degree property","high","?:X","none","?:Fv56","?:Fv17"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has degree property","high","?:X","none","?:Fv57","?:Fv18"],
+            ["has degree property","tall","?:X","none","?:Fv58","?:Fv18"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-07T20:43:08Z"
+}

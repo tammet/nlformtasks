@@ -1,0 +1,105 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 126,
+  "input_text": "All of Peter's pets that are mammals are also animals. All monkeys are mammals. Peter's pets are all either monkeys or birds. Peter's birds can fly. All animals that are Peter's pets can breathe. If Peter's pet can fly, then it has wings. Rock is Peter's pet. Rock can fly, or Rock is a bird, or Rock cannot breathe. Rock has wings?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All of Peter's pets that are mammals are also animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All pets of Peter 1 that are mammals are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "pets", "type": "generic", "category": "animal", "scope": "dependent"},
+            {"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "Peter 1", "type": "concrete", "category": "person"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Peter 1 has pets.",
+          "type": "real",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pets", "type": "generic", "category": "animal", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Peter 1"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","pet","X"], ["have","Peter 1","X"], ["isa","mammal","X"]],
+              ["isa","animal","X"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Peter 1"],
+          ["exists", "X", ["and", ["isa","pet","X"], ["have","Peter 1","X"]]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Peter 1"],
+ "@nl": "All pets of Peter 1 that are mammals are animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have", "#:Peter 1", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","mammal","?:X"],
+            ["isa","animal","?:X"]
+           ],
+ "@nl": "All pets of Peter 1 that are mammals are animals."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Peter 1"],
+ "@nl": "Peter 1 has pets."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pet","sk0_pet"],
+ "@nl": "Peter 1 has pets."},
+{"@name": "sent_S2",
+ "@logic": ["have", "#:Peter 1", "sk0_pet", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "Peter 1 has pets."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","pet","$some_pet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","pet","$some_not_pet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mammal","$some_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mammal","$some_not_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-07T21:11:17Z"
+}

@@ -1,0 +1,413 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 178,
+  "input_text": "The summer Olympic games is a sporting event. The last summer Olympic games was in Tokyo. The United States won the most medals in Tokyo. The United States won the most medals in the last summer Olympic games?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The summer Olympic games is a sporting event.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The summer Olympic games is a sporting event.",
+          "type": "real",
+          "entities": [{
+              "id": "summer Olympic games",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "event"
+            },
+            {"id": "sporting event", "type": "generic", "subtype": "compound", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The last summer Olympic games was in Tokyo.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The summer Olympic games 1 was in Tokyo 1.",
+          "type": "situation",
+          "entities": [{
+              "id": "summer Olympic games 1",
+              "type": "concrete",
+              "subtype": "compound",
+              "category": "event"
+            },
+            {
+              "id": "Tokyo 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tokyo"
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The United States won the most medals in Tokyo.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The United States 1 won the most medals in the summer Olympic games 1.",
+          "type": "situation",
+          "entities": [{
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "medals", "type": "generic", "category": "artifact"},
+            {
+              "id": "summer Olympic games 1",
+              "type": "concrete",
+              "subtype": "compound",
+              "category": "event"
+            }
+          ],
+          "actions": [{
+              "root": "win",
+              "mode": "event",
+              "roles": {"target": "medals", "location": "summer Olympic games 1"}
+            }
+          ],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The United States won the most medals in the last summer Olympic games?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Did the United States 1 win the most medals in the summer Olympic games 1?",
+          "type": "query",
+          "entities": [{
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "medals", "type": "generic", "category": "artifact"},
+            {
+              "id": "summer Olympic games 1",
+              "type": "concrete",
+              "subtype": "compound",
+              "category": "event"
+            }
+          ],
+          "actions": [{
+              "root": "win",
+              "mode": "event",
+              "roles": {"target": "medals", "location": "summer Olympic games 1"}
+            }
+          ],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","summer Olympic games","X"], ["isa","sporting event","X"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","summer Olympic games","summer Olympic games 1"],
+            ["isa","place","https://en.wikipedia.org/wiki/Tokyo"],
+            ["is rel2","in","summer Olympic games 1","https://en.wikipedia.org/wiki/Tokyo"]
+          ]
+        ],
+        ["next","W0","W1"],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","organization","https://en.wikipedia.org/wiki/United_States"],
+            ["isa","summer Olympic games","summer Olympic games 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","win"],
+                ["has actor","E","https://en.wikipedia.org/wiki/United_States"],
+                ["exists", "Y", ["and", ["isa","medal","Y"], ["has target","E","Y"]]],
+                ["has location","E","summer Olympic games 1","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"],
+        ["state time","W1","past"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","organization","https://en.wikipedia.org/wiki/United_States"],
+          ["isa","summer Olympic games","summer Olympic games 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","win"],
+              ["has actor","E","https://en.wikipedia.org/wiki/United_States"],
+              ["exists", "Y", ["and", ["isa","medal","Y"], ["has target","E","Y"]]],
+              ["has location","E","summer Olympic games 1","in"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","summer Olympic games","#:summer Olympic games 1"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "entity_S2",
+ "@logic": ["isa","summer Olympic game","#:summer Olympic games 1"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "entity_S2",
+ "@logic": ["isa","place","#:Tokyo 1"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "entity_S3",
+ "@logic": ["isa","organization","#:United States 1"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","summer olympic games","?:X"], ["isa","sporting event","?:X"]],
+ "@nl": "The summer Olympic games is a sporting event."},
+{"@name": "sent_S2",
+ "@logic": ["isa","summer olympic games","#:summer Olympic games 1"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","place","https://en.wikipedia.org/wiki/Tokyo"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "in", "#:summer Olympic games 1", "https://en.wikipedia.org/wiki/Tokyo", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The summer Olympic games 1 was in Tokyo 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","organization","https://en.wikipedia.org/wiki/United_States"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","summer olympic games","#:summer Olympic games 1"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["has type", "sk0_activity", "win", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["has actor", "sk0_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","medal","sk1_medal"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["has target", "sk0_activity", "sk1_medal", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["has location", "sk0_activity", "#:summer Olympic games 1", "in", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["has time", "sk0_activity", "past", "in", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S3",
+ "@logic": ["next","W1","W2"],
+ "@nl": "The United States 1 won the most medals in the summer Olympic games 1."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","organization","https://en.wikipedia.org/wiki/United_States"]],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","summer olympic games","#:summer Olympic games 1"]],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk2_activity"]],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk2_activity", "win", ["$ctxt","past","?:Fv18","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk2_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:Fv20","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","medal","sk3_medal"]],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has target", "sk2_activity", "sk3_medal", ["$ctxt","past","?:Fv24","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has location", "sk2_activity", "#:summer Olympic games 1", "in", ["$ctxt","past","?:Fv26","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk2_activity", "past", "in", ["$ctxt","past","?:Fv28","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk2_activity"]],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","organization","https://en.wikipedia.org/wiki/United_States"],
+            ["-isa","summer olympic games","#:summer Olympic games 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "win", ["$ctxt","past","?:Fv36","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:Fv38","?:Fv9","?:Fv10"]],
+            ["-isa","medal","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","past","?:Fv42","?:Fv9","?:Fv10"]],
+            ["-has location", "?:E", "#:summer Olympic games 1", "in", ["$ctxt","past","?:Fv44","?:Fv9","?:Fv10"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Did the United States 1 win the most medals in the summer Olympic games 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","summer Olympic games","$some_not_summer_Olympic_games"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","sporting event","$some_sporting_event"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","sporting event","$some_not_sporting_event"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","medal","$some_medal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","medal","$some_not_medal"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","sporting event","?:X"], ["isa","event","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","sporting","?:X"], ["-isa","event","?:X"], ["isa","sporting event","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","summer Olympic games","?:X"], ["isa","games","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","summer Olympic","?:X"],
+            ["-isa","games","?:X"],
+            ["isa","summer Olympic games","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S4","assumption",1], [["-isa","summer olympic games","#:summer Olympic games 1"], ["-isa","organization","https://en.wikipedia.org/wiki/United_States"], ["$defq0"], ["-has location", "?:X", "#:summer Olympic games 1", "in", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has type", "?:X", "win", ["$ctxt","past","?:V","?:Z","?:U"]], ["-has actor", "?:X", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:W","?:Z","?:U"]], ["-has target", "?:X", "?:2006", ["$ctxt","past","?:2007","?:Z","?:U"]], ["-isa","medal","?:2006"], ["-isa","activity","?:X"], ["-actuality","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["has location", "sk0_activity", "#:summer Olympic games 1", "in", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","activity","sk0_activity"], ["-isa","summer olympic games","#:summer Olympic games 1"], ["-isa","organization","https://en.wikipedia.org/wiki/United_States"], ["-actuality","sk0_activity"], ["-has type", "sk0_activity", "win", ["$ctxt","past","?:X3","?:Y3","?:Z3"]], ["-has actor", "sk0_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:U3","?:Y3","?:Z3"]], ["-has target", "sk0_activity", "?:V3", ["$ctxt","past","?:W3","?:Y3","?:Z3"]], ["-isa","medal","?:V3"]]],
+          [5, ["in","sent_S3","assumption",1], [["isa","summer olympic games","#:summer Olympic games 1"]]],
+          [6, ["in","sent_S3","assumption",1], [["isa","organization","https://en.wikipedia.org/wiki/United_States"]]],
+          [7, ["in","sent_S3","assumption",1], [["isa","activity","sk0_activity"]]],
+          [8, ["in","sent_S3","assumption",1], [["actuality","sk0_activity"]]],
+          [9, ["simp",4,5,6,7,8,"fromga",1], [["-has type", "sk0_activity", "win", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-has actor", "sk0_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:U","?:Y","?:Z"]], ["-has target", "sk0_activity", "?:V", ["$ctxt","past","?:W","?:Y","?:Z"]], ["-isa","medal","?:V"]]],
+          [10, ["in","sent_S3","assumption",1], [["has type", "sk0_activity", "win", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [11, ["mp",9,10,"fromga",1], [["-has actor", "sk0_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-has target", "sk0_activity", "?:U", ["$ctxt","past","?:V","?:Y","?:Z"]], ["-isa","medal","?:U"]]],
+          [12, ["in","sent_S3","assumption",1], [["has actor", "sk0_activity", "https://en.wikipedia.org/wiki/United_States", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [13, ["mp",11,12,"fromga",1], [["-has target", "sk0_activity", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","medal","?:X"]]],
+          [14, ["in","sent_S3","assumption",1], [["has target", "sk0_activity", "sk1_medal", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [15, ["mp",13,14,"fromga",1], [["-isa","medal","sk1_medal"]]],
+          [16, ["in","sent_S3","assumption",1], [["isa","medal","sk1_medal"]]],
+          [17, ["simp",15,16,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The United States won the most medals in Tokyo.",
+"  (2) The United States won the most medals in the last summer Olympic games?",
+"Proof steps (by contradiction):",
+"  (1) If United States is an organization and X takes place in the summer Olympic games A and X is a win event and United States performs X and X targets some E1 and E1 is a medal and X is an activity then answer holds  [sentence 2]",
+"  (2) The event act1 takes place in the summer Olympic games A  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If the event act1 is an activity and United States is an organization and the act1 is a win event and United States performs the act1 then the act1 does not target V3  [from steps 1, 2, 3]",
+"  (5) The summer Olympic games A is a summer olympic games  [sentence 1]",
+"  (6) United States is an organization  [sentence 1]",
+"  (7) The event act1 is an activity  [sentence 1]",
+"  (8)   [sentence 1]",
+"  (9) If the event act1 is a win event and United States performs the act1 then the act1 does not target V  [from steps 4, 5, 6, 7, 8]",
+"  (10) The event act1 is a win event  [sentence 1]",
+"  (11) If United States performs the event act1 then the act1 does not target U  [from steps 9, 10]",
+"  (12) United States performs the event act1  [sentence 1]",
+"  (13) The act1 does not target X  [from steps 11, 12]",
+"  (14) The event act1 targets some medal med1  [sentence 1]",
+"  (15) Med1 is not a medal  [from steps 13, 14]",
+"  (16) Med1 is a medal  [sentence 1]",
+"  (17) Contradiction  [from steps 15, 16]"
+],
+  "timestamp": "2026-06-08T01:29:41Z"
+}

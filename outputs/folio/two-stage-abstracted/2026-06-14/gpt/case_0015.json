@@ -1,0 +1,311 @@
+{
+  "test_name": "folio_v2_ultracoarse_prenorm_v4",
+  "case_id": 15,
+  "input_text": "A Japanese game company created the game the Legend of Zelda. All games on the Top 10 list are made by Japanese game companies. If a game sells more than one million copies, then it will be included in the Top 10 list. The Legend of Zelda sold more than one million copies. The Legend of Zelda is not on the Top 10 list?",
+  "expected_answer": "False.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "A Japanese game company created the game the Legend of Zelda.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A Japanese game company 1 created the game the Legend of Zelda 2.",
+          "type": "situation",
+          "entities": [{"id": "Japanese game company 1", "type": "concrete", "category": "organization"},
+            {"id": "Legend of Zelda 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "create",
+              "mode": "event",
+              "roles": {"actor": "Japanese game company 1", "target": "Legend of Zelda 2"}
+            }
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The Legend of Zelda 2 is a game.",
+          "type": "situation",
+          "entities": [{"id": "Legend of Zelda 2", "type": "concrete", "category": "artifact"},
+            {"id": "game", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All games on the Top 10 list are made by Japanese game companies.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All games on the Top 10 list are made by Japanese game companies.",
+          "type": "strict_rule",
+          "entities": [{"id": "games", "type": "generic", "category": "artifact"},
+            {"id": "Top 10 list", "type": "concrete", "category": "abstract"},
+            {"id": "Japanese game companies", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a game sells more than one million copies, then it will be included in the Top 10 list.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a game sells greater than 1000000 copies, then the game will be included in the Top 10 list.",
+          "type": "normal_rule",
+          "entities": [{"id": "game", "type": "generic", "category": "artifact"},
+            {"id": "Top 10 list", "type": "concrete", "category": "abstract"}
+          ],
+          "actions": [{"root": "sell", "mode": "event", "roles": {"target": "game"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "The Legend of Zelda sold more than one million copies.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "The Legend of Zelda 2 sold greater than 1000000 copies.",
+          "type": "situation",
+          "entities": [{"id": "Legend of Zelda 2", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "sell", "mode": "event", "roles": {"target": "Legend of Zelda 2"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The Legend of Zelda is not on the Top 10 list?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is the Legend of Zelda 2 not on the Top 10 list?",
+          "type": "query",
+          "entities": [{"id": "Legend of Zelda 2", "type": "concrete", "category": "artifact"},
+            {"id": "Top 10 list", "type": "concrete", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","company","Japanese game company 1"],
+          ["isa","game","Legend of Zelda 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","create"],
+              ["has actor","E","Japanese game company 1"],
+              ["has target","E","Legend of Zelda 2"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["and", ["isa","game","Legend of Zelda 2"]]]],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","game","X"], ["is rel2","on","X","Top 10 list"]],
+            ["exists","Y",
+              ["and",
+                ["isa","company","Y"],
+                ["is rel2","Japanese","Y","Y"],
+                ["is rel2","game","Y","Y"],
+                ["is rel2","made by","X","Y"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","game","X"],
+              ["normally",
+                ["implies",
+                  [">", ["$count", ["$setof", "?:C", ["and", ["isa","copy","?:C"], ["have","X","?:C"]]]], 1000000],
+                  ["is rel2","included in","X","Top 10 list"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.95]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","game","Legend of Zelda 2"],
+          [">", ["$count", ["$setof", "?:C", ["and", ["isa","copy","?:C"], ["have","Legend of Zelda 2","?:C"]]]], 1000000]
+        ]
+      ]
+    ],
+    ["@id", "S6", ["question", ["not", ["is rel2","on","Legend of Zelda 2","Top 10 list"]]]]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class, constant_vs_class","sanity #1: constant_vs_class, constant_vs_class"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","japanese game company","#:Japanese game company 1"],
+ "@nl": "A Japanese game company 1 created the game the Legend of Zelda 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","legend of zelda","#:Legend of Zelda 2"],
+ "@nl": "A Japanese game company 1 created the game the Legend of Zelda 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","abstract","Top 10 list"],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "entity_S3",
+ "@logic": ["isa","top 10 list","Top 10 list"],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "sent_S1",
+ "@logic": ["isa","company","#:Japanese game company 1"],
+ "@nl": "A Japanese game company 1 created the game the Legend of Zelda 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","game","#:Legend of Zelda 2"],
+ "@nl": "A Japanese game company 1 created the game the Legend of Zelda 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","create","#:Japanese game company 1","#:Legend of Zelda 2","?:Cu7"],
+ "@nl": "A Japanese game company 1 created the game the Legend of Zelda 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","game","#:Legend of Zelda 2"],
+ "@nl": "The Legend of Zelda 2 is a game."},
+{"@name": "sent_S3",
+ "@logic": [["-is rel2","on","?:X","Top 10 list","?:Cu9"], ["isa", "company", ["sk0","?:X"]]],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "sent_S3",
+ "@logic": [["-is rel2","on","?:X","Top 10 list","?:Cu10"],
+            ["is rel2", "Japanese", ["sk0","?:X"], ["sk0","?:X"], "?:Cu10"]
+           ],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "sent_S3",
+ "@logic": [["-is rel2","on","?:X","Top 10 list","?:Cu11"],
+            ["is rel2", "game", ["sk0","?:X"], ["sk0","?:X"], "?:Cu11"]
+           ],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "sent_S3",
+ "@logic": [["-is rel2","on","?:X","Top 10 list","?:Cu12"],
+            ["is rel2", "made by", "?:X", ["sk0","?:X"], "?:Cu12"]
+           ],
+ "@nl": "All games on the Top 10 list are made by Japanese game companies."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","game","?:X"],
+            ["->", ["$count", ["$setof", "have", "?:X", ["$and", ["$isa","copy","$arg1"]]]], 1000000],
+            ["is rel2","included in","?:X","Top 10 list","?:Cu13"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a game sells greater than 1000000 copies, then the game will be included in the Top 10 list."},
+{"@name": "sent_S5",
+ "@logic": ["isa","game","#:Legend of Zelda 2"],
+ "@nl": "The Legend of Zelda 2 sold greater than 1000000 copies."},
+{"@name": "sent_S5",
+ "@logic": [">", ["$count", ["$setof", "have", "#:Legend of Zelda 2", ["$and", ["$isa","copy","$arg1"]]]], 1000000],
+ "@nl": "The Legend of Zelda 2 sold greater than 1000000 copies."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-is rel2","on","#:Legend of Zelda 2","Top 10 list","?:Cu16"]],
+ "@nl": "Is the Legend of Zelda 2 not on the Top 10 list?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["is rel2","on","#:Legend of Zelda 2","Top 10 list","?:Cu17"], ["$defq0"]],
+ "@nl": "Is the Legend of Zelda 2 not on the Top 10 list?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is the Legend of Zelda 2 not on the Top 10 list?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:c","?:M"],
+            ["-have","?:S","?:M"],
+            ["member", "?:M", ["$setof", "have", "?:S", ["$and", ["$isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "have", "?:S", ["$and", ["$isa","?:C","$arg1"]]]],
+            ["isa","?:c","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "have", "?:S", ["$and", ["$isa","?:C","$arg1"]]]],
+            ["have","?:S","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","company","$some_not_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","game","$some_not_game"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","japanese game company","?:X"], ["isa","company","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","japanese game","?:X"],
+            ["-isa","company","?:X"],
+            ["isa","japanese game company","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","legend of zelda","?:X"], ["isa","zelda","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","legend of","?:X"], ["-isa","zelda","?:X"], ["isa","legend of zelda","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","top 10 list","?:X"], ["isa","list","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","top 10","?:X"], ["-isa","list","?:X"], ["isa","top 10 list","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","game","?:X"], ["isa","activity","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","activity","?:X"], ["isa","game","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","receive","?:Fv21"], ["has type","?:E","have","?:Fv21"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-14T13:00:17Z"
+}

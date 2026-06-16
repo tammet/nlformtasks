@@ -1,0 +1,118 @@
+{
+  "test_name": "folio_v2",
+  "case_id": 170,
+  "input_text": "If something is a deadly disease, then it comes with a low survival rate. Severe cancers are deadly diseases. Bile duct cancer is a severe form cancer. All Cholangiocarcinoma is bile duct cancer. Mild flu comes with a low survival rate. Colorectal cancer is not both a bile duct cancer and with a low survival rate. Colorectal cancer is a kind of severe cancer?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "If something is a deadly disease, then it comes with a low survival rate.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If an entity is a deadly disease, the entity has a low survival rate.",
+          "type": "normal_rule",
+          "entities": [{"id": "entity", "type": "generic"},
+            {"id": "deadly disease", "type": "generic", "category": "disease"},
+            {"id": "low survival rate", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Severe cancers are deadly diseases.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Severe cancer is a deadly disease.",
+          "type": "strict_rule",
+          "entities": [{"id": "severe cancer", "type": "generic", "category": "disease"},
+            {"id": "deadly disease", "type": "generic", "category": "disease"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","deadly disease","X"],
+            ["normally",
+              ["exists", "Y", ["and", ["isa","low survival rate","Y"], ["have","X","Y"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","severe cancer","X"], ["isa","deadly disease","X"]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","deadly disease","?:X"], ["isa", "low survival rate", ["sk0","?:X"]]],
+ "@nl": "If an entity is a deadly disease, the entity has a low survival rate."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","deadly disease","?:X"],
+            ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","deadly disease",1], ["$not", ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@nl": "If an entity is a deadly disease, the entity has a low survival rate."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","severe cancer","?:X"], ["isa","deadly disease","?:X"]],
+ "@nl": "Severe cancer is a deadly disease."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","deadly disease","$some_deadly_disease"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","deadly disease","$some_not_deadly_disease"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","low survival rate","$some_low_survival_rate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","low survival rate","$some_not_low_survival_rate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","severe cancer","$some_severe_cancer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","severe cancer","$some_not_severe_cancer"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","deadly disease","?:X"], ["isa","disease","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","deadly","?:X"], ["-isa","disease","?:X"], ["isa","deadly disease","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","low survival rate","?:X"], ["isa","rate","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","low survival","?:X"], ["-isa","rate","?:X"], ["isa","low survival rate","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","severe cancer","?:X"], ["isa","cancer","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","deep","?:X"], ["-isa","cancer","?:X"], ["isa","severe cancer","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-07T22:49:54Z"
+}

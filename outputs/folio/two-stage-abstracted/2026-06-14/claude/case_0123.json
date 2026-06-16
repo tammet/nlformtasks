@@ -1,0 +1,373 @@
+{
+  "test_name": "folio_v2_ultracoarse_prenorm_v4",
+  "case_id": 123,
+  "input_text": "If something can transport multiple passengers, then they are not one-seaters. All Tesla Model 3 can transport multiple passengers. All single-seat electric cars are one-seaters. All Solo EV cars are single-seat electric cars. If John's car is not a Tesla Model 3, then John's car is not a Tesla Model 3 or a single-seat electric car. John's car is a Solo EV?",
+  "expected_answer": "False.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If something can transport multiple passengers, then they are not one-seaters.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If something can transport multiple passengers, then the something is not a one-seater.",
+          "type": "strict_rule",
+          "entities": [{"id": "something", "type": "generic"},
+            {"id": "passengers", "type": "generic", "category": "person"},
+            {"id": "one-seater", "type": "generic"}
+          ],
+          "actions": [{"root": "transport", "mode": "capability", "roles": {"target": "passengers"}}]
+        }
+      ]
+    },
+    {
+      "raw": "All Tesla Model 3 can transport multiple passengers.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All Tesla Model 3 can transport multiple passengers.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "Tesla Model 3",
+              "type": "generic",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/Tesla_Model_3"
+            },
+            {"id": "passengers", "type": "generic", "category": "person"}
+          ],
+          "actions": [{"root": "transport", "mode": "capability", "roles": {"target": "passengers"}}]
+        }
+      ]
+    },
+    {
+      "raw": "All single-seat electric cars are one-seaters.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All single-seat electric cars are one-seaters.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "single-seat electric cars",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            },
+            {"id": "one-seater", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All Solo EV cars are single-seat electric cars.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All Solo EV cars are single-seat electric cars.",
+          "type": "strict_rule",
+          "entities": [{"id": "Solo EV cars", "type": "generic", "subtype": "compound", "category": "artifact"},
+            {
+              "id": "single-seat electric cars",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If John's car is not a Tesla Model 3, then John's car is not a Tesla Model 3 or a single-seat electric car.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car.",
+          "type": "strict_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {
+              "id": "Tesla Model 3",
+              "type": "generic",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/Tesla_Model_3"
+            },
+            {
+              "id": "single-seat electric cars",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            }
+          ],
+          "definites": [["car of","car 2","John 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "John's car is a Solo EV?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is John 1's car 2 a Solo EV car?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "Solo EV cars", "type": "generic", "subtype": "compound", "category": "artifact"}
+          ],
+          "definites": [["car of","car 2","John 1"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","transport"],
+                ["has actor","E","X"],
+                ["exists", "Y", ["and", ["isa","passenger","Y"], ["has target","E","Y"]]],
+                ["capability","E"]
+              ]
+            ],
+            ["not", ["isa","one-seater","X"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","Tesla Model 3","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","transport"],
+                ["has actor","E","X"],
+                ["exists", "Y", ["and", ["isa","passenger","Y"], ["has target","E","Y"]]],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","single-seat electric car","X"], ["isa","one-seater","X"]]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","Solo EV car","X"], ["isa","single-seat electric car","X"]]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","car","car 2"],
+            ["have","John 1","car 2"],
+            ["implies",
+              ["not", ["isa","Tesla Model 3","car 2"]],
+              ["and",
+                ["not", ["isa","Tesla Model 3","car 2"]],
+                ["not", ["isa","single-seat electric car","car 2"]]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S5","W0","car of","John 1","car 2"]
+      ]
+    ],
+    ["@id","S6",
+      ["and",
+        ["question",
+          ["and", ["isa","car","car 2"], ["have","John 1","car 2"], ["isa","Solo EV car","car 2"]]
+        ],
+        ["@definite","S6","W0","car of","John 1","car 2"]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class","sanity #1: constant_vs_class"],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2","transport","?:X","passenger","?:Cu2"], ["-isa","one-seater","?:X"]],
+ "@nl": "If something can transport multiple passengers, then the something is not a one-seater."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","tesla model 3","?:X"], ["is rel2","transport","?:X","passenger","?:Cu3"]],
+ "@nl": "All Tesla Model 3 can transport multiple passengers."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","single-seat electric car","?:X"], ["isa","one-seater","?:X"]],
+ "@nl": "All single-seat electric cars are one-seaters."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","solo ev car","?:X"], ["isa","single-seat electric car","?:X"]],
+ "@nl": "All Solo EV cars are single-seat electric cars."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car."},
+{"@name": "sent_S5",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car."},
+{"@name": "sent_S5",
+ "@logic": ["have","#:John 1","#:car 2","?:Cu8"],
+ "@nl": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car."},
+{"@name": "sent_S5",
+ "@logic": [["isa","tesla model 3","#:car 2"], ["-isa","single-seat electric car","#:car 2"]],
+ "@nl": "If John 1's car 2 is not a Tesla Model 3, then John 1's car 2 is not a Tesla Model 3 or a single-seat electric car."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","#:car 2"]],
+ "@nl": "Is John 1's car 2 a Solo EV car?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:John 1","#:car 2","?:Cu12"]],
+ "@nl": "Is John 1's car 2 a Solo EV car?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","solo ev car","#:car 2"]],
+ "@nl": "Is John 1's car 2 a Solo EV car?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","#:car 2"],
+            ["-have","#:John 1","#:car 2","?:Cu14"],
+            ["-isa","solo ev car","#:car 2"],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1's car 2 a Solo EV car?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1's car 2 a Solo EV car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","one-seater","$some_one-seater"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","one-seater","$some_not_one-seater"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tesla model 3","$some_Tesla_Model_3"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","single-seat electric car","$some_single-seat_electric_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","solo ev car","$some_Solo_EV_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","solo ev car","$some_not_Solo_EV_car"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","solo ev car","?:X"], ["isa","car","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","solo ev","?:X"], ["-isa","car","?:X"], ["isa","solo ev car","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","tesla model 3","?:X"], ["isa","3","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","tesla model","?:X"], ["-isa","3","?:X"], ["isa","tesla model 3","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","single-seat electric car","?:X"], ["isa","car","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","single-seat electric","?:X"],
+            ["-isa","car","?:X"],
+            ["isa","single-seat electric car","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["-is rel2","transport","?:X","passenger","?:Y"], ["-isa","one-seater","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2","transport","?:X","passenger","?:Y"], ["-isa","tesla model 3","?:X"]]],
+          [3, ["in","sent_S5","assumption",1], [["-isa","single-seat electric car","#:car 2"], ["isa","tesla model 3","#:car 2"]]],
+          [4, ["in","sent_S4","assumption",1], [["-isa","solo ev car","?:X"], ["isa","single-seat electric car","?:X"]]],
+          [5, ["in","sent_S6","assumption",1], [["-$defq0"], ["isa","solo ev car","#:car 2"]]],
+          [6, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [7, ["mp",5,6,"fromga",1], [["isa","solo ev car","#:car 2"]]],
+          [8, ["mp",4,7,"fromga",1], [["isa","single-seat electric car","#:car 2"]]],
+          [9, ["mp",3,8,"fromga",1], [["isa","tesla model 3","#:car 2"]]],
+          [10, ["mp", [2,1], 9, "fromga", 1], [["is rel2","transport","#:car 2","passenger","?:X"]]],
+          [11, ["in","sent_S3","assumption",1], [["-isa","single-seat electric car","?:X"], ["isa","one-seater","?:X"]]],
+          [12, ["mp",11,8,"fromga",1], [["isa","one-seater","#:car 2"]]],
+          [13, ["mp",1,10,12,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If something can transport multiple passengers, then they are not one-seaters.",
+"  (2) All Tesla Model 3 can transport multiple passengers.",
+"  (3) All single-seat electric cars are one-seaters.",
+"  (4) All Solo EV cars are single-seat electric cars.",
+"  (5) If John's car is not a Tesla Model 3, then John's car is not a Tesla Model 3 or a single-seat electric car.",
+"  (6) John's car is a Solo EV?",
+"Proof steps (by contradiction):",
+"  (1) X is not transport of passenger  [sentence 1]",
+"  (2) If some X is a tesla model 3 then X is transport of passenger  [sentence 2]",
+"  (3) If the car B is a single-seat electric car then the car B is a tesla model 3  [sentence 5]",
+"  (4) If some X is a solo ev car then X is a single-seat electric car  [sentence 4]",
+"  (5) If answer holds then the car B is a solo ev car  [sentence 6]",
+"  (6) Answer holds  [assumption]",
+"  (7) The car B is a solo ev car  [from steps 5, 6]",
+"  (8) The car B is a single-seat electric car  [from steps 4, 7]",
+"  (9) The car B is a tesla model 3  [from steps 3, 8]",
+"  (10) The car B is transport of passenger  [from steps 2, 9]",
+"  (11) If some X is a single-seat electric car then X is an one-seater  [sentence 3]",
+"  (12) The car B is an one-seater  [from steps 11, 8]",
+"  (13) Contradiction  [from steps 1, 10, 12]"
+],
+  "timestamp": "2026-06-14T13:01:02Z"
+}
