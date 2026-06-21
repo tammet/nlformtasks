@@ -1,0 +1,248 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1348,
+  "input_text": "If some car has a roof, elephants are nice. John is a car. John has a roof. Elephants are nice?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If some car has a roof, elephants are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a car has a roof, elephants are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "car", "type": "generic", "category": "artifact"},
+            {"id": "roof", "type": "generic", "scope": "dependent", "category": "artifact"},
+            {"id": "elephants", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a car.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a car.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a roof.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a roof.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "roof", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Elephants are nice?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Are all elephants nice?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["implies",
+              ["exists","X",
+                ["and",
+                  ["isa","car","X"],
+                  ["exists", "Y", ["and", ["isa","roof","Y"], ["has part","X","Y"]]]
+                ]
+              ],
+              ["forall","Z",
+                ["implies",
+                  ["isa","elephant","Z"],
+                  ["has degree property","nice","Z","none","elephant"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","car","John 1"]]],
+    ["@id","S3",
+      ["holds", "W0", ["exists", "X", ["and", ["isa","roof","X"], ["have","John 1","X"]]]]
+    ],
+    ["@id","S4",
+      ["question",
+        ["forall","X",
+          ["implies", ["isa","elephant","X"], ["has degree property","nice","X","none","elephant"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a car."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a car."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["-isa","roof","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu3"],
+            ["-isa","elephant","?:Z"],
+            ["has degree property","good","?:Z","none","elephant","?:Cu3"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "If a car has a roof, elephants are nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:John 1"],
+ "@nl": "John 1 is a car."},
+{"@name": "sent_S3",
+ "@logic": ["isa","roof","sk0_roof"],
+ "@nl": "John 1 has a roof."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:John 1","sk0_roof","?:Cu6"],
+ "@nl": "John 1 has a roof."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","elephant","?:X"],
+            ["has degree property","good","?:X","none","elephant","?:Cu7"]
+           ],
+ "@nl": "Are all elephants nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["isa","elephant","sk1_elephant"], ["$defq0"]],
+ "@nl": "Are all elephants nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","sk1_elephant","none","elephant","?:Cu9"], ["$defq0"]],
+ "@nl": "Are all elephants nice?"},
+{"@name": "sent_S3",
+ "@logic": ["has part","#:John 1","sk0_roof","?:Cu10"],
+ "@nl": "John 1 has a roof."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","roof","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Are all elephants nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","roof","$some_roof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","roof","$some_not_roof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_elephant","none","elephant","?:Cu17"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_nice_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_elephant","none","elephant","?:Cu19"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.984071,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has degree property","good","?:X","none","elephant","?:Y"], ["-has part","?:Z","?:U","?:Y"], ["-isa","roof","?:U"], ["-isa","elephant","?:X"], ["-isa","car","?:Z"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","roof","sk0_roof"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["has degree property","good","?:X","none","elephant","?:Y"], ["-has part","?:Z","sk0_roof","?:Y"], ["-isa","elephant","?:X"], ["-isa","car","?:Z"]]],
+          [4, ["in","sent_haspart_bridge","assumption",0.9], [["-have","?:X","?:Y","?:Z"], ["has part","?:X","?:Y","?:Z"], ["-isa","roof","?:Y"]]],
+          [5, ["mp", [4,2], 2, "fromassumption", 0.9], [["-have","?:X","sk0_roof","?:Y"], ["has part","?:X","sk0_roof","?:Y"]]],
+          [6, ["in","sent_S3","assumption",1], [["have","#:John 1","sk0_roof","?:X"]]],
+          [7, ["mp",5,6,"fromassumption",0.9], [["has part","#:John 1","sk0_roof","?:X"]]],
+          [8, ["mp", [3,1], 7, "fromassumption", 0.882], [["-isa","car","#:John 1"], ["has degree property","good","?:X3","none","elephant","?:Y3"], ["-isa","elephant","?:X3"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","car","#:John 1"]]],
+          [10, ["simp",8,9,"fromassumption",0.882], [["has degree property","good","?:X","none","elephant","?:Y"], ["-isa","elephant","?:X"]]],
+          [11, ["in","sent_S4","assumption",1], [["isa","elephant","sk1_elephant"], ["$defq0"]]],
+          [12, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [13, ["mp", [10,1], 11, 12, "fromga", 0.882], [["has degree property","good","sk1_elephant","none","elephant","?:X"]]],
+          [14, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","good","sk1_elephant","none","elephant","?:X"]]],
+          [15, ["mp", 13, [14,1], 12, "fromga", 0.882], false],
+          [16, ["in","sent_S3","assumption",1], [["has part","#:John 1","sk0_roof","?:X"]]],
+          [17, ["mp", [3,1], 16, "fromassumption", 0.98], [["-isa","car","#:John 1"], ["has degree property","good","?:X3","none","elephant","?:Y3"], ["-isa","elephant","?:X3"]]],
+          [18, ["simp",17,9,"fromassumption",0.98], [["has degree property","good","?:X","none","elephant","?:Y"], ["-isa","elephant","?:X"]]],
+          [19, ["mp", [18,1], 11, 12, "fromga", 0.98], [["has degree property","good","sk1_elephant","none","elephant","?:X"]]],
+          [20, ["mp", 19, [14,1], 12, "fromga", 0.98], false],
+          [21, ["cumul",15,20,"fromga",0.984071], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) sent_haspart_bridge",
+"  (2) If some car has a roof, elephants are nice.",
+"  (3) John is a car.",
+"  (4) John has a roof.",
+"  (5) Elephants are nice?",
+"Proof steps (by contradiction):",
+"  (1) If some Z has some U as a part and U is a roof and some X is an elephant and Z is a car then X is a good elephant  [sentence 2, confidence 98%]",
+"  (2) Some roof roo1 is a roof  [sentence 4]",
+"  (3) If some Z has roo1 as a part and some X is an elephant and Z is a car then X is a good elephant  [from steps 1, 2, confidence 98%]",
+"  (4) If some X has some Y and Y is a roof then X has Y as a part  [sentence 1, confidence 90%]",
+"  (5) If some X has roo1 then X has roo1 as a part  [from steps 4, 2, confidence 90%]",
+"  (6) John has roo1  [sentence 4]",
+"  (7) John has roo1 as a part  [from steps 5, 6, confidence 90%]",
+"  (8) If John is a car and some X3 is an elephant then X3 is a good elephant  [from steps 3, 7, confidence 88%]",
+"  (9) John is a car  [sentence 3]",
+"  (10) If some X is an elephant then X is a good elephant  [from steps 8, 9, confidence 88%]",
+"  (11) Some elephant ele1 is an elephant or answer holds  [sentence 5]",
+"  (12) assume for contradiction: the answer is no  [from question]",
+"  (13) Ele1 is a good elephant  [from steps 10, 11, 12, confidence 88%]",
+"  (14) If ele1 is a good elephant then answer holds  [sentence 5]",
+"  (15) Contradiction  [from steps 13, 14, 12, confidence 88%]",
+"  (16) John has roo1 as a part  [sentence 4]",
+"  (17) If John is a car and some X3 is an elephant then X3 is a good elephant  [from steps 3, 16, confidence 98%]",
+"  (18) If some X is an elephant then X is a good elephant  [from steps 17, 9, confidence 98%]",
+"  (19) Ele1 is a good elephant  [from steps 18, 11, 12, confidence 98%]",
+"  (20) Contradiction  [from steps 19, 14, 12, confidence 98%]",
+"  (21) Contradiction  [from steps 15, 20, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:50:48Z"
+}

@@ -1,0 +1,183 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 300,
+  "input_text": "John saw a head of an elephant. John saw the head?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw a head of an elephant.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw a head 2 of an elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head 2", "type": "concrete", "text": "head"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "head 2"}}],
+          "definites": [["head of","head 2","elephant 3"]],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The head 2 is the head of the elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "head 2", "type": "concrete", "text": "head"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "definites": [["head of","head 2","elephant 3"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John saw the head?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 see the head 2?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head 2", "type": "concrete", "text": "head"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "head 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","head","head 2"],
+            ["isa","elephant","elephant 3"],
+            ["has part","elephant 3","head 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","head 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","head of","elephant 3","head 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","head","head 2"],
+            ["isa","elephant","elephant 3"],
+            ["has part","elephant 3","head 2"]
+          ]
+        ],
+        ["@definite","S2","W0","head of","elephant 3","head 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","see"],
+            ["has actor","E","John 1"],
+            ["has target","E","head 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw a head 2 of an elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "head", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "John 1 saw a head 2 of an elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "John 1 saw a head 2 of an elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["has part", "#:elephant 3", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a head 2 of an elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a head 2 of an elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "head", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:elephant 3", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]], ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see the head 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see the head 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see the head 2?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:elephant 3", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:elephant 3", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "head of", ["$theof1","head","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "head", ["$theof1","head","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:X","?:Y"]]], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "head", "#:elephant 3", ["$ctxt","past","W0","?:X","?:Y"]]], ["$ctxt","past","W0","?:Z","?:U"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John saw a head of an elephant.",
+"  (2) John saw the head?",
+"Proof steps (by contradiction):",
+"  (1) John is show of the head of elephant C  [sentence 1]",
+"  (2) If John is show of the head of elephant C then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-18T15:37:26Z"
+}

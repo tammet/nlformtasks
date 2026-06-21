@@ -1,0 +1,125 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1563,
+  "input_text": "John managed to open the door. John opened the door?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John managed to open the door.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 managed to open the door 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "door 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "manage",
+              "mode": "event",
+              "roles": {
+                "actor": "John 1",
+                "content": {"root": "open", "mode": "event", "roles": {"actor": "John 1", "target": "door 2"}}
+              }
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John opened the door?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did John 1 open the door 2?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "door 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "open", "mode": "event", "roles": {"actor": "John 1", "target": "door 2"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","door","door 2"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","manage"],
+              ["has actor","E1","John 1"],
+              ["has time","E1","past","in"],
+              ["exists","E2",
+                ["and",
+                  ["has content","E1","E2"],
+                  ["isa","activity","E2"],
+                  ["has type","E2","open"],
+                  ["has actor","E2","John 1"],
+                  ["has target","E2","door 2"],
+                  ["has time","E2","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","open"],
+            ["has actor","E","John 1"],
+            ["has target","E","door 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 managed to open the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","door","#:door 2"],
+ "@nl": "John 1 managed to open the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "manage", "#:John 1", ["eventprop","$target","open"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 managed to open the door 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree rel2", "open", "#:John 1", ["eventprop","$target","#:door 2"], "none", "?:Fv11", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-has degree rel2", "open", "#:John 1", ["eventprop","$target","#:door 2"], "none", "?:Fv12", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","open","?:X"], ["isa","outside","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","outside","?:X"], ["isa","open","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T08:08:26Z"
+}

@@ -1,0 +1,314 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 345,
+  "input_text": "John saw a blue head of a red elephant. John saw a head of the red elephant?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw a blue head of a red elephant.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw a blue head 2 of a red elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head 2", "type": "concrete"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "head 2"}}],
+          "adjectives": [["blue","none","head"], ["red","none","elephant"]],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Head 2 is the head of elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "head 2", "type": "concrete"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John saw a head of the red elephant?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 see a head of the red elephant 3?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head", "type": "generic"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "head"}}],
+          "adjectives": [["red","none","elephant"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","head","head 2"],
+          ["isa","elephant","elephant 3"],
+          ["has degree property","blue","head 2","none","head"],
+          ["has degree property","red","elephant 3","none","elephant"],
+          ["has part","elephant 3","head 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","see"],
+              ["has actor","E","John 1"],
+              ["has target","E","head 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","head","head 2"],
+            ["isa","elephant","elephant 3"],
+            ["has part","elephant 3","head 2"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","head","X"],
+            ["isa","elephant","elephant 3"],
+            ["has degree property","red","elephant 3","none","elephant"],
+            ["has part","elephant 3","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","X"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "blue", "#:head 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "red", "#:elephant 3", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["has part", "#:elephant 3", "#:head 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop","$target","#:head 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a blue head 2 of a red elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "Head 2 is the head of elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "Head 2 is the head of elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:elephant 3", "#:head 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Head 2 is the head of elephant 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","head","sk0_head"]],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:elephant 3"]],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "red", "#:elephant 3", ["$ctxt","past","?:Fv13","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has part", "#:elephant 3", "sk0_head", ["$ctxt","past","?:Fv15","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop","$target","sk0_head"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","head","?:X"],
+            ["-isa","elephant","#:elephant 3"],
+            ["-has property", "red", "#:elephant 3", ["$ctxt","past","?:Fv20","?:Fv5","?:Fv6"]],
+            ["-has part", "#:elephant 3", "?:X", ["$ctxt","past","?:Fv22","?:Fv5","?:Fv6"]],
+            ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","head","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "red", "#:elephant 3", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "red", "#:elephant 3", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "red", "#:elephant 3", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "#:elephant 3", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has part", "#:elephant 3", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "#:elephant 3", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 see a head of the red elephant 3?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","blue","?:X","?:Fv23"],
+            ["-has property","red","?:X","?:Fv23"],
+            ["$block", 0, ["has property","red","?:X","?:Fv23"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","blue","?:X","?:Fv24"],
+            ["-has property","red","?:X","?:Fv24"],
+            ["$block", 0, ["has property","blue","?:X","?:Fv24"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "blue", "?:X", ["$ctxt","past","?:Fv25","?:Fv26","?:Fv27"]],
+            ["has property", "blue", "?:X", ["$ctxt","present","?:Fv25","?:Fv26","?:Fv27"]],
+            ["$block", 0, ["$not", ["has property", "blue", "?:X", ["$ctxt","present","?:Fv25","?:Fv26","?:Fv27"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "blue", "?:X", ["$ctxt","past","?:Fv28","?:Fv29","?:Fv30"]],
+            ["has property", "blue", "?:X", ["$ctxt","present","?:Fv28","?:Fv29","?:Fv30"]],
+            ["$block", 0, ["$not", ["has property", "blue", "?:X", ["$ctxt","present","?:Fv28","?:Fv29","?:Fv30"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv31","?:Fv32","?:Fv33"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv31","?:Fv32","?:Fv33"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv31","?:Fv32","?:Fv33"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv34","?:Fv35","?:Fv36"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv34","?:Fv35","?:Fv36"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv34","?:Fv35","?:Fv36"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","elephant","#:elephant 3"], ["$defq0"], ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has property", "red", "#:elephant 3", ["$ctxt","past","?:V","?:Z","?:U"]], ["-has part", "#:elephant 3", "?:X", ["$ctxt","past","?:W","?:Z","?:U"]], ["-isa","head","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "show", "#:John 1", ["eventprop","$target","#:head 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], 2, 3, "fromga", 1], [["-isa","head","#:head 2"], ["-isa","elephant","#:elephant 3"], ["-has property", "red", "#:elephant 3", ["$ctxt","past","?:X3","?:Y3","?:Z3"]], ["-has part", "#:elephant 3", "#:head 2", ["$ctxt","past","?:U3","?:Y3","?:Z3"]]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","elephant","#:elephant 3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","head","#:head 2"]]],
+          [7, ["simp",4,5,6,"fromga",1], [["-has property", "red", "#:elephant 3", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-has part", "#:elephant 3", "#:head 2", ["$ctxt","past","?:U","?:Y","?:Z"]]]],
+          [8, ["in","sent_S1","assumption",1], [["has property", "red", "#:elephant 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [9, ["mp",7,8,"fromga",1], [["-has part", "#:elephant 3", "#:head 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [10, ["in","sent_S2","assumption",1], [["has part", "#:elephant 3", "#:head 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [11, ["mp",9,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John saw a blue head of a red elephant.",
+"  (2) John saw a head of the red elephant?",
+"Proof steps (by contradiction):",
+"  (1) If John is show of X and the elephant C is red and the elephant C has some X as a part and X is a head then answer holds  [sentence 2]",
+"  (2) John is show of head B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If the elephant C is red then the elephant C does not have the head B as a part  [from steps 1, 2, 3]",
+"  (5) The elephant C is an elephant  [sentence 1]",
+"  (6) The head B is a head  [sentence 1]",
+"  (7) If the elephant C is red then the elephant C does not have the head B as a part  [from steps 4, 5, 6]",
+"  (8) The elephant C is red  [sentence 1]",
+"  (9) The elephant C does not have the head B as a part  [from steps 7, 8]",
+"  (10) The elephant C has the head B as a part  [sentence 1]",
+"  (11) Contradiction  [from steps 9, 10]"
+],
+  "timestamp": "2026-06-19T23:08:31Z"
+}

@@ -1,0 +1,225 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1278,
+  "input_text": "John ate candy in a house. John ate meat in a room. Where did John eat meat?",
+  "expected_answer": "In a room",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John ate candy in a house.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 ate candy 1 in a house 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "candy 1", "type": "concrete", "category": "substance"},
+            {"id": "house 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "candy 1", "location": "house 2", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John ate meat in a room.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 ate meat in a room 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "meat", "type": "generic", "scope": "kind", "category": "substance"},
+            {"id": "room 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "meat", "location": "room 3", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did John eat meat?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Where did John 1 eat meat?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "meat", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"actor": "John 1", "target": "meat", "location": "entity"}
+            }
+          ],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","candy","candy 1"],
+            ["isa","house","house 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","candy 1"],
+                ["has location","E","house 2","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","meat","meat"],
+            ["isa","room","room 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","meat"],
+                ["has location","E","room 3","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","meat","meat"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 1"],
+              ["has target","E","meat"],
+              ["has location","E","X","in"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate candy 1 in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","candy","#:candy 1"],
+ "@nl": "John 1 ate candy 1 in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","house","#:house 2"],
+ "@nl": "John 1 ate candy 1 in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","#:candy 1"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 ate candy 1 in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 ate candy 1 in a house 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate meat in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","meat","meat"],
+ "@nl": "John 1 ate meat in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","room","#:room 3"],
+ "@nl": "John 1 ate meat in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","meat"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 ate meat in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 1 ate meat in a room 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","person","#:John 1"]],
+ "@nl": "Where did John 1 eat meat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","meat","meat"]],
+ "@nl": "Where did John 1 eat meat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "eat", "#:John 1", ["eventprop","$target","meat"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Where did John 1 eat meat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","meat","meat"],
+            ["-is rel2", "eat", "#:John 1", ["eventprop","$target","meat"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Where did John 1 eat meat?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "Where did John 1 eat meat?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","meat","meat"], ["-isa","person","#:John 1"], ["-is rel2", "eat", "#:John 1", ["eventprop","$target","meat"], ["$ctxt","past","W1","?:X","?:Y"]], ["$defq0","?:Z"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "eat", "#:John 1", ["eventprop","$target","meat"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["-isa","meat","meat"], ["-isa","person","#:John 1"], ["$defq0","?:X3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","meat","meat"]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","person","#:John 1"]]],
+          [6, ["simp",3,4,5,"fromassumption",1], [["$defq0","?:X"]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [8, ["mp",6,7,"fromga",1], [["$ans","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "timestamp": "2026-06-18T17:08:12Z"
+}

@@ -1,0 +1,171 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 114,
+  "input_text": "Muggles cannot disappear. Mr Dursley is a Muggle. Mr Dursley can disappear?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Muggles cannot disappear.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Muggles cannot disappear.",
+          "type": "strict_rule",
+          "entities": [{"id": "muggles", "type": "generic", "category": "person"}],
+          "actions": [{"root": "disappear", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "Mr Dursley is a Muggle.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mr Dursley 1 is a Muggle.",
+          "type": "real",
+          "entities": [{
+              "id": "Mr Dursley 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Dursley_family"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Mr Dursley can disappear?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Can Mr Dursley 1 disappear?",
+          "type": "query",
+          "entities": [{
+              "id": "Mr Dursley 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Dursley_family"
+            }
+          ],
+          "actions": [{"root": "disappear", "mode": "capability", "roles": {"actor": "Mr Dursley 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","muggle","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","disappear"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","muggle","https://en.wikipedia.org/wiki/Dursley_family"]]],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","disappear"],
+            ["has actor","E","https://en.wikipedia.org/wiki/Dursley_family"],
+            ["capability","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Mr Dursley 1"],
+ "@nl": "Mr Dursley 1 is a Muggle."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","muggle","?:X"],
+            ["-has property", "disappear", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Muggles cannot disappear."},
+{"@name": "sent_S2",
+ "@logic": ["isa","muggle","https://en.wikipedia.org/wiki/Dursley_family"],
+ "@nl": "Mr Dursley 1 is a Muggle."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Can Mr Dursley 1 disappear?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Can Mr Dursley 1 disappear?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Can Mr Dursley 1 disappear?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Can Mr Dursley 1 disappear?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","muggle","$some_not_muggle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "disappear", "$some_disappear", ["$ctxt","?:Fv18","?:Fv15","?:Fv16","?:Fv17"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "disappear", "$some_not_disappear", ["$ctxt","?:Fv22","?:Fv19","?:Fv20","?:Fv21"]],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["-has property", "disappear", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","muggle","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["has property", "disappear", "https://en.wikipedia.org/wiki/Dursley_family", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["mp",1,4,"fromga",1], [["-isa","muggle","https://en.wikipedia.org/wiki/Dursley_family"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","muggle","https://en.wikipedia.org/wiki/Dursley_family"]]],
+          [7, ["simp",5,6,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Muggles cannot disappear.",
+"  (2) Mr Dursley is a Muggle.",
+"  (3) Mr Dursley can disappear?",
+"Proof steps (by contradiction):",
+"  (1) X is not disappear  [sentence 1]",
+"  (2) If answer holds then Mr Dursley is disappear  [sentence 3]",
+"  (3) Answer holds  [assumption]",
+"  (4) Mr Dursley is disappear  [from steps 2, 3]",
+"  (5) Mr Dursley is not a muggle  [from steps 1, 4]",
+"  (6) Mr Dursley is a muggle  [sentence 2]",
+"  (7) Contradiction  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T07:52:46Z"
+}

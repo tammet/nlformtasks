@@ -1,0 +1,204 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 685,
+  "input_text": "The doctor who treated Mary called John. The doctor treated Mary?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The doctor who treated Mary called John.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The doctor 1 called John 2.",
+          "type": "situation",
+          "entities": [{"id": "doctor 1", "type": "concrete", "category": "person"},
+            {"id": "John 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "call", "mode": "event", "roles": {"actor": "doctor 1", "target": "John 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The doctor 1 treated Mary 3.",
+          "type": "situation",
+          "entities": [{"id": "doctor 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "treat", "mode": "event", "roles": {"actor": "doctor 1", "target": "Mary 3"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The doctor treated Mary?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did the doctor 1 treat Mary 3?",
+          "type": "query",
+          "entities": [{"id": "doctor 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "treat", "mode": "event", "roles": {"actor": "doctor 1", "target": "Mary 3"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","doctor 1"],
+            ["isa","person","John 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","call"],
+                ["has actor","E","doctor 1"],
+                ["has target","E","John 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","doctor 1"],
+          ["isa","person","Mary 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","treat"],
+              ["has actor","E","doctor 1"],
+              ["has target","E","Mary 3"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","treat"],
+            ["has actor","E","doctor 1"],
+            ["has target","E","Mary 3"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","doctor","#:doctor 1"],
+ "@nl": "The doctor 1 called John 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:doctor 1"],
+ "@nl": "The doctor 1 called John 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 2"],
+ "@nl": "The doctor 1 called John 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "call", "#:doctor 1", ["eventprop","$target","#:John 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The doctor 1 called John 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The doctor 1 called John 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:doctor 1"],
+ "@nl": "The doctor 1 treated Mary 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 3"],
+ "@nl": "The doctor 1 treated Mary 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "treat", "#:doctor 1", ["eventprop","$target","#:Mary 3"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The doctor 1 treated Mary 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "treat", "#:doctor 1", ["eventprop","$target","#:Mary 3"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did the doctor 1 treat Mary 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "treat", "#:doctor 1", ["eventprop","$target","#:Mary 3"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the doctor 1 treat Mary 3?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did the doctor 1 treat Mary 3?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "treat", "#:doctor 1", ["eventprop","$target","#:Mary 3"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "treat", "#:doctor 1", ["eventprop","$target","#:Mary 3"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The doctor who treated Mary called John.",
+"  (2) The doctor treated Mary?",
+"Proof steps (by contradiction):",
+"  (1) If the doctor A is treat of Mary then answer holds  [sentence 2]",
+"  (2) The doctor A is treat of Mary  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T10:55:11Z"
+}

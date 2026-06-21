@@ -1,0 +1,123 @@
+{
+  "test_name": "core_definites",
+  "case_id": 520,
+  "input_text": "Some elephants are animals. All elephants are not animals?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some elephants are animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some elephants are animals.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All elephants are not animals?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Are all elephants not animals?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds", "W0", ["exists", "X", ["and", ["isa","elephant","X"], ["isa","animal","X"]]]],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall", "X", ["implies", ["isa","elephant","X"], ["not", ["isa","animal","X"]]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","sk0_elephant"],
+ "@confidence": 0.9899,
+ "@nl": "Some elephants are animals."},
+{"@name": "sent_S1",
+ "@logic": ["isa","animal","sk0_elephant"],
+ "@confidence": 0.9899,
+ "@nl": "Some elephants are animals."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","elephant","?:X"], ["-isa","animal","?:X"]],
+ "@nl": "Are all elephants not animals?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","elephant","sk1_elephant"], ["$defq0"]],
+ "@nl": "Are all elephants not animals?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","animal","sk1_elephant"], ["$defq0"]],
+ "@nl": "Are all elephants not animals?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Are all elephants not animals?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.979902,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-$defq0"], ["-isa","elephant","?:X"], ["-isa","animal","?:X"]]],
+          [2, ["in","sent_S1","assumption",0.9899], [["isa","elephant","sk0_elephant"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 0.9899], [["-isa","animal","sk0_elephant"]]],
+          [5, ["in","sent_S1","assumption",0.9899], [["isa","animal","sk0_elephant"]]],
+          [6, ["mp",4,5,"fromga",0.979902], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Some elephants are animals.",
+"  (2) All elephants are not animals?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds and some X is an elephant then X is not an animal  [sentence 2]",
+"  (2) Some elephant ele1 is an elephant  [sentence 1, confidence 99%]",
+"  (3) Answer holds  [assumption]",
+"  (4) Ele1 is not an animal  [from steps 1, 2, 3, confidence 99%]",
+"  (5) Ele1 is an animal  [sentence 1, confidence 99%]",
+"  (6) Contradiction  [from steps 4, 5, confidence 98%]"
+],
+  "timestamp": "2026-06-19T04:55:05Z"
+}

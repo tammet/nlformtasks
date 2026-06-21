@@ -1,0 +1,149 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 890,
+  "input_text": "The car which John drove was red. What color was the car?",
+  "expected_answer": "Red.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "The car which John drove was red.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 drove the car 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "John 1", "target": "car 2"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 was red.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","none"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What color was the car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which color was the car 2?",
+          "type": "query",
+          "entities": [{"id": "color", "type": "generic", "wh_placeholder": true},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: missing_wh_placeholder"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","car","car 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","drive"],
+              ["has actor","E","John 1"],
+              ["has target","E","car 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","car","car 2"], ["has degree property","red","car 2","none","none"]]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["isa","color","X"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "drive", "#:John 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "red", "#:car 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S3",
+ "@question": ["-isa","black_and_white","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which color was the car 2?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv9"], ["has type","?:E","go","?:Fv9"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv10","?:Fv11","?:Fv12"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv10","?:Fv11","?:Fv12"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv10","?:Fv11","?:Fv12"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv13","?:Fv14","?:Fv15"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv13","?:Fv14","?:Fv15"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv13","?:Fv14","?:Fv15"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-19T11:08:51Z"
+}

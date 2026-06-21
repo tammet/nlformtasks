@@ -1,0 +1,300 @@
+{
+  "test_name": "core_davidson_fix",
+  "case_id": 937,
+  "input_text": "A man drove a car which a woman bought. A woman bought a car?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A man drove a car which a woman bought.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A man 1 drove a car 2 which a woman 3 bought.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "woman 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "man 1", "target": "car 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "A woman 3 bought a car 2.",
+          "type": "situation",
+          "entities": [{"id": "woman 3", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "woman 3", "target": "car 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A woman bought a car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did a woman buy a car?",
+          "type": "query",
+          "entities": [{"id": "woman", "type": "generic", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"target": "car"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","man","man 1"],
+          ["isa","car","car 2"],
+          ["isa","woman","woman 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","drive"],
+              ["has actor","E","man 1"],
+              ["has target","E","car 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","woman","woman 3"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","woman 3"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","woman","X"],
+            ["exists","Y",
+              ["and",
+                ["isa","car","Y"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","buy"],
+                    ["has actor","E","X"],
+                    ["has target","E","Y"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["isa","woman","#:woman 3"],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["event", "drive", "#:man 1", "#:car 2", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "A man 1 drove a car 2 which a woman 3 bought."},
+{"@name": "sent_S2",
+ "@logic": ["isa","woman","#:woman 3"],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["event", "buy", "#:woman 3", "#:car 2", "sk1", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk1", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk1"],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "A woman 3 bought a car 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","woman","sk2_woman"]],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","sk3_car"]],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "buy", "sk2_woman", "sk3_car", "sk4", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk4", "past", "in", ["$ctxt","past","?:Fv14","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk4"]],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","woman","?:X"],
+            ["-isa","car","?:Y"],
+            ["-event", "buy", "?:X", "?:Y", "?:E", ["$ctxt","past","?:Fv20","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did a woman buy a car?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv24"], ["has type","?:E","go","?:Fv24"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","man","?:X","?:Fv25"], ["-has property","woman","?:X","?:Fv25"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv26","?:Fv27","?:Fv29","?:Fv30"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv26","?:Fv27","?:Fv29","?:Fv30"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv26","?:Fv27","?:Fv29","?:Fv30"]],
+            ["-next","?:Fv27","?:Fv28"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv28","?:Fv29","?:Fv30"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv28","?:Fv29","?:Fv30"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv31","?:Fv32","?:Fv34","?:Fv35"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv31","?:Fv32","?:Fv34","?:Fv35"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv31","?:Fv32","?:Fv34","?:Fv35"]],
+            ["-next","?:Fv32","?:Fv33"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv33","?:Fv34","?:Fv35"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv36","?:Fv37","?:Fv39","?:Fv40"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv36","?:Fv37","?:Fv39","?:Fv40"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv36","?:Fv37","?:Fv39","?:Fv40"]],
+            ["-next","?:Fv37","?:Fv38"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv38","?:Fv39","?:Fv40"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-event", "buy", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["-isa","woman","?:X"], ["-isa","car","?:Y"], ["-actuality","?:Z"]]],
+          [2, ["in","sent_S2","assumption",1], [["event", "buy", "#:woman 3", "#:car 2", "sk1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-isa","car","#:car 2"], ["-isa","woman","#:woman 3"], ["-actuality","sk1"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","car","#:car 2"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","woman","#:woman 3"], ["-actuality","sk1"]]],
+          [7, ["in","sent_S2","assumption",1], [["isa","woman","#:woman 3"]]],
+          [8, ["mp",6,7,"fromga",1], [["-actuality","sk1"]]],
+          [9, ["in","sent_S2","assumption",1], [["actuality","sk1"]]],
+          [10, ["simp",8,9,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) A man drove a car which a woman bought.",
+"  (2) A woman bought a car?",
+"Proof steps (by contradiction):",
+"  (1) If some X buys some Y and X is a woman and Y is a car then answer holds  [sentence 2]",
+"  (2) The woman C buys the car B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) (Empty)  [from steps 1, 2, 3]",
+"  (5) The car B is a car  [sentence 1]",
+"  (6) (Empty)  [from steps 4, 5]",
+"  (7) The woman C is a woman  [sentence 1]",
+"  (8) (Empty)  [from steps 6, 7]",
+"  (9)   [sentence 1]",
+"  (10) Contradiction  [from steps 8, 9]"
+],
+  "timestamp": "2026-06-20T10:33:07Z"
+}

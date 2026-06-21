@@ -1,0 +1,426 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1118,
+  "input_text": "If a bear eats, it is hungry. John is a brown bear.\n      John quickly eats berries in a deep forest. Who is hungry?",
+  "expected_answer": "John.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "An eat bear.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "If a bear eats, it is hungry.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear eats, the bear is hungry.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "eat", "mode": "habitual"}],
+          "adjectives": [["hungry","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a brown bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a brown bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["brown","none","bear"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John quickly eats berries in a deep forest.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 quickly eats berries in a deep forest 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"actor": "John 1", "target": "berries", "manner": "quickly", "location": "forest 2"}
+            }
+          ],
+          "adjectives": [["deep","none","forest"]],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Who is hungry?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity is hungry?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["hungry","none","entity"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ],
+              ["normally", ["has degree property","hungry","X","none","bear"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","bear","John 1"], ["has degree property","brown","John 1","none","bear"]]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","forest","forest 2"],
+            ["has degree property","deep","forest 2","none","forest"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                ["has manner","E","quickly"],
+                ["has location","E","forest 2","in"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id", "S4", ["ask", "X", ["has degree property","hungry","X","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has property", "eat", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear eats, the bear is hungry."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a brown bear."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "brown", "#:John 1", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 is a brown bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 quickly eats berries in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","forest","#:forest 2"],
+ "@nl": "John 1 quickly eats berries in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "deep", "#:forest 2", "none", "forest", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","berry"], ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 quickly eats berries in a deep forest 2."},
+{"@name": "sent_S4",
+ "@question": ["has degree property", "hungry", "?:X", "none", "?:Fv56", ["$ctxt","present","W1","?:Fv9","?:Fv10"]],
+ "@askvars": 1,
+ "@nl": "Which entity is hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "hungry", "?:Br1", "none", "?:Fv57", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "hungry", "?:Br1", "none", "?:Fv58", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "hungry", "?:Br1", "none", "?:Fv59", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity is hungry?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "eat", "$some_eat", ["$ctxt","?:Fv31","?:Fv28","?:Fv29","?:Fv30"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "eat", "$some_not_eat", ["$ctxt","?:Fv35","?:Fv32","?:Fv33","?:Fv34"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "hungry", "$some_hungry_bear", "none", "bear", ["$ctxt","?:Fv39","?:Fv36","?:Fv37","?:Fv38"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_hungry_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "hungry", "$some_not_hungry_bear", "none", "bear", ["$ctxt","?:Fv47","?:Fv44","?:Fv45","?:Fv46"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_eat_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "eat", "$some_eat_bear", ["$ctxt","?:Fv55","?:Fv52","?:Fv53","?:Fv54"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "brown", "?:X", ["$ctxt","past","?:Fv12","?:Fv13","?:Fv14"]],
+            ["has property", "brown", "?:X", ["$ctxt","present","?:Fv12","?:Fv13","?:Fv14"]],
+            ["$block", 0, ["$not", ["has property", "brown", "?:X", ["$ctxt","present","?:Fv12","?:Fv13","?:Fv14"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "brown", "?:X", ["$ctxt","past","?:Fv15","?:Fv16","?:Fv17"]],
+            ["has property", "brown", "?:X", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]],
+            ["$block", 0, ["$not", ["has property", "brown", "?:X", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "none", "?:Fv60", ["$ctxt","past","?:Fv18","?:Fv19","?:Fv20"]],
+            ["has degree property", "deep", "?:X", "none", "?:Fv61", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "none", "?:Fv62", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv21","?:Fv22","?:Fv23"]],
+            ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","forest","$some_forest"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_hungry_bear","bear","?:X3","?:Y3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property", "hungry", "$some_hungry_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_hungry_bear","bear","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_hungry_bear","?:U3","?:Y3","?:Z3"]],
+        "blockers": [["$block", 0, ["$not", ["has degree property", "hungry", "$some_hungry_bear", "none", "?:X3", ["$ctxt","present","W1","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.99,
+        "positive proof": [[1, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "hungry", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "hungry", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [2, ["in","sent_S1","assumption",1], [["has degree property", "hungry", "$some_hungry_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "$some_hungry_bear", "none", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_hungry_bear", "none", "?:V", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [5, ["mp", [3,1], 4, "fromga", 0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "$some_hungry_bear", "none", "?:X3", ["$ctxt","present","W1","?:Y3","?:Z3"]]]], ["$ans","$some_hungry_bear","?:U3","?:Y3","?:Z3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_eat_bear","bear","?:X3","?:Y3"]],
+        "blockers": [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["has property", "eat", "$some_eat_bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["-isa","bear","$some_eat_bear"], ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","bear","$some_eat_bear"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [7, ["mp", [5,1], 6, "fromga", 0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]],
+        "blockers": [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W1","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.891,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["has property", "eat", "$some_eat_bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["-isa","bear","$some_eat_bear"], ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","bear","$some_eat_bear"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "hungry", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "hungry", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [7, ["mp", [5,1], [6,1], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [8, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [9, ["mp", [7,2], 8, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_eat_bear","bear","?:X3","?:Y3"]],
+        "blockers": [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.910424,
+        "positive proof": [[1, ["in","frm_57","axiom",0.99], [["$block", 0, ["$not", ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:2008","?:2006","?:2007"]], ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:W","?:2006","?:2007"]], ["-next","?:2008","?:W"]]],
+          [2, ["in","sent_S1","assumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["has property", "eat", "$some_eat_bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["mp", [2,2], 3, "fromassumption", 0.9], [["-isa","bear","$some_eat_bear"], ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","bear","$some_eat_bear"]]],
+          [6, ["simp",4,5,"fromassumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", [1,1], [6,1], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:V","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["-next","?:Y","?:V"]]],
+          [8, ["in","sent_S3","assumption",1], [["next","W0","W1"]]],
+          [9, ["mp", [7,3], 8, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [10, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [11, ["mp", [9,2], 10, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]],
+          [12, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [13, ["mp", [7,3], 12, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [14, ["mp", [13,2], 10, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]],
+          [15, ["cumul",11,14,"fromga",0.910424], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]],
+        "blockers": [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.949633,
+        "positive proof": [[1, ["in","frm_57","axiom",0.99], [["$block", 0, ["$not", ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:2008","?:2006","?:2007"]], ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","?:V","?:W","?:2006","?:2007"]], ["-next","?:2008","?:W"]]],
+          [2, ["in","sent_S1","assumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["has property", "eat", "$some_eat_bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["mp", [2,2], 3, "fromassumption", 0.9], [["-isa","bear","$some_eat_bear"], ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","bear","$some_eat_bear"]]],
+          [6, ["simp",4,5,"fromassumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", [1,1], [6,1], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:V","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["-next","?:Y","?:V"]]],
+          [8, ["in","sent_S3","assumption",1], [["next","W0","W1"]]],
+          [9, ["mp", [7,3], 8, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [10, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [11, ["mp", [9,2], 10, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]],
+          [12, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [13, ["mp", [7,3], 12, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [14, ["mp", [13,2], 10, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","bear","?:X3","?:Y3"]]],
+          [15, ["in","frm_97","axiom",1], [["-has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","present","?:V","?:W","?:2006"]], ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","past","?:2007","?:W","?:2006"]], ["-before","?:V","?:2007"]]],
+          [16, ["mp", 15, [6,1], "fromassumption", 0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","?:U","?:Y","?:Z"]], ["-before","?:X","?:U"]]],
+          [17, ["in","frm_91","axiom",1], [["-next","?:X","?:Y"], ["before","?:X","?:Y"]]],
+          [18, ["mp",17,12,"fromassumption",1], [["before","W0","W1"]]],
+          [19, ["mp", [16,2], 18, "fromassumption", 0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [20, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "hungry", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "hungry", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [21, ["mp", [19,1], [20,1], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [22, ["mp", [21,2], 10, "fromga", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]]],
+          [23, ["cumul",14,22,"fromga",0.923373], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]]],
+          [24, ["cumul",11,23,"fromga",0.949633], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:U3","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_eat_bear","?:V3","?:X3","?:Y3"]],
+        "blockers": [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U3", ["$ctxt","present","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.896948,
+        "positive proof": [[1, ["in","frm_97","axiom",1], [["-has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","present","?:V","?:W","?:2006"]], ["has degree property", "?:X", "?:Y", "?:Z", "?:U", ["$ctxt","past","?:2007","?:W","?:2006"]], ["-before","?:V","?:2007"]]],
+          [2, ["in","sent_S1","assumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["has property", "eat", "$some_eat_bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["mp", [2,2], 3, "fromassumption", 0.9], [["-isa","bear","$some_eat_bear"], ["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","bear","$some_eat_bear"]]],
+          [6, ["simp",4,5,"fromassumption",0.9], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "hungry", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "hungry", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [8, ["mp", [6,1], [7,1], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [9, ["mp", 1, [8,2], "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:V", ["$ctxt","past","?:W","?:Y","?:Z"]], ["-before","?:X","?:W"]]],
+          [10, ["in","frm_91","axiom",1], [["-next","?:X","?:Y"], ["before","?:X","?:Y"]]],
+          [11, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [12, ["mp",10,11,"fromassumption",1], [["before","W0","W1"]]],
+          [13, ["mp", [9,3], 12, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [14, ["mp", [13,2], [7,1], "fromassumption", 0.88209], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z", ["$ctxt","present","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:V", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [15, ["in","sent_S4","goal",1], [["-has degree property", "hungry", "?:X", "none", "?:Y", ["$ctxt","present","W1","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [16, ["mp", [14,3], 15, "fromga", 0.88209], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U3", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:V3","?:X3","?:Y3"]]],
+          [17, ["in","sent_S3","assumption",1], [["next","W0","W1"]]],
+          [18, ["mp",10,17,"fromassumption",1], [["before","W0","W1"]]],
+          [19, ["mp", [9,3], 18, "fromassumption", 0.891], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [20, ["mp", [19,2], [7,1], "fromassumption", 0.88209], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z", ["$ctxt","present","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "hungry", "$some_eat_bear", "none", "?:V", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [21, ["mp", [20,3], 15, "fromga", 0.88209], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U3", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:V3","?:X3","?:Y3"]]],
+          [22, ["cumul",16,21,"fromga",0.896948], [["$block", ["$","bear",2], ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "bear", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:Z3", ["$ctxt","present","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has degree property", "hungry", "$some_eat_bear", "none", "?:U3", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$ans","$some_eat_bear","?:V3","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) If a bear eats, it is hungry.",
+"  (2) John quickly eats berries in a deep forest.",
+"  (3) Who is hungry?",
+"Knowledge used:",
+"  If some Y is some z some X and a situation E3 is followed by a situation W then normally Y is z X. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"  If some Y is some z some X and a situation V is earlier than a situation E2 then Y is z X. Why: assumed basic knowledge.",
+"  If a situation X is followed by a situation Y then X is earlier than Y. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some z some X and a situation E3 is followed by a situation W then normally Y is z X  [background knowledge, confidence 99%]",
+"  (2) If some X is eat and X is a bear then normally X is a hungry bear  [sentence 1, confidence 90%]",
+"  (3) An eat bear is eat  [sentence 1]",
+"  (4) If an eat bear is a bear then normally an eat bear is a hungry bear  [from steps 2, 3, confidence 90%]",
+"  (5) An eat bear is a bear  [sentence 1]",
+"  (6) Normally an eat bear is a hungry bear  [from steps 4, 5, confidence 90%]",
+"  (7) If a situation Y is followed by a situation V then normally an eat bear is a hungry bear, except when an eat bear is not a hungry bear  [from steps 1, 6, confidence 89%]",
+"  (8) The situation W0 is followed by the situation W1  [sentence 2]",
+"  (9) Normally an eat bear is a hungry bear, except when an eat bear is not a hungry bear  [from steps 7, 8, confidence 89%]",
+"  (10) If some X is hungry then X is an answer  [from question]",
+"  (11) [An eat bear, the bear] is an answer, except when an eat bear is not a hungry bear and an eat bear is not a hungry bear  [from steps 9, 10, confidence 89%]",
+"  (12) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (13) Normally an eat bear is a hungry bear, except when an eat bear is not a hungry bear  [from steps 7, 12, confidence 89%]",
+"  (14) [An eat bear, the bear] is an answer, except when an eat bear is not a hungry bear and an eat bear is not a hungry bear  [from steps 13, 10, confidence 89%]",
+"  (15) If some Y is some z some X and a situation V is earlier than a situation E2 then Y is z X  [background knowledge]",
+"  (16) If a situation X is earlier than a situation U then an eat bear is a hungry bear, except when an eat bear is not a hungry bear  [from steps 15, 6, confidence 90%]",
+"  (17) If a situation X is followed by a situation Y then X is earlier than Y  [background knowledge]",
+"  (18) The situation W0 is earlier than the situation W1  [from steps 17, 12]",
+"  (19) An eat bear is a hungry bear, except when an eat bear is not a hungry bear  [from steps 16, 18, confidence 90%]",
+"  (20) If some X is hungry then X is hungry, except when X is not hungry  [sentence 3, confidence 99%]",
+"  (21) An eat bear is hungry, except when an eat bear is not a hungry bear and an eat bear is not hungry  [from steps 19, 20, confidence 89%]",
+"  (22) An eat bear is an answer, except when an eat bear is not a hungry bear and an eat bear is not hungry  [from steps 21, 10, confidence 89%]",
+"  (23) An eat bear is an answer, except when an eat bear is not a hungry bear and an eat bear is not hungry  [from steps 14, 22, confidence 92%]",
+"  (24) An eat bear is an answer, except when an eat bear is not a hungry bear and an eat bear is not hungry  [from steps 11, 23, confidence 95%]",
+"Exceptions checked and not holding:",
+"  an eat bear is not a hungry bear",
+"  an eat bear is not hungry"
+],
+  "timestamp": "2026-06-19T09:08:40Z"
+}

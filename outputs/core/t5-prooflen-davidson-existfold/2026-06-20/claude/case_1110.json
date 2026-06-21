@@ -1,0 +1,320 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1110,
+  "input_text": "Bears eat red berries in a deep forest. John is a bear. John eats no berries?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears eat red berries in a deep forest.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat red berries in a deep forest.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest", "type": "generic", "scope": "dependent", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "adjectives": [["red","none","none"], ["deep","none","forest"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John eats no berries?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does John 1 eat no berries?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists","Y",
+                      ["and",
+                        ["isa","berry","Y"],
+                        ["has degree property","red","Y","none","none"],
+                        ["has target","E","Y"]
+                      ]
+                    ],
+                    ["exists","Z",
+                      ["and",
+                        ["isa","forest","Z"],
+                        ["has degree property","deep","Z","none","forest"],
+                        ["has location","E","Z","in"]
+                      ]
+                    ],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id","S3",
+      ["question",
+        ["normally",
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["event", "eat", "?:X", "berry", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "berry", ["sk1","?:X"]]],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["has property", "red", ["sk1","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "forest", ["sk2","?:X"]]],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["has degree property", "deep", ["sk2","?:X"], "none", "forest", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["has location", ["sk0","?:X"], ["sk2","?:X"], "in", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bear",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Bears eat red berries in a deep forest."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-event", "eat", "#:John 1", "berry", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-isa","berry","?:Y"],
+            ["-typical", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Does John 1 eat no berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["event", "eat", "#:John 1", "berry", "sk3", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 eat no berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa","berry","sk4_berry"], ["$defq0"]],
+ "@nl": "Does John 1 eat no berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["typical", "sk3", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]], ["$defq0"]],
+ "@nl": "Does John 1 eat no berries?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 eat no berries?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","forest","$some_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","forest","$some_not_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "red", "$some_red", ["$ctxt","?:Fv46","?:Fv43","?:Fv44","?:Fv45"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "red", "$some_not_red", ["$ctxt","?:Fv50","?:Fv47","?:Fv48","?:Fv49"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "deep", "$some_deep_forest", "none", "forest", ["$ctxt","?:Fv54","?:Fv51","?:Fv52","?:Fv53"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","forest","$some_deep_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "deep", "$some_not_deep_forest", "none", "forest", ["$ctxt","?:Fv62","?:Fv59","?:Fv60","?:Fv61"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "none", "?:Fv63", ["$ctxt","past","?:Fv11","?:Fv12","?:Fv13"]],
+            ["has degree property", "deep", "?:X", "none", "?:Fv64", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "none", "?:Fv65", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv17","?:Fv18","?:Fv19"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", ["$","bear",1], ["$not", ["typical", ["sk0","#:John 1"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "negative proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","bear",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["typical", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","bear",1], ["$not", ["typical", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["typical", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S1","assumption",1], [["event", "eat", "?:X", "berry", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [5, ["mp", [4,1], 2, "fromassumption", 1], [["event", "eat", "#:John 1", "berry", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-$defq0"], ["-event", "eat", "#:John 1", "berry", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-typical", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","berry","?:W"]]],
+          [7, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], [["-typical", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","berry","?:V"]]],
+          [9, ["mp", [3,1], 8, "fromga", 0.98], [["$block", ["$","bear",1], ["$not", ["typical", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-isa","berry","?:V"]]],
+          [10, ["in","sent_S1","assumption",1], [["isa","berry","$some_berry"]]],
+          [11, ["mp", [9,1], 10, "fromga", 0.98], [["$block", ["$","bear",1], ["$not", ["typical", ["sk0","#:John 1"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Bears eat red berries in a deep forest.",
+"  (2) John is a bear.",
+"  (3) John eats no berries?",
+"Proof steps:",
+"  (1) If some X is a bear then normally the event sk0 of X is typical  [sentence 1, confidence 98%]",
+"  (2) John is a bear  [sentence 2]",
+"  (3) Normally the event sk0 of John 1 is typical  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is a bear then X eats berry  [sentence 1]",
+"  (5) John eats berry  [from steps 4, 2]",
+"  (6) If answer holds and John eats berry and some W is a berry then X is not typical  [sentence 3]",
+"  (7) Answer holds  [assumption]",
+"  (8) If some V is a berry then sk0 of John 1 is not typical  [from steps 5, 6, 7]",
+"  (9) V is not a berry, except when the event sk0 of John 1 is not typical  [from steps 3, 8, confidence 98%]",
+"  (10) A berry is a berry  [sentence 1]",
+"  (11) Outstanding exception: the event sk0 of John 1 is not typical  [from steps 9, 10, confidence 98%]",
+"Exceptions checked and not holding:",
+"  the event sk0 of John 1 is not typical"
+],
+  "timestamp": "2026-06-20T12:43:20Z"
+}

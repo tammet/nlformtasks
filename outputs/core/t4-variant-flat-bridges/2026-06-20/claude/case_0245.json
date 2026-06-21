@@ -1,0 +1,278 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 245,
+  "input_text": "John saw the mother of the boy. John saw a boy's mother?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw the mother of the boy.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw the mother 2 of the boy 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "mother 2", "type": "concrete", "text": "mother", "category": "person"},
+            {"id": "boy 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "mother 2"}}],
+          "definites": [["mother of","mother 2","boy 3"]],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The mother 2 is the mother of the boy 3.",
+          "type": "situation",
+          "entities": [{"id": "mother 2", "type": "concrete", "text": "mother", "category": "person"},
+            {"id": "boy 3", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["mother of","mother 2","boy 3"]],
+          "pre_state": "W0"
+        }
+      ]
+    },
+    {
+      "raw": "John saw a boy's mother?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 see a boy's mother?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "mother", "type": "generic", "text": "mother", "category": "person"},
+            {"id": "boy", "type": "generic", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "mother"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","mother","mother 2"],
+            ["isa","person","boy 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","mother 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","mother of","boy 3","mother 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","mother","mother 2"],
+            ["isa","person","boy 3"],
+            ["is rel2","mother of","mother 2","boy 3"]
+          ]
+        ],
+        ["@definite","S2","W0","mother of","boy 3","mother 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","boy","X"],
+            ["exists","Y",
+              ["and",
+                ["isa","mother","Y"],
+                ["is rel2","mother of","Y","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","see"],
+                    ["has actor","E","John 1"],
+                    ["has target","E","Y"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","mother","#:mother 2"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","boy","#:boy 3"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:boy 3"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:Fv3","?:Fv4"]]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "The mother 2 is the mother of the boy 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:boy 3"],
+ "@nl": "The mother 2 is the mother of the boy 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","boy","sk0_boy"]],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa", "mother", ["$theof1", "mother", "sk0_boy", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "mother", "sk0_boy", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","boy","?:X"],
+            ["-isa","mother","?:Y"],
+            ["-is rel2", "mother of", "?:Y", "?:X", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:Y"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "mother of", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "mother of", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "mother of", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:boy 3", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:Fv3","?:Fv4"]], ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "sk0_boy", ["$theof1", "mother", "sk0_boy", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "mother of", ["$theof1","mother","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "mother", ["$theof1","mother","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.967143,
+        "positive proof": [[1, ["in","sent_S3","assumption",0.95], [["$block", 0, ["$not", ["is rel2", "mother of", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]]]], ["-is rel2", "mother of", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["is rel2", "mother of", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [2, ["in","frm_theof","assumption",1], [["is rel2", "mother of", ["$theof1","mother","?:X","?:Y"], "?:X", "?:Y"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.95], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]], ["is rel2", "mother of", ["$theof1", "mother", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["-is rel2", "mother of", "?:X", "?:V", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","mother","?:X"], ["-isa","boy","?:V"]]],
+          [5, ["in","sent_S1","assumption",1], [["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]]], ["$ctxt","past","W0","?:Z","?:U"]]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [7, ["mp", [4,1], 5, 6, "fromga", 1], [["-is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]], "?:Z", ["$ctxt","past","W0","?:U","?:V"]], ["-isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]]], ["-isa","boy","?:Z"]]],
+          [8, ["mp", [3,1], 7, "fromga", 0.95], [["-isa","boy","#:boy 3"], ["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["-isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]]]]],
+          [9, ["in","entity_S1","assumption",1], [["isa","boy","#:boy 3"]]],
+          [10, ["simp",8,9,"fromga",0.95], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]], "#:boy 3", ["$ctxt","past","W0","?:X","?:Y"]]]], ["-isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]]]]],
+          [11, ["in","sent_S2","assumption",1], [["isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]]]]],
+          [12, ["mp", [10,1], 11, "fromga", 0.95], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]],
+          [13, ["in","frm_theof","assumption",1], [["isa", "mother", ["$theof1","mother","?:X","?:Y"]]]],
+          [14, ["mp", [10,1], 13, "fromga", 0.95], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]],
+          [15, ["cumul",12,14,"fromga",0.957917], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]],
+          [16, ["in","sent_S1","assumption",1], [["isa", "mother", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X","?:Y"]]]]],
+          [17, ["mp", [10,1], 16, "fromga", 0.95], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]],
+          [18, ["cumul",15,17,"fromga",0.967143], [["$block", 0, ["$not", ["is rel2", "mother of", ["$theof1", "mother", "#:boy 3", ["$ctxt","present","W0","?:X3","?:Y3"]], "#:boy 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 97%.",
+"Sentences used:",
+"  (1) John saw the mother of the boy.",
+"  (2) John saw a boy's mother?",
+"Knowledge used:",
+"  X's mother is mother of some X. Why: assumed basic knowledge.",
+"  The boy C is a boy. Why: assumed basic knowledge.",
+"  X's mother is a mother. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some X is mother of some Y then normally X is mother of Y  [sentence 2, confidence 95%]",
+"  (2) X's mother is mother of some X  [background knowledge]",
+"  (3) Normally X's mother is mother of some X  [from steps 1, 2, confidence 95%]",
+"  (4) If John is show of X and some X is mother of some V and X is a mother and V is a boy then answer holds  [sentence 2]",
+"  (5) John is show of the mother of boy C  [sentence 1]",
+"  (6) assume for contradiction: the answer is no  [from question]",
+"  (7) If the mother of boy C is mother of some boy Z then the mother of boy C is not a mother  [from steps 4, 5, 6]",
+"  (8) The mother of boy C is not a mother, except when the mother of boy C is not mother of the boy C  [from steps 3, 7, confidence 95%]",
+"  (9) The boy C is a boy  [background knowledge]",
+"  (10) The mother of boy C is not a mother, except when the mother of boy C is not mother of the boy C  [from steps 8, 9, confidence 95%]",
+"  (11) The mother of boy C is a mother  [sentence 1]",
+"  (12) Outstanding exception: the mother of boy C is not mother of the boy C  [from steps 10, 11, confidence 95%]",
+"  (13) X's mother is a mother  [background knowledge]",
+"  (14) Outstanding exception: the mother of boy C is not mother of the boy C  [from steps 10, 13, confidence 95%]",
+"  (15) Outstanding exception: the mother of boy C is not mother of the boy C  [from steps 12, 14, confidence 96%]",
+"  (16) The mother of boy C is a mother  [sentence 1]",
+"  (17) Outstanding exception: the mother of boy C is not mother of the boy C  [from steps 10, 16, confidence 95%]",
+"  (18) Outstanding exception: the mother of boy C is not mother of the boy C  [from steps 15, 17, confidence 97%]",
+"Exceptions checked and not holding:",
+"  the mother of boy C is not mother of boy C"
+],
+  "timestamp": "2026-06-19T10:52:39Z"
+}

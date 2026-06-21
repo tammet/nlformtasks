@@ -1,0 +1,275 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1339,
+  "input_text": "Squirrels can fly. Foxes cannot fly. Squirrels and foxes are animals.\n      Which animal can fly?",
+  "expected_answer": "A squirrel",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "A squirrel.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Squirrels can fly.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Squirrels can fly.",
+          "type": "normal_rule",
+          "entities": [{"category": "animal", "id": "squirrels", "type": "generic"}],
+          "actions": [{"mode": "capability", "root": "fly"}]
+        }
+      ]
+    },
+    {
+      "raw": "Foxes cannot fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Foxes cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"category": "animal", "id": "foxes", "type": "generic"}],
+          "actions": [{"mode": "capability", "root": "fly"}]
+        }
+      ]
+    },
+    {
+      "raw": "Squirrels and foxes are animals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Squirrels are animals.",
+          "type": "strict_rule",
+          "entities": [{"category": "animal", "id": "squirrels", "type": "generic"},
+            {"category": "animal", "id": "animals", "type": "generic"}
+          ]
+        },
+        {
+          "unit_id": "S4",
+          "text": "Foxes are animals.",
+          "type": "strict_rule",
+          "entities": [{"category": "animal", "id": "foxes", "type": "generic"},
+            {"category": "animal", "id": "animals", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Which animal can fly?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Which animal can fly?",
+          "type": "query",
+          "entities": [{"id": "animal", "type": "generic", "category": "animal", "wh_placeholder": true}],
+          "actions": [{"mode": "capability", "root": "fly"}]
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: missing_wh_placeholder"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","squirrel","X"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","fox","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","squirrel","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S4",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","fox","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S5",
+      ["ask","X",
+        ["and",
+          ["isa","animal","X"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","X"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","squirrel","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@nl": "Squirrels can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","fox","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Foxes cannot fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","squirrel","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Squirrels are animals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","fox","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Foxes are animals."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Which animal can fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Which animal can fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","animal","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which animal can fly?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which animal can fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "fly", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which animal can fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","squirrel","$some_squirrel"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","squirrel","$some_not_squirrel"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","fox","$some_fox"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","fox","$some_not_fox"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "fly", "$some_fly", ["$ctxt","?:Fv53","?:Fv50","?:Fv51","?:Fv52"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "fly", "$some_not_fly", ["$ctxt","?:Fv57","?:Fv54","?:Fv55","?:Fv56"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv25"], ["has type","?:E","go","?:Fv25"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_squirrel"]],
+        "blockers": [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","squirrel","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","squirrel","$some_squirrel"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "fly", "$some_squirrel", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S5","assumption",1], [["-has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","animal","?:X"], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 1], [["-isa","animal","$some_squirrel"], ["$defq0","$some_squirrel"], ["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [6, ["in","sent_S3","assumption",1], [["-isa","squirrel","?:X"], ["isa","animal","?:X"]]],
+          [7, ["mp",6,2,"fromassumption",1], [["isa","animal","$some_squirrel"]]],
+          [8, ["simp",5,7,"fromassumption",1], [["$defq0","$some_squirrel"], ["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [9, ["in","sent_S5","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [10, ["mp",8,9,"fromga",1], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_squirrel"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_squirrel"]],
+        "blockers": [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.99,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","squirrel","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","squirrel","$some_squirrel"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "fly", "$some_squirrel", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S5","assumption",0.99], [["$block", 0, ["$not", ["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["-has property", "fly", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.99], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S5","assumption",1], [["-has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","animal","?:X"], ["$defq0","?:X"]]],
+          [7, ["mp", [5,2], 6, "fromassumption", 0.99], [["-isa","animal","$some_squirrel"], ["$defq0","$some_squirrel"], ["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [8, ["in","sent_S3","assumption",1], [["-isa","squirrel","?:X"], ["isa","animal","?:X"]]],
+          [9, ["mp",8,2,"fromassumption",1], [["isa","animal","$some_squirrel"]]],
+          [10, ["simp",7,9,"fromassumption",0.99], [["$defq0","$some_squirrel"], ["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [11, ["in","sent_S5","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [12, ["mp",10,11,"fromga",0.99], [["$block", ["$","squirrel",1], ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_squirrel", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_squirrel"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Squirrels can fly.",
+"  (2) Squirrels and foxes are animals.",
+"  (3) Which animal can fly?",
+"Proof steps:",
+"  (1) If some X is a squirrel then normally X is fly  [sentence 1]",
+"  (2) A squirrel is a squirrel  [sentence 1]",
+"  (3) Normally a squirrel is fly  [from steps 1, 2]",
+"  (4) If some X is fly and X is an animal then X is the answer  [sentence 3]",
+"  (5) If a squirrel is an animal then a squirrel is the answer, except when a squirrel is not fly  [from steps 3, 4]",
+"  (6) If some X is a squirrel then X is an animal  [sentence 2]",
+"  (7) A squirrel is an animal  [from steps 6, 2]",
+"  (8) A squirrel is the answer, except when a squirrel is not fly  [from steps 5, 7]",
+"  (9) technical answer unwrap step  [from question]",
+"  (10) A squirrel is an answer, except when a squirrel is not fly  [from steps 8, 9]",
+"Exceptions checked and not holding:",
+"  a squirrel is not fly"
+],
+  "timestamp": "2026-06-18T15:34:36Z"
+}

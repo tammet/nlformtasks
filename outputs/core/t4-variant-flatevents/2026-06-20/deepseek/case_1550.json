@@ -1,0 +1,148 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1550,
+  "input_text": "Probably John smokes. John smokes?",
+  "expected_answer": "Probably true",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Likely true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Probably John smokes.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 smokes.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "smoke", "mode": "habitual"}],
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "raw": "John smokes?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Does John 1 smoke?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "smoke", "mode": "habitual"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","smoke"],
+                  ["has actor","E","John 1"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.8]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","smoke"],
+            ["has actor","E","John 1"],
+            ["typical","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 smokes."},
+{"@name": "sent_S1",
+ "@logic": [["has property", "smoke", "#:John 1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.6,
+ "@nl": "John 1 smokes."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "smoke", "#:John 1", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "smoke", "#:John 1", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "smoke", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "smoke", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does John 1 smoke?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.6,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.6], [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "smoke", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S2","assumption",1], [["$defq0"], ["-has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], [2,1], 3, "fromga", 0.6], [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.594,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.99], [["$block", 0, ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-has property", "smoke", "#:John 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [2, ["in","sent_S1","assumption",0.6], [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "smoke", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,1], [2,1], "fromassumption", 0.594], [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [4, ["in","sent_S2","assumption",1], [["$defq0"], ["-has property", "smoke", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,2], [4,1], 5, "fromga", 0.594], [["$block", ["$","$generic",1], ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has property", "smoke", "#:John 1", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 60%.",
+"Sentences used:",
+"  (1) Probably John smokes.",
+"  (2) John smokes?",
+"Proof steps:",
+"  (1) Normally the Probably John is smoke  [sentence 1, confidence 60%]",
+"  (2) If the Probably John is smoke then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Outstanding exception: the Probably John is not smoke  [from steps 1, 2, 3, confidence 60%]",
+"Exceptions checked and not holding:",
+"  the Probably John is not smoke"
+],
+  "timestamp": "2026-06-18T17:47:48Z"
+}

@@ -1,0 +1,116 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 133,
+  "input_text": "She was in a room. She was in the room?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "She was in a room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "She 1 was in a room 2.",
+          "type": "situation",
+          "entities": [{"id": "she 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "She was in the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Was she 1 in the room 2?",
+          "type": "query",
+          "entities": [{"id": "she 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","she 1"],
+            ["isa","room","room 2"],
+            ["@time", "past", ["is rel2","in","she 1","room 2"]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S2", ["question", ["@time", "past", ["is rel2","in","she 1","room 2"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","she","#:she 1"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:she 1"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Was she 1 in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was she 1 in the room 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Was she 1 in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was she 1 in the room 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["$defq0"], ["-is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) She was in a room.",
+"  (2) She was in the room?",
+"Proof steps (by contradiction):",
+"  (1) The she A is in the room B  [sentence 1]",
+"  (2) If the she A is in the room B then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-18T17:31:07Z"
+}

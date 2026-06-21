@@ -1,0 +1,200 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1095,
+  "input_text": "If John wrote a report, then Bill did too. John wrote a report. Did Bill write a report?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "If John wrote a report, then Bill did too.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If John 1 wrote a report, then Bill 2 wrote a report.",
+          "type": "strict_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Bill 2", "type": "concrete", "category": "person"},
+            {"id": "report", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "write", "mode": "event", "roles": {"actor": "John 1", "target": "report"}},
+            {"root": "write", "mode": "event", "roles": {"actor": "Bill 2", "target": "report"}}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John wrote a report.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 wrote a report 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "report 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "write", "mode": "event", "roles": {"actor": "John 1", "target": "report 3"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Bill write a report?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Bill 2 write a report?",
+          "type": "query",
+          "entities": [{"id": "Bill 2", "type": "concrete", "category": "person"},
+            {"id": "report", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "write", "mode": "event", "roles": {"actor": "Bill 2", "target": "report"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["implies",
+          ["exists","Y",
+            ["and",
+              ["isa","artifact","report"],
+              ["isa","report","Y"],
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","write"],
+                  ["has actor","E1","John 1"],
+                  ["has target","E1","Y"]
+                ]
+              ]
+            ]
+          ],
+          ["exists","Z",
+            ["and",
+              ["isa","report","Z"],
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","write"],
+                  ["has actor","E2","Bill 2"],
+                  ["has target","E2","Z"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","report","report 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","write"],
+                ["has actor","E","John 1"],
+                ["has target","E","report 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","report","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","write"],
+                ["has actor","E","Bill 2"],
+                ["has target","E","X"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:Bill 2"],
+ "@nl": "If John 1 wrote a report, then Bill 2 wrote a report."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","artifact","report"],
+            ["-isa","report","?:Y"],
+            ["-is rel2", "write", "#:John 1", ["eventprop","$target","?:Y"], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+            ["isa","report","sk0_report"]
+           ],
+ "@nl": "If John 1 wrote a report, then Bill 2 wrote a report."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","artifact","report"],
+            ["-isa","report","?:Y"],
+            ["-is rel2", "write", "#:John 1", ["eventprop","$target","?:Y"], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+            ["is rel2", "write", "#:Bill 2", ["eventprop","$target","sk0_report"], ["$ctxt","present","W0","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If John 1 wrote a report, then Bill 2 wrote a report."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 wrote a report 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","report","#:report 3"],
+ "@nl": "John 1 wrote a report 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "write", "#:John 1", ["eventprop","$target","#:report 3"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 wrote a report 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 wrote a report 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","report","sk1_report"]],
+ "@nl": "Did Bill 2 write a report?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "write", "#:Bill 2", ["eventprop","$target","sk1_report"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Bill 2 write a report?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","report","?:X"],
+            ["-is rel2", "write", "#:Bill 2", ["eventprop","$target","?:X"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Bill 2 write a report?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Bill 2 write a report?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","report","$some_not_report"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","report","?:Fv12"], ["has type","?:E","announce","?:Fv12"]],
+ "@confidence": 0.71,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","announce","?:Fv13"], ["has type","?:E","report","?:Fv13"]],
+ "@confidence": 0.71,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T07:56:06Z"
+}

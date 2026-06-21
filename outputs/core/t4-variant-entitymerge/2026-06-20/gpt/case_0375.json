@@ -1,0 +1,324 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 375,
+  "input_text": "John does not eat a carrot. Mike eats carrots. Who eats carrots?",
+  "expected_answer": "Mike",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Mike.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John does not eat a carrot.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 does not eat a carrot.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "carrot"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike eats carrots.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 2 eats carrots.",
+          "type": "normal_rule",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "carrots", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "Mike 2", "target": "carrots"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Who eats carrots?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity eats carrots?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "carrots", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "entity", "target": "carrots"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["normally",
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["exists", "X", ["and", ["isa","carrot","X"], ["has target","E","X"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mike 2"],
+            ["forall","X",
+              ["implies",
+                ["isa","carrot","X"],
+                ["normally",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","Mike 2"],
+                      ["has target","E","X"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","entity","X"],
+          ["normally",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","X"],
+                ["forall", "Y", ["implies", ["isa","carrot","Y"], ["has target","E","Y"]]],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E", "#:John 1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","carrot","?:X"],
+            ["-has target", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-typical", "?:E", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","carrot",4], ["typical", "?:E", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]
+           ],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"],
+            ["has type", ["sk0","?:X"], "eat", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"],
+            ["has actor", ["sk0","?:X"], "#:Mike 2", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"],
+            ["has target", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has type", ["sk1","?:X"], "eat", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has actor", ["sk1","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-isa","carrot","?:Y"],
+            ["has target", ["sk1","?:X"], "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["typical", ["sk1","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa", "carrot", ["sk2","?:X"]],
+            ["-typical", "?:E", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has target", "?:E", ["sk2","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-typical", "?:E", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","carrot","$some_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","carrot","$some_not_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:Mike 2"]],
+        "blockers": [["$block", ["$","carrot",1], ["$not", ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]]
+        ],
+        "confidence": 0.885842,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["isa","carrot","$some_carrot"]]],
+          [2, ["in","sent_S2","assumption",1], [["has type", ["sk0","?:X"], "eat", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","carrot","?:X"]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 1], [["has type", ["sk0","$some_carrot"], "eat", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",1], [["-has type", "?:X", "eat", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has actor", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-typical", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["isa", "carrot", ["sk2","?:W"]], ["-isa","activity","?:X"], ["$defq0","?:W"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["-isa", "activity", ["sk0","$some_carrot"]], ["-has actor", ["sk0","$some_carrot"], "?:X3", ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["-typical", ["sk0","$some_carrot"], ["$ctxt","?:Y3","?:Z3","?:U3","?:V3"]], ["isa", "carrot", ["sk2","?:X3"]], ["$defq0","?:X3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa", "activity", ["sk0","?:X"]], ["-isa","carrot","?:X"]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 1], [["isa", "activity", ["sk0","$some_carrot"]]]],
+          [8, ["simp",5,7,"fromassumption",1], [["-has actor", ["sk0","$some_carrot"], "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-typical", ["sk0","$some_carrot"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["isa", "carrot", ["sk2","?:X"]], ["$defq0","?:X"]]],
+          [9, ["in","sent_S2","assumption",1], [["has actor", ["sk0","?:X"], "#:Mike 2", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","carrot","?:X"]]],
+          [10, ["mp", 1, [9,1], "fromassumption", 1], [["has actor", ["sk0","$some_carrot"], "#:Mike 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["mp",8,10,"fromassumption",1], [["isa", "carrot", ["sk2","#:Mike 2"]], ["$defq0","#:Mike 2"], ["-typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [12, ["in","sent_S2","assumption",0.98], [["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["typical", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","carrot","?:X"]]],
+          [13, ["mp", 1, [12,2], "fromassumption", 0.98], [["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [14, ["mp", [11,2], [13,1], "fromassumption", 0.98], [["isa", "carrot", ["sk2","#:Mike 2"]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [15, ["in","sent_S2","assumption",1], [["has target", ["sk0","?:X"], "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","carrot","?:X"]]],
+          [16, ["mp", 14, [15,1], "fromassumption", 0.98], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has target", ["sk0", ["sk2","#:Mike 2"]], ["sk2","#:Mike 2"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [17, ["in","sent_S3","assumption",1], [["-has target", "?:X", ["sk2","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-has type", "?:X", "eat", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-has actor", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-typical", "?:X", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","activity","?:X"], ["$defq0","?:Y"]]],
+          [18, ["mp", [16,2], 17, "fromassumption", 0.98], [["-isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-has type", ["sk0", ["sk2","#:Mike 2"]], "eat", ["$ctxt","?:V","?:W","?:2006","?:2007"]], ["-has actor", ["sk0", ["sk2","#:Mike 2"]], "#:Mike 2", ["$ctxt","?:V","?:W","?:2006","?:2007"]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [19, ["mp", 14, [2,1], "fromassumption", 0.98], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has type", ["sk0", ["sk2","#:Mike 2"]], "eat", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [20, ["mp", [18,3], [19,2], "fromassumption", 0.9604], [["-isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-has actor", ["sk0", ["sk2","#:Mike 2"]], "#:Mike 2", ["$ctxt","?:2008","?:2009","?:2010","?:2011"]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]],
+          [21, ["merge", [20,2,3], "fromassumption", 0.9604], [["-isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-has actor", ["sk0", ["sk2","#:Mike 2"]], "#:Mike 2", ["$ctxt","?:V","?:W","?:2006","?:2007"]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [22, ["mp", 14, [9,1], "fromassumption", 0.98], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has actor", ["sk0", ["sk2","#:Mike 2"]], "#:Mike 2", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [23, ["mp", [21,3], [22,2], "fromassumption", 0.941192], [["-isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]],
+          [24, ["merge", [23,2,3], "fromassumption", 0.941192], [["-isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [25, ["mp", 14, [6,1], "fromassumption", 0.98], [["isa", "activity", ["sk0", ["sk2","#:Mike 2"]]], ["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [26, ["mp",24,25,"fromassumption",0.922368], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]],
+          [27, ["merge", [26,1,2], "fromassumption", 0.922368], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [28, ["mp", 14, [12,2], "fromassumption", 0.9604], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [29, ["mp", [27,2], [28,3], "fromassumption", 0.885842], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]]]],
+          [30, ["merge", [29,2,3], "fromassumption", 0.885842], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [31, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [32, ["mp",30,31,"fromga",0.885842], [["$block", ["$","carrot",1], ["$not", ["typical", ["sk0", ["sk2","#:Mike 2"]], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","carrot",1], ["$not", ["typical", ["sk0","$some_carrot"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]], ["$ans","#:Mike 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 89%.",
+"Sentences used:",
+"  (1) John does not eat a carrot.",
+"  (2) Mike eats carrots.",
+"  (3) Who eats carrots?",
+"Proof steps:",
+"  (1) A carrot is a carrot  [sentence 1]",
+"  (2) If some X is a carrot then sk0 of X is a eat event  [sentence 2]",
+"  (3) sk0 of $some_carrot is a eat event  [from steps 1, 2]",
+"  (4) If X is a eat event and some W performs X and X is typical and X is an activity then the carrot sk2 of W is a carrot or W is the answer  [sentence 3]",
+"  (5) If the eating event sk0 of $some_carrot is an activity and some X3 performs sk0 of $some_carrot and sk0 of $some_carrot is typical then the carrot sk2 of X3 is a carrot or X3 is the answer  [from steps 3, 4]",
+"  (6) If some X is a carrot then the eating event sk0 of X is an activity  [sentence 2]",
+"  (7) The eating event sk0 of $some_carrot is an activity  [from steps 1, 6]",
+"  (8) If some X performs the eating event sk0 of $some_carrot and sk0 of $some_carrot is typical then the carrot sk2 of X is a carrot or X is the answer  [from steps 5, 7]",
+"  (9) If some X is a carrot then Mike performs the eating event sk0 of X  [sentence 2]",
+"  (10) Mike performs the eating event sk0 of $some_carrot  [from steps 1, 9]",
+"  (11) If the eating event sk0 of $some_carrot is typical then the carrot sk2 of Mike 2 is a carrot or Mike is the answer  [from steps 8, 10]",
+"  (12) If some X is a carrot then normally the eating event sk0 of X is typical  [sentence 2, confidence 98%]",
+"  (13) Normally the eating event sk0 of $some_carrot is typical  [from steps 1, 12, confidence 98%]",
+"  (14) The carrot sk2 of Mike 2 is a carrot or Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 11, 13, confidence 98%]",
+"  (15) If some X is a carrot then the eating event sk0 of X targets X  [sentence 2]",
+"  (16) Mike is the answer or the eating event sk0 of the carrot sk2 of Mike 2 targets the carrot sk2 of Mike 2, except when the eating event sk0 of $some_carrot is not typical  [from steps 14, 15, confidence 98%]",
+"  (17) If X targets the carrot sk2 of Y and X is a eat event and Y performs X and X is typical and X is an activity then Y is the answer  [sentence 3]",
+"  (18) If the eating event sk0 of the carrot sk2 of Mike 2 is an activity and sk0 of the carrot sk2 of Mike 2 is a eat event and Mike performs sk0 of the carrot sk2 of Mike 2 and sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 16, 17, confidence 98%]",
+"  (19) Mike is the answer or sk0 of the carrot sk2 of Mike 2 is a eat event, except when the eating event sk0 of $some_carrot is not typical  [from steps 14, 2, confidence 98%]",
+"  (20) If the eating event sk0 of the carrot sk2 of Mike 2 is an activity and Mike performs sk0 of the carrot sk2 of Mike 2 and sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical and sk0 of $some_carrot is not typical  [from steps 18, 19, confidence 96%]",
+"  (21) If the eating event sk0 of the carrot sk2 of Mike 2 is an activity and Mike performs sk0 of the carrot sk2 of Mike 2 and sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 20, confidence 96%]",
+"  (22) Mike is the answer or Mike performs the eating event sk0 of the carrot sk2 of Mike 2, except when the eating event sk0 of $some_carrot is not typical  [from steps 14, 9, confidence 98%]",
+"  (23) If the eating event sk0 of the carrot sk2 of Mike 2 is an activity and sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical and sk0 of $some_carrot is not typical  [from steps 21, 22, confidence 94%]",
+"  (24) If the eating event sk0 of the carrot sk2 of Mike 2 is an activity and sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 23, confidence 94%]",
+"  (25) The eating event sk0 of the carrot sk2 of Mike 2 is an activity or Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 14, 6, confidence 98%]",
+"  (26) If the eating event sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical and sk0 of $some_carrot is not typical  [from steps 24, 25, confidence 92%]",
+"  (27) If the eating event sk0 of the carrot sk2 of Mike 2 is typical then Mike is the answer, except when the eating event sk0 of $some_carrot is not typical  [from steps 26, confidence 92%]",
+"  (28) Mike is the answer or normally the eating event sk0 of the carrot sk2 of Mike 2 is typical, except when the eating event sk0 of $some_carrot is not typical  [from steps 14, 12, confidence 96%]",
+"  (29) Mike is the answer, except when the eating event sk0 of the carrot sk2 of Mike 2 is not typical and the eating event sk0 of $some_carrot is not typical and sk0 of $some_carrot is not typical  [from steps 27, 28, confidence 89%]",
+"  (30) Mike is the answer, except when the eating event sk0 of the carrot sk2 of Mike 2 is not typical and the eating event sk0 of $some_carrot is not typical  [from steps 29, confidence 89%]",
+"  (31) technical answer unwrap step  [from question]",
+"  (32) Mike is an answer, except when the eating event sk0 of the carrot sk2 of Mike 2 is not typical and the eating event sk0 of $some_carrot is not typical  [from steps 30, 31, confidence 89%]",
+"Exceptions checked and not holding:",
+"  the eating event sk0 of the carrot sk2 of Mike 2 is not typical",
+"  the eating event sk0 of $some_carrot is not typical"
+],
+  "timestamp": "2026-06-19T00:18:59Z"
+}

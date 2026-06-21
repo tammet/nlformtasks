@@ -1,0 +1,362 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_existfold_fix",
+  "case_id": 133,
+  "input_text": "Some mammals have teeth. Platypuses have no teeth. Platypuses are mammals. Humans have teeth. Platypuses are reptiles?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Some mammals have teeth.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some mammals have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses have no teeth.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Platypuses have no teeth.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are mammals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Platypuses are mammals.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Humans have teeth.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Humans have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "humans", "type": "generic", "category": "person"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are reptiles?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Are all platypuses reptiles?",
+          "type": "query",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "reptiles", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","mammal","X"],
+              ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","platypus","X"],
+            ["not", ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","mammal","X"]]]]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","human","X"],
+            ["normally", ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["question", ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","reptile","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","mammal","sk0_mammal"],
+ "@confidence": 0.9899,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S1",
+ "@logic": ["has property", ["$have","tooth"], "sk0_mammal", "?:Cu2"],
+ "@confidence": 0.9899,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","platypus","?:X"], ["-has property", ["$have","tooth"], "?:X", "?:Cu3"]],
+ "@nl": "Platypuses have no teeth."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","platypus","?:X"], ["isa","mammal","?:X"]],
+ "@nl": "Platypuses are mammals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","human","?:X"], ["has property", ["$have","tooth"], "?:X", "?:Cu5"]],
+ "@nl": "Humans have teeth."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","platypus","?:X"], ["isa","reptile","?:X"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa","platypus","sk1_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","reptile","sk1_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","?:cef","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mammal","$some_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mammal","$some_not_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","platypus","$some_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","platypus","$some_not_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","human","$some_human"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","human","$some_not_human"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","['$have', 'tooth']","$some_['$have',_'tooth']","?:Cu16"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","mammal","?:X"], ["-isa","reptile","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","mammal","?:X"], ["-isa","reptile","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:cef", ["$typed_partof","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["has part", "?:Xef", ["$typed_partof","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:cef","?:Yef"],
+            ["-has part","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:cef", ["$typed_have","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["have", "?:Xef", ["$typed_have","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:cef","?:Yef"],
+            ["-have","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.997701,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["isa","platypus","$some_platypus"]]],
+          [2, ["in","sent_S5","assumption",1], [["-$defq0"], ["-isa","platypus","?:X"], ["isa","reptile","?:X"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["isa","reptile","$some_platypus"]]],
+          [5, ["in","frm_excl_isa","assumption",0.95], [["-isa","reptile","?:X"], ["-isa","mammal","?:X"]]],
+          [6, ["mp",4,5,"fromga",0.95], [["-isa","mammal","$some_platypus"]]],
+          [7, ["in","sent_S3","assumption",1], [["-isa","platypus","?:X"], ["isa","mammal","?:X"]]],
+          [8, ["mp",1,7,"fromassumption",1], [["isa","mammal","$some_platypus"]]],
+          [9, ["simp",6,8,"fromga",0.95], false],
+          [10, ["in","frm_existfold","assumption",1], [["have", "?:X", ["$typed_have","?:X","?:Y"], "?:Z"], ["-has property", ["$have","?:Y"], "?:X", "?:Z"]]],
+          [11, ["in","sent_S1","assumption",0.9899], [["has property", ["$have","tooth"], "sk0_mammal", "?:X"]]],
+          [12, ["mp", [10,1], 11, "fromassumption", 0.9899], [["have", "sk0_mammal", ["$typed_have","sk0_mammal","tooth"], "?:X"]]],
+          [13, ["in","frm_existfold_rev","assumption",1], [["has property", ["$have","?:X"], "?:Y", "?:Z"], ["-have","?:Y","?:U","?:Z"], ["-isa","?:V","?:U"]]],
+          [14, ["mp", 12, [13,1], "fromassumption", 0.9899], [["has property", ["$have","?:X"], "sk0_mammal", "?:Y"], ["-isa", "?:Z", ["$typed_have","sk0_mammal","tooth"]]]],
+          [15, ["in","frm_existfold","assumption",1], [["-has property", ["$have","?:X"], "?:Y", "?:Z"], ["isa", "?:U", ["$typed_have","?:Y","?:X"]]]],
+          [16, ["mp",15,11,"fromassumption",0.9899], [["isa", "?:X", ["$typed_have","sk0_mammal","tooth"]]]],
+          [17, ["mp", 16, [2,1], 3, "fromga", 0.9899], [["isa", "reptile", ["$typed_have","sk0_mammal","tooth"]]]],
+          [18, ["mp", [14,1], 17, "fromga", 0.979902], [["has property", ["$have","?:X"], "sk0_mammal", "?:Y"]]],
+          [19, ["mp",18,15,"fromga",0.979902], [["isa", "?:X", ["$typed_have","sk0_mammal","?:Y"]]]],
+          [20, ["in","sent_S4","assumption",1], [["has property", ["$have","tooth"], "?:X", "?:Y"], ["-isa","human","?:X"]]],
+          [21, ["mp", 16, [20,1], "fromassumption", 0.9899], [["has property", ["$have","tooth"], ["$typed_have","sk0_mammal","tooth"], "?:X"]]],
+          [22, ["in","sent_S2","assumption",1], [["-has property", ["$have","tooth"], "?:X", "?:Y"], ["-isa","platypus","?:X"]]],
+          [23, ["mp",21,22,"fromassumption",0.9899], [["-isa", "platypus", ["$typed_have","sk0_mammal","tooth"]]]],
+          [24, ["mp",19,23,"fromga",0.970005], false],
+          [25, ["cumul",9,24,"fromga",0.993319], false],
+          [26, ["in","sent_S4","assumption",1], [["isa","human","$some_human"]]],
+          [27, ["mp", [20,1], 26, "fromassumption", 1], [["has property", ["$have","tooth"], "$some_human", "?:X"]]],
+          [28, ["mp",27,15,"fromassumption",1], [["isa", "?:X", ["$typed_have","$some_human","tooth"]]]],
+          [29, ["mp", 28, [2,1], 3, "fromga", 1], [["isa", "reptile", ["$typed_have","$some_human","tooth"]]]],
+          [30, ["mp",29,5,"fromga",0.95], [["-isa", "mammal", ["$typed_have","$some_human","tooth"]]]],
+          [31, ["mp",28,7,"fromassumption",1], [["isa", "mammal", ["$typed_have","$some_human","tooth"]]]],
+          [32, ["simp",30,31,"fromga",0.95], false],
+          [33, ["cumul",25,32,"fromga",0.995699], false],
+          [34, ["mp",21,15,"fromassumption",0.9899], [["isa", "?:X", ["$typed_have", ["$typed_have","sk0_mammal","tooth"], "tooth"]]]],
+          [35, ["mp", 34, [2,1], 3, "fromga", 0.9899], [["isa", "reptile", ["$typed_have", ["$typed_have","sk0_mammal","tooth"], "tooth"]]]],
+          [36, ["in","frm_excl_isa","assumption",0.95], [["-isa","reptile","?:X"], ["-isa","mammal","?:Y"], ["-=","?:Y","?:X"]]],
+          [37, ["r=", [36,2], "fromassumption", 0.95], [["-isa","reptile","?:X"], ["-isa","mammal","?:X"]]],
+          [38, ["mp",35,37,"fromga",0.940405], [["-isa", "mammal", ["$typed_have", ["$typed_have","sk0_mammal","tooth"], "tooth"]]]],
+          [39, ["mp",38,34,"fromga",0.930907], false],
+          [40, ["cumul",33,39,"fromga",0.997701], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 100%.",
+"Sentences used:",
+"  (1) Some mammals have teeth.",
+"  (2) Platypuses have no teeth.",
+"  (3) Platypuses are mammals.",
+"  (4) Humans have teeth.",
+"  (5) Platypuses are reptiles?",
+"Knowledge used:",
+"  If some X is a reptile then X is not a mammal. Why: assumed basic knowledge.",
+"  If some X has a ?:Y then X has ['$typed_have', '?:X', '?:Y']. Why: assumed basic knowledge.",
+"  If some Y has some U and U is a ?:V then Y has a ?:X. Why: assumed basic knowledge.",
+"  If some Y has a ?:X then ['$typed_have', '?:Y', '?:X'] is a ?:U. Why: assumed basic knowledge.",
+"  Y does not equal X. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) A platypus is a platypus  [sentence 2]",
+"  (2) If answer holds and some X is a platypus then X is a reptile  [sentence 5]",
+"  (3) Answer holds  [assumption]",
+"  (4) A platypus is a reptile  [from steps 1, 2, 3]",
+"  (5) If some X is a reptile then X is not a mammal  [background knowledge, confidence 95%]",
+"  (6) A platypus is not a mammal  [from steps 4, 5, confidence 95%]",
+"  (7) If some X is a platypus then X is a mammal  [sentence 3]",
+"  (8) A platypus is a mammal  [from steps 1, 7]",
+"  (9) Contradiction  [from steps 6, 8, confidence 95%]",
+"  (10) If some X has a ?:Y then X has ['$typed_have', '?:X', '?:Y']  [background knowledge]",
+"  (11) Some mammal mam1 has a tooth  [sentence 1, confidence 99%]",
+"  (12) Mam1 has ['$typed_have', 'sk0_mammal', 'tooth']  [from steps 10, 11, confidence 99%]",
+"  (13) If some Y has some U and U is a ?:V then Y has a ?:X  [background knowledge]",
+"  (14) If ['$typed_have', 'sk0_mammal', 'tooth'] is a ?:Z then mam1 has a ?:X  [from steps 12, 13, confidence 99%]",
+"  (15) If some Y has a ?:X then ['$typed_have', '?:Y', '?:X'] is a ?:U  [background knowledge]",
+"  (16) ['$Typed_have', 'sk0_mammal', 'tooth'] is a ?:X  [from steps 15, 11, confidence 99%]",
+"  (17) ['$Typed_have', 'sk0_mammal', 'tooth'] is a reptile  [from steps 16, 2, 3, confidence 99%]",
+"  (18) Mam1 has a ?:X  [from steps 14, 17, confidence 98%]",
+"  (19) ['$Typed_have', 'sk0_mammal', '?:Y'] is a ?:X  [from steps 18, 15, confidence 98%]",
+"  (20) If some X is a human then X has a tooth  [sentence 4]",
+"  (21) ['$Typed_have', 'sk0_mammal', 'tooth'] has a tooth  [from steps 16, 20, confidence 99%]",
+"  (22) X does not have a tooth  [sentence 2]",
+"  (23) ['$Typed_have', 'sk0_mammal', 'tooth'] is not a platypus  [from steps 21, 22, confidence 99%]",
+"  (24) Contradiction  [from steps 19, 23, confidence 97%]",
+"  (25) Contradiction  [from steps 9, 24, confidence 99%]",
+"  (26) A human is a human  [sentence 4]",
+"  (27) A human has a tooth  [from steps 20, 26]",
+"  (28) ['$Typed_have', '$some_human', 'tooth'] is a ?:X  [from steps 27, 15]",
+"  (29) ['$Typed_have', '$some_human', 'tooth'] is a reptile  [from steps 28, 2, 3]",
+"  (30) ['$Typed_have', '$some_human', 'tooth'] is not a mammal  [from steps 29, 5, confidence 95%]",
+"  (31) ['$Typed_have', '$some_human', 'tooth'] is a mammal  [from steps 28, 7]",
+"  (32) Contradiction  [from steps 30, 31, confidence 95%]",
+"  (33) Contradiction  [from steps 25, 32, confidence 100%]",
+"  (34) ['$Typed_have', ['$typed_have', 'sk0_mammal', 'tooth'], 'tooth'] is a ?:X  [from steps 21, 15, confidence 99%]",
+"  (35) ['$Typed_have', ['$typed_have', 'sk0_mammal', 'tooth'], 'tooth'] is a reptile  [from steps 34, 2, 3, confidence 99%]",
+"  (36) Y does not equal X  [background knowledge, confidence 95%]",
+"  (37) If some X is a reptile then X is not a mammal  [from steps 36, confidence 95%]",
+"  (38) ['$Typed_have', ['$typed_have', 'sk0_mammal', 'tooth'], 'tooth'] is not a mammal  [from steps 35, 37, confidence 94%]",
+"  (39) Contradiction  [from steps 38, 34, confidence 93%]",
+"  (40) Contradiction  [from steps 33, 39, confidence 100%]"
+],
+  "timestamp": "2026-06-20T14:07:23Z"
+}

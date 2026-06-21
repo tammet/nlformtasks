@@ -1,0 +1,171 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 525,
+  "input_text": "Bears eat all boxers. Mike is a boxer. Greg is a bear. Greg eats Mike?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears eat all boxers.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat all boxers.",
+          "type": "strict_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "boxers", "type": "generic", "category": "person"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "boxers"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a boxer.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 1 is a boxer.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Greg is a bear.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Greg 2 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "Greg 2", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Greg eats Mike?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does Greg 2 eat Mike 1?",
+          "type": "query",
+          "entities": [{"id": "Greg 2", "type": "concrete", "category": "animal"},
+            {"id": "Mike 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "Mike 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","bear","X"],
+            ["forall","Y",
+              ["implies",
+                ["isa","boxer","Y"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["has target","E","Y"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","boxer","Mike 1"]]],
+    ["@id", "S3", ["holds", "W0", ["isa","bear","Greg 2"]]],
+    ["@id","S4",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has actor","E","Greg 2"],
+            ["has target","E","Mike 1"],
+            ["typical","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","boxer","?:Y"],
+            ["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat all boxers."},
+{"@name": "sent_S2",
+ "@logic": ["isa","boxer","#:Mike 1"],
+ "@nl": "Mike 1 is a boxer."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:Greg 2"],
+ "@nl": "Greg 2 is a bear."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "#:Greg 2", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Does Greg 2 eat Mike 1?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "eat", "#:Greg 2", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Greg 2 eat Mike 1?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does Greg 2 eat Mike 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","boxer","$some_not_boxer"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","boxer","?:Y"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","boxer","#:Mike 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["is rel2", "eat", "?:X", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","bear","#:Greg 2"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 1], [["is rel2", "eat", "#:Greg 2", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S4","assumption",1], [["$defq0"], ["-is rel2", "eat", "#:Greg 2", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [7, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Bears eat all boxers.",
+"  (2) Mike is a boxer.",
+"  (3) Greg is a bear.",
+"  (4) Greg eats Mike?",
+"Proof steps (by contradiction):",
+"  (1) If some Y is a boxer and some X is a bear then X eats Y  [sentence 1]",
+"  (2) Mike is a boxer  [sentence 2]",
+"  (3) If some X is a bear then X eats Mike  [from steps 1, 2]",
+"  (4) Greg is a bear  [sentence 3]",
+"  (5) Greg eats Mike  [from steps 3, 4]",
+"  (6) If Greg eats Mike then answer holds  [sentence 4]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7]"
+],
+  "timestamp": "2026-06-18T15:26:40Z"
+}

@@ -1,0 +1,115 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1023,
+  "input_text": "Clinton defeated Dole. Dole was defeated by Mike?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Clinton defeated Dole.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Clinton 1 defeated Dole 1.",
+          "type": "situation",
+          "entities": [{"id": "Clinton 1", "type": "concrete", "category": "person"},
+            {"id": "Dole 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "defeat", "mode": "event", "roles": {"actor": "Clinton 1", "target": "Dole 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Dole was defeated by Mike?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Mike 1 defeat Dole 1?",
+          "type": "query",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"},
+            {"id": "Dole 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "defeat", "mode": "event", "roles": {"actor": "Mike 1", "target": "Dole 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Clinton 1"],
+            ["isa","person","Dole 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","defeat"],
+                ["has actor","E","Clinton 1"],
+                ["has target","E","Dole 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","defeat"],
+            ["has actor","E","Mike 1"],
+            ["has target","E","Dole 1"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Mike 1"],
+ "@nl": "Did Mike 1 defeat Dole 1?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Clinton 1"],
+ "@nl": "Clinton 1 defeated Dole 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Dole 1"],
+ "@nl": "Clinton 1 defeated Dole 1."},
+{"@name": "sent_S1",
+ "@logic": ["-is rel2", "victory", "#:Clinton 1", ["eventprop","$target","#:Dole 1"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Clinton 1 defeated Dole 1."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Clinton 1 defeated Dole 1."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-is rel2", "victory", "#:Mike 1", ["eventprop","$target","#:Dole 1"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Mike 1 defeat Dole 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["is rel2", "victory", "#:Mike 1", ["eventprop","$target","#:Dole 1"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mike 1 defeat Dole 1?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Mike 1 defeat Dole 1?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T10:44:53Z"
+}

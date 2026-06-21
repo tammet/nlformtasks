@@ -1,0 +1,188 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 702,
+  "input_text": "Bears ate berries in a forest. Bears did not eat berries in a field?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears ate berries in a forest.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears [set 1] ate berries in a forest 1.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "bear"},
+            {"id": "berries 2", "type": "concrete"},
+            {"id": "forest 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries 2", "location": "forest 1", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Bears did not eat berries in a field?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did bears not eat berries in a field?",
+          "type": "query",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic"},
+            {"id": "field", "type": "generic", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries", "location": "field", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","berry","berries 2"],
+            ["isa","forest","forest 1"],
+            ["forall","?:M",
+              ["implies",
+                ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","bear","?:X"]]]],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","?:M"],
+                    ["has target","E","berries 2"],
+                    ["has location","E","forest 1","in"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","bear","X"],
+            ["normally",
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["exists", "Z", ["and", ["isa","field","Z"], ["has location","E","Z","in"]]]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["json-fail retry: Expecting value: line 1 column 1 (char 0)"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "Bears [set 1] ate berries in a forest 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","forest","#:forest 1"],
+ "@nl": "Bears [set 1] ate berries in a forest 1."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["is rel2", "eat", "?:M", ["eventprop","$target","#:berries 2"], ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 1."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Bears [set 1] ate berries in a forest 1."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_bear", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","bear","skq_S2_bear"],
+ "@nl": "Did bears not eat berries in a field?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did bears not eat berries in a field?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears not eat berries in a field?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did bears not eat berries in a field?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T10:55:17Z"
+}

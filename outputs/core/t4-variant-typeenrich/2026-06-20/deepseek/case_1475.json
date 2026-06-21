@@ -1,0 +1,215 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1475,
+  "input_text": "If a bear eats red berries, it is big. John eats berries. John is a bear.\n     John is big?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear eats red berries, it is big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear eats red berries, the bear is big.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}],
+          "adjectives": [["red","none","none"], ["big","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John eats berries.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 eats berries.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a bear.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is big?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 big?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","bear","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists","Y",
+                        ["and",
+                          ["isa","berry","Y"],
+                          ["has degree property","red","Y","none","none"],
+                          ["has target","E","Y"]
+                        ]
+                      ],
+                      ["typical","E"]
+                    ]
+                  ]
+                ],
+                ["has degree property","big","X","none","bear"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","John 1"],
+          ["exists","Z",
+            ["and",
+              ["isa","berry","Z"],
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","eat"],
+                  ["has actor","E2","John 1"],
+                  ["has target","E2","Z"],
+                  ["typical","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","animal","John 1"], ["isa","bear","John 1"]]]],
+    ["@id", "S4", ["question", ["has degree property","big","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu1"],
+            ["-has actor","?:E","?:X","?:Cu1"],
+            ["-isa","berry","?:Y"],
+            ["-has property","red","?:Y","?:Cu1"],
+            ["-has target","?:E","?:Y","?:Cu1"],
+            ["has degree property","big","?:X","none","bear","?:Cu1"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear eats red berries, the bear is big."},
+{"@name": "sent_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","berry","sk0_berry"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S2",
+ "@logic": ["has type","sk1_activity","eat","?:Cu5"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S2",
+ "@logic": ["has actor","sk1_activity","#:John 1","?:Cu6"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S2",
+ "@logic": ["has target","sk1_activity","sk0_berry","?:Cu7"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","big","#:John 1","none","bear","?:Cu11"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","big","#:John 1","none","bear","?:Cu12"], ["$defq0"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red","?:Cu19"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","red","$some_not_red","?:Cu20"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_bear","none","bear","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_big_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_bear","none","bear","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv65","?:Cu24"],
+            ["has degree property","big","?:X","none","?:Fv66","?:Cu24"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T04:42:30Z"
+}

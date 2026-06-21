@@ -1,0 +1,178 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1203,
+  "input_text": "Before Mary wrote a letter, she found a pen. Mary found a pen?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Before Mary wrote a letter, she found a pen.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "pen 2", "type": "concrete", "category": "artifact"},
+            {"id": "letter 3", "type": "concrete", "category": "abstract"}
+          ],
+          "actions": [{"root": "find", "mode": "event", "roles": {"actor": "Mary 1", "target": "pen 2"}},
+            {"root": "write", "mode": "event", "roles": {"actor": "Mary 1", "target": "letter 3"}}
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary found a pen?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Mary 1 find a pen 2?",
+          "type": "query",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "pen 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "find", "mode": "event", "roles": {"actor": "Mary 1", "target": "pen 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","pen","pen 2"],
+            ["isa","letter","letter 3"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","find"],
+                ["has actor","E1","Mary 1"],
+                ["has target","E1","pen 2"],
+                ["has time","E1","past","in"]
+              ]
+            ],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","write"],
+                ["has actor","E2","Mary 1"],
+                ["has target","E2","letter 3"],
+                ["has time","E2","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","Mary 1"],
+          ["isa","pen","pen 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","find"],
+              ["has actor","E","Mary 1"],
+              ["has target","E","pen 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","write","#:pen 2"],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","letter","#:letter 3"],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "write", "#:Mary 1", ["eventprop","$target","#:letter 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 found a pen 2 before Mary 1 wrote a letter 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 1"]],
+ "@nl": "Did Mary 1 find a pen 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","write","#:pen 2"]],
+ "@nl": "Did Mary 1 find a pen 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Mary 1 find a pen 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 1"],
+            ["-isa","write","#:pen 2"],
+            ["-is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 1 find a pen 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 1 find a pen 2?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","person","#:Mary 1"], ["-isa","write","#:pen 2"], ["$defq0"], ["-is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","person","#:Mary 1"], ["-isa","write","#:pen 2"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","person","#:Mary 1"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","write","#:pen 2"]]],
+          [7, ["in","sent_S1","assumption",1], [["isa","write","#:pen 2"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Before Mary wrote a letter, she found a pen.",
+"  (2) Mary found a pen?",
+"Proof steps (by contradiction):",
+"  (1) If Mary is a person and the pen B is a write and Mary is find of pen B then answer holds  [sentence 2]",
+"  (2) Mary is find of pen B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If Mary is a person then the pen B is not a write  [from steps 1, 2, 3]",
+"  (5) Mary is a person  [sentence 1]",
+"  (6) The pen B is not a write  [from steps 4, 5]",
+"  (7) The pen B is a write  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-18T15:44:26Z"
+}

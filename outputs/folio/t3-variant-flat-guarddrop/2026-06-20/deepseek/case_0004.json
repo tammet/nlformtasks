@@ -1,0 +1,341 @@
+{
+  "test_name": "folio_v2_prenorm_flat_guarddrop",
+  "case_id": 4,
+  "input_text": "All employees who schedule a meeting with their customers will go to the company building today. Everyone who has lunch in the company building schedules meetings with their customers. Employees have lunch either in the company building or at home. If an employee has lunch at home, they are working remotely from home. All employees who are in other countries work remotely from home. No managers work remotely from home. James will appear in the company today if and only if he is a manager. James has lunch in the company?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All employees who schedule a meeting with their customers will go to the company building today.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All employees who schedule a meeting with their customers will go to the company building today.",
+          "type": "normal_rule",
+          "entities": [{"id": "employees", "type": "generic", "category": "person"},
+            {"id": "customers", "type": "generic", "scope": "dependent", "category": "person"},
+            {"id": "company building 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "go", "mode": "event", "roles": {"destination": "company building 1"}}],
+          "time": "today"
+        }
+      ]
+    },
+    {
+      "raw": "Everyone who has lunch in the company building schedules a meeting with their customers.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All employees who have lunch in the company building schedule a meeting with their customers.",
+          "type": "normal_rule",
+          "entities": [{"id": "employees", "type": "generic", "category": "person"},
+            {"id": "company building 1", "type": "concrete", "category": "place"},
+            {"id": "customers", "type": "generic", "scope": "dependent", "category": "person"},
+            {"id": "meeting", "type": "generic", "scope": "dependent", "category": "event"}
+          ],
+          "actions": [{
+              "root": "schedule",
+              "mode": "habitual",
+              "roles": {"target": "meeting", "accompaniment": "customers"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Employees have lunch either in the company building or at home.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Employees have lunch either in the company building or at home.",
+          "type": "normal_rule",
+          "entities": [{"id": "employees", "type": "generic", "category": "person"},
+            {"id": "company building 1", "type": "concrete", "category": "place"},
+            {"id": "home", "type": "generic", "category": "place"}
+          ],
+          "actions": [{"root": "have", "mode": "habitual"}]
+        }
+      ]
+    },
+    {
+      "raw": "If an employee has lunch at home, they work remotely from home.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If an employee has lunch at home, the employee works remotely from home.",
+          "type": "normal_rule",
+          "entities": [{"id": "employee", "type": "generic", "category": "person"},
+            {"id": "home", "type": "generic", "category": "place"}
+          ],
+          "actions": [{"root": "work", "mode": "habitual", "roles": {"location": "home"}}]
+        }
+      ]
+    },
+    {
+      "raw": "All employees who are in other countries work remotely from home.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "All employees who are in other countries work remotely from home.",
+          "type": "normal_rule",
+          "entities": [{"id": "employees", "type": "generic", "category": "person"},
+            {"id": "other countries", "type": "generic", "category": "place"},
+            {"id": "home", "type": "generic", "category": "place"}
+          ],
+          "actions": [{"root": "work", "mode": "habitual", "roles": {"location": "home"}}]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","employee","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","schedule"],
+                    ["has actor","E1","X"],
+                    ["exists", "Z", ["and", ["isa","meeting","Z"], ["has target","E1","Z"]]],
+                    ["exists","Y",
+                      ["and",
+                        ["isa","customer","Y"],
+                        ["is rel2","customer","Y","X"],
+                        ["has accompaniment","E1","Y"]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","go"],
+                  ["has actor","E2","X"],
+                  ["has destination","E2","company building 1","at"],
+                  ["has time","E2","today","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","employee","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","have lunch"],
+                    ["has actor","E1","X"],
+                    ["has location","E1","company building 1","in"]
+                  ]
+                ]
+              ],
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","schedule"],
+                  ["has actor","E2","X"],
+                  ["exists", "M", ["and", ["isa","meeting","M"], ["has target","E2","M"]]],
+                  ["exists","C",
+                    ["and",
+                      ["isa","customer","C"],
+                      ["is rel2","customer","C","X"],
+                      ["has accompaniment","E2","C"]
+                    ]
+                  ],
+                  ["typical","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","employee","X"],
+            ["xor",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","have"],
+                  ["has actor","E","X"],
+                  ["has target","E","lunch"],
+                  ["has location","E","company building 1","in"],
+                  ["typical","E"]
+                ]
+              ],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","have"],
+                  ["has actor","E","X"],
+                  ["has target","E","lunch"],
+                  ["has location","E","home","at"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","employee","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","have"],
+                    ["has actor","E1","X"],
+                    ["has target","E1","lunch"],
+                    ["has location","E1","home","at"]
+                  ]
+                ]
+              ],
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","work"],
+                  ["has actor","E2","X"],
+                  ["has location","E2","home","from"],
+                  ["typical","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","employee","X"],
+              ["exists", "Y", ["and", ["isa","other countries","Y"], ["is rel2","in","X","Y"]]]
+            ],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","work"],
+                  ["has actor","E","X"],
+                  ["has location","E","home","from"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: either_or_not_xor"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:company building 1"],
+ "@nl": "All employees who schedule a meeting with their customers will go to the company building today."},
+{"@name": "entity_S1",
+ "@logic": ["isa","company building","#:company building 1"],
+ "@nl": "All employees who schedule a meeting with their customers will go to the company building today."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "schedule", "?:X", ["eventprop","$target","meeting"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["is rel2", "go", "?:X", ["eventprop","$destination","#:company building 1"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","$generic",2], ["$not", ["is rel2", "go", "?:X", ["eventprop","$destination","#:company building 1"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@nl": "All employees who schedule a meeting with their customers will go to the company building today."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv5"], ["$datetime","today"]],
+ "@nl": "All employees who schedule a meeting with their customers will go to the company building today."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2", "have lunch", "?:X", ["eventprop","$location","#:company building 1"], ["$ctxt","?:Fv9","?:Fv8","?:Fv6","?:Fv7"]],
+            ["is rel2", "schedule", "?:X", ["eventprop","$target","meeting"], ["$ctxt","?:Fv9","?:Fv8","?:Fv6","?:Fv7"]],
+            ["$block", ["$","$generic",2], ["$not", ["is rel2", "schedule", "?:X", ["eventprop","$target","meeting"], ["$ctxt","?:Fv9","?:Fv8","?:Fv6","?:Fv7"]]]]
+           ],
+ "@nl": "All employees who have lunch in the company building schedule a meeting with their customers."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","employee","?:X"],
+            ["is rel2", "have", "?:X", ["eventprop","$target","lunch"], ["$ctxt","?:Fv13","?:Fv12","?:Fv10","?:Fv11"]],
+            ["is rel2", "have", "?:X", ["eventprop","$target","lunch"], ["$ctxt","?:Fv13","?:Fv12","?:Fv10","?:Fv11"]]
+           ],
+ "@nl": "Employees have lunch either in the company building or at home."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","employee","?:X"],
+            ["-is rel2", "have", "?:X", ["eventprop","$target","lunch"], ["$ctxt","?:Fv13","?:Fv12","?:Fv10","?:Fv11"]],
+            ["-is rel2", "have", "?:X", ["eventprop","$target","lunch"], ["$ctxt","?:Fv13","?:Fv12","?:Fv10","?:Fv11"]]
+           ],
+ "@nl": "Employees have lunch either in the company building or at home."},
+{"@name": "sent_S4",
+ "@logic": [["-is rel2", "have", "?:X", ["eventprop","$target","lunch"], ["$ctxt","?:Fv17","?:Fv16","?:Fv14","?:Fv15"]],
+            ["is rel2", "work", "?:X", ["eventprop","$location","home"], ["$ctxt","?:Fv17","?:Fv16","?:Fv14","?:Fv15"]],
+            ["$block", ["$","$generic",2], ["$not", ["is rel2", "work", "?:X", ["eventprop","$location","home"], ["$ctxt","?:Fv17","?:Fv16","?:Fv14","?:Fv15"]]]]
+           ],
+ "@nl": "If an employee has lunch at home, the employee works remotely from home."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","employee","?:X"],
+            ["-isa","other countries","?:Y"],
+            ["-is rel2", "in", "?:X", "?:Y", ["$ctxt","?:Fv21","?:Fv20","?:Fv18","?:Fv19"]],
+            ["is rel2", "work", "?:X", ["eventprop","$location","home"], ["$ctxt","?:Fv21","?:Fv20","?:Fv18","?:Fv19"]],
+            ["$block", ["$","other countries",2], ["$not", ["is rel2", "work", "?:X", ["eventprop","$location","home"], ["$ctxt","?:Fv21","?:Fv20","?:Fv18","?:Fv19"]]]]
+           ],
+ "@nl": "All employees who are in other countries work remotely from home."},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","employee","$some_employee"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","employee","$some_not_employee"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","other countries","$some_other_countries"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","other countries","$some_not_other_countries"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","other countries","?:X"], ["isa","countries","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","different","?:X"], ["-isa","countries","?:X"], ["isa","other countries","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv22"], ["has type","?:E","go","?:Fv22"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","today","?:X"], ["isa","present","?:X"]],
+ "@confidence": 0.78,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","present","?:X"], ["isa","today","?:X"]],
+ "@confidence": 0.78,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","receive","?:Fv25"], ["has type","?:E","have","?:Fv25"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-18T23:24:00Z"
+}

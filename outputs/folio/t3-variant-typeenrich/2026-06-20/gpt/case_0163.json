@@ -1,0 +1,204 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 163,
+  "input_text": "A hawk never swims. Some birds are hawks. All birds swim?",
+  "expected_answer": "False.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A hawk never swims.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Hawks do not swim.",
+          "type": "normal_rule",
+          "entities": [{"id": "hawks", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "swim", "mode": "habitual"}],
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "raw": "Some birds are hawks.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some birds are hawks.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"},
+            {"id": "hawks", "type": "generic", "category": "animal"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Do all birds swim?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Do all birds swim?",
+          "type": "query",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "swim", "mode": "habitual"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","hawk","X"],
+              ["normally",
+                ["not",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","swim"],
+                      ["has actor","E","X"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.2]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds", "W0", ["exists", "X", ["and", ["isa","bird","X"], ["isa","hawk","X"]]]],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","bird","X"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","swim"],
+                  ["has actor","E","X"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","hawk","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Hawks do not swim."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","hawk","?:X"], ["has type", ["sk0","?:X"], "swim", "?:Cu2"]],
+ "@nl": "Hawks do not swim."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","hawk","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu3"]],
+ "@nl": "Hawks do not swim."},
+{"@name": "sent_S1",
+ "@logic": ["-isa","hawk","?:X"],
+ "@confidence": 0.6,
+ "@nl": "Hawks do not swim."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bird","sk1_bird"],
+ "@confidence": 0.9899,
+ "@nl": "Some birds are hawks."},
+{"@name": "sent_S2",
+ "@logic": ["isa","hawk","sk1_bird"],
+ "@confidence": 0.9899,
+ "@nl": "Some birds are hawks."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","bird","skq_S3_bird"],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk2_activity"]],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk2_activity","swim","?:Cu9"]],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk2_activity","skq_S3_bird","?:Cu10"]],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","swim","?:Cu12"],
+            ["-has actor","?:E","skq_S3_bird","?:Cu12"],
+            ["$defq0"]
+           ],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Do all birds swim?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","hawk","$some_hawk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","hawk","$some_not_hawk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","swim","?:Fv11"], ["has type","?:E","go","?:Fv11"]],
+ "@confidence": 0.51,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S3","assumption",1], [["-$defq0"]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["simp",1,2,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Do all birds swim?",
+"Proof steps (by contradiction):",
+"  (1) assume for contradiction: the answer is no  [sentence 1]",
+"  (2) Answer holds  [assumption]",
+"  (3) Contradiction  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-18T21:59:24Z"
+}

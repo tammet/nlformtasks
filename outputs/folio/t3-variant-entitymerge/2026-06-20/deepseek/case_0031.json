@@ -1,0 +1,253 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 31,
+  "input_text": "Everyone at the mixer is a Grand Slam champion or an Oscar-nominated actor. Every Grand Slam champion at the mixer is a professional tennis player. All Oscar-nominated actors at the mixer are celebrities. All professional tennis players at the mixer are athletes. If a person at the mixer is a celebrity, then they are well paid. If a person at the mixer is an athlete, then they are famous. All well-paid people at the mixer live in tax havens. Djokovic is at the mixer: if Djokovic is a famous athlete, then Djokovic is well-paid. Djokovic is a Grand Slam champion?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Everyone at the mixer is a Grand Slam champion or an Oscar-nominated actor.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All persons at mixer 1 are Grand Slam champions or Oscar-nominated actors.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "Grand Slam champion", "type": "generic", "category": "person"},
+            {"id": "Oscar-nominated actor", "type": "generic", "category": "person"},
+            {"id": "mixer 1", "type": "concrete", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Every Grand Slam champion at the mixer is a professional tennis player.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All Grand Slam champions at mixer 1 are professional tennis players.",
+          "type": "strict_rule",
+          "entities": [{"id": "Grand Slam champion", "type": "generic", "category": "person"},
+            {"id": "professional tennis player", "type": "generic", "category": "person"},
+            {"id": "mixer 1", "type": "concrete", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All Oscar-nominated actors at the mixer are celebrities.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All Oscar-nominated actors at mixer 1 are celebrities.",
+          "type": "strict_rule",
+          "entities": [{"id": "Oscar-nominated actor", "type": "generic", "category": "person"},
+            {"id": "celebrity", "type": "generic", "category": "person"},
+            {"id": "mixer 1", "type": "concrete", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All professional tennis players at the mixer are athletes.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All professional tennis players at mixer 1 are athletes.",
+          "type": "strict_rule",
+          "entities": [{"id": "professional tennis player", "type": "generic", "category": "person"},
+            {"id": "athlete", "type": "generic", "category": "person"},
+            {"id": "mixer 1", "type": "concrete", "category": "event"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","person","X"], ["is rel2","at","X","mixer 1"]],
+            ["or", ["isa","Grand Slam champion","X"], ["isa","Oscar-nominated actor","X"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","Grand Slam champion","X"], ["is rel2","at","X","mixer 1"]],
+            ["isa","professional tennis player","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","Oscar-nominated actor","X"], ["is rel2","at","X","mixer 1"]],
+            ["isa","celebrity","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","professional tennis player","X"], ["is rel2","at","X","mixer 1"]],
+            ["isa","athlete","X"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","event","#:mixer 1"],
+ "@nl": "All persons at mixer 1 are Grand Slam champions or Oscar-nominated actors."},
+{"@name": "entity_S1",
+ "@logic": ["isa","mixer","#:mixer 1"],
+ "@nl": "All persons at mixer 1 are Grand Slam champions or Oscar-nominated actors."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-is rel2", "at", "?:X", "#:mixer 1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa","grand slam champion","?:X"],
+            ["isa","oscar-nominated actor","?:X"]
+           ],
+ "@nl": "All persons at mixer 1 are Grand Slam champions or Oscar-nominated actors."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","grand slam champion","?:X"],
+            ["-is rel2", "at", "?:X", "#:mixer 1", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["isa","professional tennis player","?:X"]
+           ],
+ "@nl": "All Grand Slam champions at mixer 1 are professional tennis players."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","oscar-nominated actor","?:X"],
+            ["-is rel2", "at", "?:X", "#:mixer 1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","celebrity","?:X"]
+           ],
+ "@nl": "All Oscar-nominated actors at mixer 1 are celebrities."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","professional tennis player","?:X"],
+            ["-is rel2", "at", "?:X", "#:mixer 1", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["isa","athlete","?:X"]
+           ],
+ "@nl": "All professional tennis players at mixer 1 are athletes."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Grand Slam champion","$some_Grand_Slam_champion"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","Grand Slam champion","$some_not_Grand_Slam_champion"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Oscar-nominated actor","$some_Oscar-nominated_actor"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","Oscar-nominated actor","$some_not_Oscar-nominated_actor"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","professional tennis player","$some_professional_tennis_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","professional tennis player","$some_not_professional_tennis_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","celebrity","$some_celebrity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","celebrity","$some_not_celebrity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","athlete","$some_athlete"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","athlete","$some_not_athlete"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person_at_mixer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "at", "$some_person_at_mixer", "#:mixer 1", ["$ctxt","?:Fv72","?:Fv69","?:Fv70","?:Fv71"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Grand Slam champion","$some_Grand_Slam_champion_at_mixer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "at", "$some_Grand_Slam_champion_at_mixer", "#:mixer 1", ["$ctxt","?:Fv80","?:Fv77","?:Fv78","?:Fv79"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Oscar-nominated actor","$some_Oscar-nominated_actor_at_mixer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "at", "$some_Oscar-nominated_actor_at_mixer", "#:mixer 1", ["$ctxt","?:Fv88","?:Fv85","?:Fv86","?:Fv87"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","professional tennis player","$some_professional_tennis_player_at_mixer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "at", "$some_professional_tennis_player_at_mixer", "#:mixer 1", ["$ctxt","?:Fv96","?:Fv93","?:Fv94","?:Fv95"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Grand Slam champion","?:X"], ["isa","champion","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Grand Slam","?:X"],
+            ["-isa","champion","?:X"],
+            ["isa","Grand Slam champion","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Oscar-nominated actor","?:X"], ["isa","actor","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Oscar-nominated","?:X"],
+            ["-isa","actor","?:X"],
+            ["isa","Oscar-nominated actor","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","professional tennis player","?:X"], ["isa","player","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","professional tennis","?:X"],
+            ["-isa","player","?:X"],
+            ["isa","professional tennis player","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-18T21:39:15Z"
+}

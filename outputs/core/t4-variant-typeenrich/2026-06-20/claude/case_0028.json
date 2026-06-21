@@ -1,0 +1,195 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 28,
+  "input_text": "Yellow and green elephants are nice. John is an elephant. John is yellow and green. John is nice?",
+  "expected_answer": "Probably true.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Yellow and green elephants are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants that are yellow and green are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["yellow","none","elephant"], ["green","none","elephant"], ["nice","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is yellow and green.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is yellow.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["yellow","none","elephant"]]
+        },
+        {
+          "unit_id": "S4",
+          "text": "John 1 is green.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["green","none","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "John is nice?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is John 1 nice?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","elephant","X"],
+                ["has degree property","yellow","X","none","elephant"],
+                ["has degree property","green","X","none","elephant"]
+              ],
+              ["normally", ["has degree property","nice","X","none","entity"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id", "S3", ["holds", "W0", ["has degree property","yellow","John 1","none","elephant"]]],
+    ["@id", "S4", ["holds", "W0", ["has degree property","green","John 1","none","elephant"]]],
+    ["@id", "S5", ["question", ["has degree property","nice","John 1","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has property","yellow","?:X","?:Cu2"],
+            ["-has property","green","?:X","?:Cu2"],
+            ["has degree property","good","?:X","none","?:Fv53","?:Cu2"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Elephants that are yellow and green are nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S3",
+ "@logic": ["has property","yellow","#:John 1","?:Cu4"],
+ "@nl": "John 1 is yellow."},
+{"@name": "sent_S4",
+ "@logic": ["has property","green","#:John 1","?:Cu5"],
+ "@nl": "John 1 is green."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","#:John 1","none","?:Fv55","?:Cu6"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","#:John 1","none","?:Fv56","?:Cu7"], ["$defq0"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","good","#:John 1","none","?:Fv57","?:Cu8"],
+            ["has degree property","good","#:John 1","none","?:Fv58","?:Cu8"]
+           ],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","yellow","$some_not_yellow_elephant","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","green","$some_not_green_elephant","?:Cu11"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_entity","none","?:Fv60","?:Cu12"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_entity","none","?:Fv61","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","green","?:X","?:Fv15"], ["-has property","yellow","?:X","?:Fv15"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","green","?:X","?:Fv16"], ["-has property","yellow","?:X","?:Fv16"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-has property","yellow","?:X","?:Z"], ["-has property","green","?:X","?:Z"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["has property","yellow","#:John 1","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-isa","elephant","#:John 1"], ["has degree property","good","#:John 1","none","?:X3","?:Y3"], ["-has property","green","#:John 1","?:Y3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["has degree property","good","#:John 1","none","?:X","?:Y"], ["-has property","green","#:John 1","?:Y"]]],
+          [6, ["in","sent_S4","assumption",1], [["has property","green","#:John 1","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.9], [["has degree property","good","#:John 1","none","?:X","?:Y"]]],
+          [8, ["in","sent_S5","assumption",1], [["$defq0"], ["-has degree property","good","#:John 1","none","?:X","?:Y"]]],
+          [9, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [10, ["mp", 7, [8,1], 9, "fromga", 0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Yellow and green elephants are nice.",
+"  (2) John is an elephant.",
+"  (3) John is yellow and green.",
+"  (4) John is nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X is yellow and X is green and X is an elephant then X is good  [sentence 1, confidence 90%]",
+"  (2) John is yellow  [sentence 3]",
+"  (3) If John is an elephant and John is green then John is good  [from steps 1, 2, confidence 90%]",
+"  (4) John is an elephant  [sentence 2]",
+"  (5) If John is green then John is good  [from steps 3, 4, confidence 90%]",
+"  (6) John is green  [sentence 3]",
+"  (7) John is good  [from steps 5, 6, confidence 90%]",
+"  (8) If John is good then answer holds  [sentence 4]",
+"  (9) assume for contradiction: the answer is no  [from question]",
+"  (10) Contradiction  [from steps 7, 8, 9, confidence 90%]"
+],
+  "timestamp": "2026-06-19T02:38:27Z"
+}

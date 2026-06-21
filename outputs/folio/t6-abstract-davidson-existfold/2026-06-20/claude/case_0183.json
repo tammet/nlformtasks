@@ -1,0 +1,391 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_existfold_fix",
+  "case_id": 183,
+  "input_text": "No one nice to animals is also mean to animals. Some grumpy people are mean to animals. All animal lovers are nice to animals. All pet owners love animals. Tom is a pet owner. Tom is not both a grumpy person and mean to animals?",
+  "expected_answer": "True.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "No one nice to animals is also mean to animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No person who is nice to animals is mean to animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice to animals","none","person"], ["mean to animals","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Some grumpy people are mean to animals.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some grumpy people are mean to animals.",
+          "type": "normal_rule",
+          "entities": [{"id": "people", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["grumpy","none","person"], ["mean to animals","none","person"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All animal lovers are nice to animals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All animal lovers are nice to animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "animal lovers", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice to animals","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "All pet owners are animal lovers.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All pet owners are animal lovers.",
+          "type": "strict_rule",
+          "entities": [{"id": "pet owners", "type": "generic", "category": "person"},
+            {"id": "animal lovers", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom is a pet owner.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Tom 1 is a pet owner.",
+          "type": "situation",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Tom is not both a grumpy person and mean to animals?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is Tom 1 not both a grumpy person and mean to animals?",
+          "type": "query",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["grumpy","none","person"], ["mean to animals","none","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["forall","Y",
+                ["implies",
+                  ["isa","animal","Y"],
+                  ["has degree rel2","nice","X","Y","none","person"]
+                ]
+              ]
+            ],
+            ["forall","Y",
+              ["implies",
+                ["isa","animal","Y"],
+                ["not", ["has degree rel2","mean","X","Y","none","person"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["exists","X",
+              ["and",
+                ["isa","people","X"],
+                ["has degree property","grumpy","X","none","person"],
+                ["exists","Y",
+                  ["and", ["isa","animal","Y"], ["has degree rel2","mean","X","Y","none","person"]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","animal lover","X"],
+            ["forall","Y",
+              ["implies", ["isa","animal","Y"], ["has degree rel2","nice","X","Y","none","person"]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","pet owner","X"], ["isa","animal lover","X"]]]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","pet owner","Tom 1"]]],
+    ["@id","S6",
+      ["question",
+        ["not",
+          ["and",
+            ["has degree property","grumpy","Tom 1","none","person"],
+            ["exists","Y",
+              ["and", ["isa","animal","Y"], ["has degree rel2","mean","Tom 1","Y","none","person"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: dropped_specific_noun, multiword_property, multiword_property"],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "Tom 1 is a pet owner."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["isa", "animal", ["sk0","?:X"]],
+            ["-isa","animal","?:Y"],
+            ["-is rel2","mean","?:X","?:Y","?:Cu2"]
+           ],
+ "@nl": "No person who is nice to animals is mean to animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-is rel2", "good", "?:X", ["sk0","?:X"], "?:Cu3"],
+            ["-isa","animal","?:Y"],
+            ["-is rel2","mean","?:X","?:Y","?:Cu3"]
+           ],
+ "@nl": "No person who is nice to animals is mean to animals."},
+{"@name": "sent_S2",
+ "@logic": ["isa","people","sk1_people"],
+ "@nl": "Some grumpy people are mean to animals."},
+{"@name": "sent_S2",
+ "@logic": ["has property","grumpy","sk1_people","?:Cu5"],
+ "@nl": "Some grumpy people are mean to animals."},
+{"@name": "sent_S2",
+ "@logic": ["isa","animal","sk2_animal"],
+ "@nl": "Some grumpy people are mean to animals."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2","mean","sk1_people","sk2_animal","?:Cu7"],
+ "@confidence": 0.98,
+ "@nl": "Some grumpy people are mean to animals."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","animal lover","?:X"],
+            ["-isa","animal","?:Y"],
+            ["is rel2","good","?:X","?:Y","?:Cu8"]
+           ],
+ "@nl": "All animal lovers are nice to animals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","pet owner","?:X"], ["isa","animal lover","?:X"]],
+ "@nl": "All pet owners are animal lovers."},
+{"@name": "sent_S5",
+ "@logic": ["isa","pet owner","#:Tom 1"],
+ "@nl": "Tom 1 is a pet owner."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has property","grumpy","#:Tom 1","?:Cu11"],
+            ["-isa","animal","?:Y"],
+            ["-is rel2","mean","#:Tom 1","?:Y","?:Cu11"]
+           ],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has property","grumpy","#:Tom 1","?:Cu12"], ["$defq0"]],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","animal","sk2_animal"], ["$defq0"]],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["is rel2","mean","#:Tom 1","sk2_animal","?:Cu14"], ["$defq0"]],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","animal","sk2_animal"], ["$defq0"]],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is Tom 1 not both a grumpy person and mean to animals?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","people","$some_people"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","people","$some_not_people"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal lover","$some_animal_lover"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal lover","$some_not_animal_lover"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","pet owner","$some_not_pet_owner"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property","grumpy","$some_grumpy","?:Cu27"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","grumpy","$some_not_grumpy","?:Cu28"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","animal lover","?:X"], ["isa","lover","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","animal","?:X"], ["-isa","lover","?:X"], ["isa","animal lover","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","pet owner","?:X"], ["isa","owner","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","pet","?:X"], ["-isa","owner","?:X"], ["isa","pet owner","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","people","?:X"], ["isa","following","?:X"]],
+ "@confidence": 0.61,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","following","?:X"], ["isa","people","?:X"]],
+ "@confidence": 0.61,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-is rel2","mean","?:X","?:Y","?:Z"], ["isa", "animal", ["sk0","?:X"]], ["-isa","person","?:X"], ["-isa","animal","?:Y"]]],
+          [2, ["in","entity_S5","assumption",1], [["isa","person","#:Tom 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["isa", "animal", ["sk0","#:Tom 1"]], ["-is rel2","mean","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [4, ["in","sent_S6","assumption",1], [["$defq0"], ["is rel2","mean","#:Tom 1","sk2_animal","?:X"]]],
+          [5, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,1], 5, "fromga", 1], [["-isa","animal","sk2_animal"], ["isa", "animal", ["sk0","#:Tom 1"]]]],
+          [7, ["in","sent_S2","assumption",1], [["isa","animal","sk2_animal"]]],
+          [8, ["simp",6,7,"fromga",1], [["isa", "animal", ["sk0","#:Tom 1"]]]],
+          [9, ["in","sent_S4","assumption",1], [["-isa","pet owner","?:X"], ["isa","animal lover","?:X"]]],
+          [10, ["in","sent_S5","assumption",1], [["isa","pet owner","#:Tom 1"]]],
+          [11, ["mp",9,10,"fromassumption",1], [["isa","animal lover","#:Tom 1"]]],
+          [12, ["in","sent_S3","assumption",1], [["is rel2","good","?:X","?:Y","?:Z"], ["-isa","animal lover","?:X"], ["-isa","animal","?:Y"]]],
+          [13, ["mp", 11, [12,1], "fromassumption", 1], [["is rel2","good","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [14, ["mp", 8, [13,1], "fromga", 1], [["is rel2", "good", "#:Tom 1", ["sk0","#:Tom 1"], "?:X"]]],
+          [15, ["in","sent_S1","assumption",1], [["-is rel2", "good", "?:X", ["sk0","?:X"], "?:Y"], ["-is rel2","mean","?:X","?:Z","?:Y"], ["-isa","person","?:X"], ["-isa","animal","?:Z"]]],
+          [16, ["mp",14,15,"fromga",1], [["-isa","person","#:Tom 1"], ["-is rel2","mean","#:Tom 1","?:X3","?:Y3"], ["-isa","animal","?:X3"]]],
+          [17, ["simp",16,2,"fromga",1], [["-is rel2","mean","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [18, ["mp", 17, [4,1], 5, "fromga", 1], [["-isa","animal","sk2_animal"]]],
+          [19, ["simp",18,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) No one nice to animals is also mean to animals.",
+"  (2) Some grumpy people are mean to animals.",
+"  (3) All animal lovers are nice to animals.",
+"  (4) All pet owners are animal lovers.",
+"  (5) Tom is a pet owner.",
+"  (6) Tom is not both a grumpy person and mean to animals?",
+"Knowledge used:",
+"  Tom is a person. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is mean of some Y and X is a person and Y is an animal then the animal sk0 of X is an animal  [sentence 1]",
+"  (2) Tom is a person  [background knowledge]",
+"  (3) If Tom is mean of some X and X is an animal then the animal sk0 of Tom 1 is an animal  [from steps 1, 2]",
+"  (4) Answer holds or Tom is mean of some animal ani1  [sentence 6]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If ani1 is an animal then the animal sk0 of Tom 1 is an animal  [from steps 3, 4, 5]",
+"  (7) Ani1 is an animal  [sentence 2]",
+"  (8) The animal sk0 of Tom 1 is an animal  [from steps 6, 7]",
+"  (9) If some X is a pet owner then X is an animal lover  [sentence 4]",
+"  (10) Tom is a pet owner  [sentence 5]",
+"  (11) Tom is an animal lover  [from steps 9, 10]",
+"  (12) If some X is an animal lover and some Y is an animal then X is good of Y  [sentence 3]",
+"  (13) If some X is an animal then Tom is good of X  [from steps 11, 12]",
+"  (14) Tom is good of the animal sk0 of Tom 1  [from steps 8, 13]",
+"  (15) If some person X is good of the animal sk0 of X then X is not mean of Z  [sentence 1]",
+"  (16) If Tom is a person then Tom is not mean of X3  [from steps 14, 15]",
+"  (17) Tom is not mean of X  [from steps 16, 2]",
+"  (18) Ani1 is not an animal  [from steps 17, 4, 5]",
+"  (19) Contradiction  [from steps 18, 7]"
+],
+  "timestamp": "2026-06-20T13:42:48Z"
+}

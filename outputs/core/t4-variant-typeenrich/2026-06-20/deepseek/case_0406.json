@@ -1,0 +1,154 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 406,
+  "input_text": "An animal had two legs. The animal had a leg?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "An animal had two legs.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An animal 1 had two legs.",
+          "type": "situation",
+          "entities": [{"id": "animal 1", "type": "concrete", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The animal had a leg?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did the animal 1 have a leg?",
+          "type": "query",
+          "entities": [{"id": "animal 1", "type": "concrete", "category": "animal"},
+            {"id": "leg", "type": "generic", "scope": "dependent"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","animal","animal 1"],
+            ["=", 2, ["$count", ["$setof", "?:X", ["and", ["isa","leg","?:X"], ["has part","animal 1","?:X"]]]]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["@time", "past", ["exists", "Y", ["and", ["isa","leg","Y"], ["has part","animal 1","Y"]]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","animal","#:animal 1"],
+ "@nl": "An animal 1 had two legs."},
+{"@name": "sent_S1",
+ "@logic": ["=", 2, ["$count", ["$setof", "has part", "#:animal 1", ["$and", ["$isa","leg","$arg1"]]]]],
+ "@nl": "An animal 1 had two legs."},
+{"@name": "sent_S1_el1",
+ "@logic": ["isa","leg","$set1_el1"],
+ "@nl": "[generated: sent_S1_el1]"},
+{"@name": "sent_S1_el1",
+ "@logic": ["has part","#:animal 1","$set1_el1","?:Cu4"],
+ "@nl": "[generated: sent_S1_el1]"},
+{"@name": "sent_S1_el1",
+ "@logic": ["member", "$set1_el1", ["$setof", "has part", "#:animal 1", ["$and", ["$isa","leg","$arg1"]]]],
+ "@nl": "[generated: sent_S1_el1]"},
+{"@name": "sent_S1_el2",
+ "@logic": ["isa","leg","$set1_el2"],
+ "@nl": "[generated: sent_S1_el2]"},
+{"@name": "sent_S1_el2",
+ "@logic": ["has part","#:animal 1","$set1_el2","?:Cu7"],
+ "@nl": "[generated: sent_S1_el2]"},
+{"@name": "sent_S1_el2",
+ "@logic": ["member", "$set1_el2", ["$setof", "has part", "#:animal 1", ["$and", ["$isa","leg","$arg1"]]]],
+ "@nl": "[generated: sent_S1_el2]"},
+{"@name": "sent_S1_dist",
+ "@logic": ["-=","$set1_el1","$set1_el2"],
+ "@nl": "[generated: sent_S1_dist]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","leg","sk0_leg"]],
+ "@nl": "Did the animal 1 have a leg?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:animal 1","sk0_leg","?:Cu11"]],
+ "@nl": "Did the animal 1 have a leg?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","leg","?:Y"], ["-has part","#:animal 1","?:Y","?:Cu12"], ["$defq0"]],
+ "@nl": "Did the animal 1 have a leg?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","?:c","?:Y"], ["-have","?:X","?:Y","?:Ctxt"], ["has part","?:X","?:Y","?:Ctxt"]],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","leg","?:Y"], ["-have","?:X","?:Y","?:Ctxt"], ["has part","?:X","?:Y","?:Ctxt"]],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did the animal 1 have a leg?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:c","?:M"],
+            ["-has part","?:S","?:M"],
+            ["member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"]]]],
+            ["isa","?:c","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"]]]],
+            ["has part","?:S","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["$defq0"], ["-has part","#:animal 1","?:X","?:Y"], ["-isa","leg","?:X"]]],
+          [2, ["in","sent_S1_el2","assumption",1], [["has part","#:animal 1","$set1_el2","?:X"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-isa","leg","$set1_el2"]]],
+          [5, ["in","sent_S1_el2","assumption",1], [["isa","leg","$set1_el2"]]],
+          [6, ["simp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) sent_S1_el2",
+"  (2) The animal had a leg?",
+"Proof steps (by contradiction):",
+"  (1) If the animal A has some X as a part and X is a leg then answer holds  [sentence 2]",
+"  (2) The animal A has $set1_el2 as a part  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) $Set1_el2 is not a leg  [from steps 1, 2, 3]",
+"  (5) $Set1_el2 is a leg  [sentence 1]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-19T04:37:34Z"
+}

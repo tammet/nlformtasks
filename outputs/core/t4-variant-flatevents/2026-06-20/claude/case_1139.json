@@ -1,0 +1,150 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1139,
+  "input_text": "The teacher showed the students the map. Who saw the map?",
+  "expected_answer": ["The students.","The teacher and the students."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "The teacher showed the students the map.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The teacher 1 showed the students 2 the map 3.",
+          "type": "situation",
+          "entities": [{"id": "teacher 1", "type": "concrete", "category": "person"},
+            {"id": "students 2", "type": "concrete", "category": "person"},
+            {"id": "map 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "show",
+              "mode": "event",
+              "roles": {"actor": "teacher 1", "recipient": "students 2", "target": "map 3"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who saw the map?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity saw the map 3?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "map 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "map 3"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","teacher 1"],
+            ["isa","person","students 2"],
+            ["isa","map","map 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","show"],
+                ["has actor","E","teacher 1"],
+                ["has recipient","E","students 2"],
+                ["has target","E","map 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","see"],
+            ["has actor","E","X"],
+            ["has target","E","map 3"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","teacher","#:teacher 1"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","student","#:students 2"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","student","#:students 2"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:teacher 1"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:students 2"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","map","#:map 3"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:teacher 1", ["eventprop","$recipient","#:students 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The teacher 1 showed the students 2 the map 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "show", "?:X", ["eventprop","$target","#:map 3"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity saw the map 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "show", "?:X", ["eventprop","$target","#:map 3"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity saw the map 3?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity saw the map 3?"},
+{"@name": "pop_what",
+ "@logic": ["isa","student","$some_student"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","student","$some_students"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","teacher","$some_teacher"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","map","$some_map"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-18T15:29:25Z"
+}

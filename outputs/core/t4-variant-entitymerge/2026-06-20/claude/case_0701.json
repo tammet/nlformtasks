@@ -1,0 +1,309 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 701,
+  "input_text": "Bears ate berries in a forest. Bears did not eat berries in a forest?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears ate berries in a forest.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears [set 1] ate berries 2 in a forest 3.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "bear"},
+            {"id": "berries 2", "type": "concrete"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries 2", "location": "forest 3", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Bears did not eat berries in a forest?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did bears not eat berries in a forest?",
+          "type": "query",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic"},
+            {"id": "forest", "type": "generic", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","berry","berries 2"],
+            ["isa","forest","forest 3"],
+            ["forall","?:M",
+              ["implies",
+                ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","bear","?:X"]]]],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","?:M"],
+                    ["has target","E","berries 2"],
+                    ["has location","E","forest 3","in"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","bear","X"],
+            ["normally",
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["exists", "Z", ["and", ["isa","forest","Z"], ["has location","E","Z","in"]]]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["isa", "activity", ["sk0","?:M"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has type", ["sk0","?:M"], "eat", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has actor", ["sk0","?:M"], "?:M", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has target", ["sk0","?:M"], "#:berries 2", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has location", ["sk0","?:M"], "#:forest 3", "in", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has time", ["sk0","?:M"], "past", "in", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["actuality", ["sk0","?:M"]]
+           ],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Bears [set 1] ate berries 2 in a forest 3."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_bear", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","bear","skq_S2_bear"],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E", "skq_S2_bear", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","berry","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","forest","?:Z"],
+            ["-has location", "?:E", "?:Z", "in", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","activity","sk1_activity"], ["$defq0"]],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["has type", "sk1_activity", "eat", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["has actor", "sk1_activity", "skq_S2_bear", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","berry","sk2_berry"], ["$defq0"]],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["has target", "sk1_activity", "sk2_berry", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","forest","sk3_forest"], ["$defq0"]],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["has location", "sk1_activity", "sk3_forest", "in", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["actuality","sk1_activity"], ["$defq0"]],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did bears not eat berries in a forest?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","forest","$some_not_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","frm_set","assumption",1], [["member", "?:X", ["$setof", "id", "?:Y", ["$and", ["isa","?:Z","$arg1"]]]], ["-isa","?:Z","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","bear","skq_S2_bear"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["member", "skq_S2_bear", ["$setof", "id", "?:X", ["$and", ["isa","bear","$arg1"]]]]]],
+          [4, ["in","sent_S1","assumption",1], [["has location", ["sk0","?:X"], "#:forest 3", "in", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]]]],
+          [5, ["mp", 3, [4,1], "fromassumption", 1], [["has location", ["sk0","skq_S2_bear"], "#:forest 3", "in", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S2","assumption",1], [["-$defq0"], ["-has location", "?:X", "?:Y", "in", ["$ctxt","past","?:Z","?:U","?:V"]], ["-has type", "?:X", "eat", ["$ctxt","past","?:Z","?:U","?:V"]], ["-has actor", "?:X", "skq_S2_bear", ["$ctxt","past","?:Z","?:U","?:V"]], ["-has target", "?:X", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["-isa","forest","?:Y"], ["-isa","berry","?:W"], ["-isa","activity","?:X"], ["-actuality","?:X"]]],
+          [7, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], [["-isa", "activity", ["sk0","skq_S2_bear"]], ["-actuality", ["sk0","skq_S2_bear"]], ["-isa","forest","#:forest 3"], ["-has type", ["sk0","skq_S2_bear"], "eat", ["$ctxt","past","?:X3","?:Y3","?:Z3"]], ["-has actor", ["sk0","skq_S2_bear"], "skq_S2_bear", ["$ctxt","past","?:X3","?:Y3","?:Z3"]], ["-has target", ["sk0","skq_S2_bear"], "?:U3", ["$ctxt","past","?:X3","?:Y3","?:Z3"]], ["-isa","berry","?:U3"]]],
+          [9, ["in","sent_S1","assumption",1], [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]], ["has type", ["sk0","?:X"], "eat", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [10, ["mp",3,9,"fromassumption",1], [["has type", ["sk0","skq_S2_bear"], "eat", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [11, ["in","sent_S1","assumption",1], [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]], ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [12, ["mp",3,11,"fromassumption",1], [["has actor", ["sk0","skq_S2_bear"], "skq_S2_bear", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [13, ["in","sent_S1","assumption",1], [["isa","forest","#:forest 3"]]],
+          [14, ["in","sent_S1","assumption",1], [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]], ["isa", "activity", ["sk0","?:X"]]]],
+          [15, ["mp",3,14,"fromassumption",1], [["isa", "activity", ["sk0","skq_S2_bear"]]]],
+          [16, ["in","sent_S1","assumption",1], [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]], ["actuality", ["sk0","?:X"]]]],
+          [17, ["mp",3,16,"fromassumption",1], [["actuality", ["sk0","skq_S2_bear"]]]],
+          [18, ["simp",8,10,12,13,15,17,"fromga",1], [["-has target", ["sk0","skq_S2_bear"], "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","berry","?:X"]]],
+          [19, ["in","sent_S1","assumption",1], [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]], ["has target", ["sk0","?:X"], "#:berries 2", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [20, ["mp",3,19,"fromassumption",1], [["has target", ["sk0","skq_S2_bear"], "#:berries 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [21, ["mp",18,20,"fromga",1], [["-isa","berry","#:berries 2"]]],
+          [22, ["in","sent_S1","assumption",1], [["isa","berry","#:berries 2"]]],
+          [23, ["simp",21,22,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Bears ate berries in a forest.",
+"  (2) Bears did not eat berries in a forest?",
+"Knowledge used:",
+"  If some X is a ?:Z then X is among ?:Zs in ?:Y. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is a ?:Z then X is among ?:Zs in ?:Y  [background knowledge]",
+"  (2) Skq_S2_bear is a bear  [sentence 2]",
+"  (3) Skq_S2_bear is among bears in ?:X  [from steps 1, 2]",
+"  (4) If some X is among bears in set 1 then the eating event sk0 of X takes place in the forest C  [sentence 1]",
+"  (5) The eating event sk0 of skq_S2_bear takes place in the forest C  [from steps 3, 4]",
+"  (6) If answer holds and X takes place in some forest Y and X is a eat event and skq_S2_bear performs X and X targets some berry W then X is not an activity  [sentence 2]",
+"  (7) Answer holds  [assumption]",
+"  (8) If the eating event sk0 of skq_S2_bear is an activity and sk0 of skq_S2_bear is a eat event and skq_S2_bear performs sk0 of skq_S2_bear then sk0 of skq_S2_bear does not target U3  [from steps 5, 6, 7]",
+"  (9) If some X is among bears in set 1 then sk0 of X is a eat event  [sentence 1]",
+"  (10) sk0 of skq_S2_bear is a eat event  [from steps 3, 9]",
+"  (11) If some X is among bears in set 1 then X performs the eating event sk0 of X  [sentence 1]",
+"  (12) Skq_S2_bear performs the eating event sk0 of skq_S2_bear  [from steps 3, 11]",
+"  (13) The forest C is a forest  [sentence 1]",
+"  (14) If some X is among bears in set 1 then the eating event sk0 of X is an activity  [sentence 1]",
+"  (15) The eating event sk0 of skq_S2_bear is an activity  [from steps 3, 14]",
+"  (16) X is not among bears in set 1  [sentence 1]",
+"  (17)   [from steps 3, 16]",
+"  (18) sk0 of skq_S2_bear does not target X  [from steps 8, 10, 12, 13, 15, 17]",
+"  (19) If some X is among bears in set 1 then the eating event sk0 of X targets the berries B  [sentence 1]",
+"  (20) The eating event sk0 of skq_S2_bear targets the berries B  [from steps 3, 19]",
+"  (21) The berries B is not a berry  [from steps 18, 20]",
+"  (22) The berries B is a berry  [sentence 1]",
+"  (23) Contradiction  [from steps 21, 22]"
+],
+  "timestamp": "2026-06-19T00:10:09Z"
+}

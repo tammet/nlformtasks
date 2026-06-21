@@ -1,0 +1,152 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 547,
+  "input_text": "John is nicer than Mike. Mike is nicer than Eve. Who is nicer than Eve?",
+  "expected_answer": ["John and Mike.","John.","Mike."],
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Mike and John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is nicer than Mike.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is nicer than Mike 2.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["nice","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is nicer than Eve.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 2 is nicer than Eve 3.",
+          "type": "real",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "Eve 3", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["nice","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is nicer than Eve?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is nicer than Eve 3?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "Eve 3", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["nice","high","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["has degree rel2","nice","John 1","Mike 2","high","person"]]],
+    ["@id", "S2", ["holds", "W0", ["has degree rel2","nice","Mike 2","Eve 3","high","person"]]],
+    ["@id", "S3", ["ask", "X", ["has degree rel2","nice","X","Eve 3","high","person"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is nicer than Mike 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is nicer than Mike 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "John 1 is nicer than Mike 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:Mike 2"],
+ "@nl": "John 1 is nicer than Mike 2."},
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Eve 3"],
+ "@nl": "Mike 2 is nicer than Eve 3."},
+{"@name": "entity_S2",
+ "@logic": ["isa","woman","#:Eve 3"],
+ "@nl": "Mike 2 is nicer than Eve 3."},
+{"@name": "sent_S1",
+ "@logic": ["has degree rel2","good","#:John 1","#:Mike 2","high","person","?:Cu7"],
+ "@nl": "John 1 is nicer than Mike 2."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2","good","#:Mike 2","#:Eve 3","high","person","?:Cu8"],
+ "@nl": "Mike 2 is nicer than Eve 3."},
+{"@name": "sent_S3",
+ "@question": ["has degree rel2","good","?:X","#:Eve 3","high","?:Fv10","?:Cu9"],
+ "@askvars": 1,
+ "@nl": "Which entity is nicer than Eve 3?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","man","?:X","?:Fv9"], ["-has property","woman","?:X","?:Fv9"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","woman","$some_woman"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 1","person","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_12","axiom",1], [["-has degree rel2","?:X","?:Y","?:Z","high","?:U","?:V"], ["-has degree rel2","?:X","?:W","?:Y","high","?:U","?:V"], ["has degree rel2","?:X","?:W","?:Z","high","?:U","?:V"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree rel2","good","#:Mike 2","#:Eve 3","high","person","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-has degree rel2","good","?:X","#:Mike 2","high","person","?:Y"], ["has degree rel2","good","?:X","#:Eve 3","high","person","?:Y"]]],
+          [4, ["in","sent_S1","assumption",1], [["has degree rel2","good","#:John 1","#:Mike 2","high","person","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["has degree rel2","good","#:John 1","#:Eve 3","high","person","?:X"]]],
+          [6, ["in","sent_S3","goal",1], [["-has degree rel2","good","?:X","#:Eve 3","high","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:John 1","person","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:Mike 2","person","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree rel2","good","#:Mike 2","#:Eve 3","high","person","?:X"]]],
+          [2, ["in","sent_S3","goal",1], [["-has degree rel2","good","?:X","#:Eve 3","high","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","#:Mike 2","person","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Mike:",
+"Sentences used:",
+"  (1) Mike is nicer than Eve.",
+"  (2) Who is nicer than Eve?",
+"Proof steps:",
+"  (1) Mike is gooder than Eve  [sentence 1]",
+"  (2) If some X is gooder than Eve then X is an answer  [from question]",
+"  (3) [Mike, person] is an answer  [from steps 1, 2]",
+"",
+"John:",
+"Sentences used:",
+"  (1) John is nicer than Mike.",
+"  (2) Mike is nicer than Eve.",
+"  (3) Who is nicer than Eve?",
+"Knowledge used:",
+"  If some Y is more some X than some Z and some W has a X-relation with Y then W has a X-relation with Z. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is more some X than some Z and some W has a X-relation with Y then W has a X-relation with Z  [background knowledge]",
+"  (2) Mike is gooder than Eve  [sentence 2]",
+"  (3) If some X is gooder than Mike then X is gooder than Eve  [from steps 1, 2]",
+"  (4) John is gooder than Mike  [sentence 1]",
+"  (5) John is gooder than Eve  [from steps 3, 4]",
+"  (6) If some X is gooder than Eve then X is an answer  [from question]",
+"  (7) [John, person] is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T04:37:58Z"
+}

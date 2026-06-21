@@ -1,0 +1,144 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1176,
+  "input_text": "The train leaves at noon. When does the train leave?",
+  "expected_answer": "At noon.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "W0.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "The train leaves at noon.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The train 1 leaves at noon.",
+          "type": "situation",
+          "entities": [{"id": "train 1", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "leave", "mode": "event", "roles": {"actor": "train 1"}}],
+          "time": "noon",
+          "time_prep": "at",
+          "state_tense": "present"
+        }
+      ]
+    },
+    {
+      "raw": "When does the train leave?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "When does the train 1 leave?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "train 1", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "leave", "mode": "event", "roles": {"actor": "train 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: missing_wh_placeholder"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","train","train 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","leave"],
+              ["has actor","E","train 1"],
+              ["has time","E","noon","at"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","leave"],
+            ["has actor","E","train 1"],
+            ["has time","E","X","at"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","train","#:train 1"],
+ "@nl": "The train 1 leaves at noon."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "leave", "#:train 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The train 1 leaves at noon."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv3"], ["$datetime","noon"]],
+ "@nl": "The train 1 leaves at noon."},
+{"@name": "sent_S2",
+ "@question": ["has property", "leave", "#:train 1", ["$ctxt","present","?:Fv6","?:Fv4","?:Fv5"]],
+ "@askvars": 1,
+ "@nl": "When does the train 1 leave?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "leave", "#:train 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "leave", "#:train 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "leave", "#:train 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "When does the train 1 leave?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","W0","?:X3","?:Y3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has property", "leave", "#:train 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","goal",1], [["-has property", "leave", "#:train 1", ["$ctxt","present","?:X","?:Y","?:Z"]], ["$ans","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","W0","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The train leaves at noon.",
+"  (2) When does the train leave?",
+"Proof steps:",
+"  (1) The train A is leave  [sentence 1]",
+"  (2) If the train A is leave then X is an answer  [from question]",
+"  (3) W0 is an answer  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T10:58:29Z"
+}

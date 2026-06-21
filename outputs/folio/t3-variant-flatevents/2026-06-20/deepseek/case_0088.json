@@ -1,0 +1,463 @@
+{
+  "test_name": "folio_v2_prenorm_flatevents",
+  "case_id": 88,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. Walden contains knowledge?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Books contain tons of knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, that person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, they become smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person is smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "adjectives": [["smart","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Harry read the book Walden by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 read the book Walden 2.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "Walden 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S5",
+          "text": "Henry Thoreau 3 wrote Walden 2.",
+          "type": "real",
+          "entities": [{"id": "Henry Thoreau 3", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "event",
+              "roles": {"actor": "Henry Thoreau 3", "target": "Walden 2"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Does the book Walden by Henry Thoreau contain knowledge?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does the book Walden 2, which was written by Henry Thoreau 3, contain knowledge?",
+          "type": "query",
+          "entities": [{"id": "Walden 2", "type": "concrete", "category": "artifact"},
+            {"id": "Henry Thoreau 3", "type": "concrete", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","book","X"], ["normally", ["is rel2","in","knowledge","X"]]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person","X"],
+            ["forall","Y",
+              ["implies",
+                ["isa","book","Y"],
+                ["normally",
+                  ["implies",
+                    ["exists","E1",
+                      ["and",
+                        ["isa","activity","E1"],
+                        ["has type","E1","read"],
+                        ["has actor","E1","X"],
+                        ["has target","E1","Y"],
+                        ["typical","E1"]
+                      ]
+                    ],
+                    ["exists","E2",
+                      ["and",
+                        ["isa","activity","E2"],
+                        ["has type","E2","gain"],
+                        ["has actor","E2","X"],
+                        ["has target","E2","knowledge"],
+                        ["typical","E2"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person","X"],
+            ["normally",
+              ["implies",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","gain"],
+                    ["has actor","E","X"],
+                    ["has target","E","knowledge"],
+                    ["typical","E"]
+                  ]
+                ],
+                ["has degree property","smart","X","high","person"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Harry 1"],
+            ["isa","book","Walden 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","read"],
+                ["has actor","E","Harry 1"],
+                ["has target","E","Walden 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["next","W0","W1"]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Henry Thoreau 3"],
+          ["isa","book","Walden 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","Henry Thoreau 3"],
+              ["has target","E","Walden 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S6", ["question", ["is rel2","in","knowledge","Walden 2"]]]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"],
+            ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@nl": "Books contain knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-is rel2", "read", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","book",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has degree property", "stupid", "?:X", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","person",2], ["$not", ["has degree property", "smart", "?:X", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@nl": "If a person gains knowledge, the person is smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","past","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2", "write", "#:Henry Thoreau 3", ["eventprop","$target","#:Walden 2"], ["$ctxt","past","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does the book Walden 2, which was written by Henry Thoreau 3, contain knowledge?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does the book Walden 2, which was written by Henry Thoreau 3, contain knowledge?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does the book Walden 2, which was written by Henry Thoreau 3, contain knowledge?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does the book Walden 2, which was written by Henry Thoreau 3, contain knowledge?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "stupid", "$some_smart_person", "none", "person", ["$ctxt","?:Fv37","?:Fv34","?:Fv35","?:Fv36"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_smart_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "stupid", "$some_not_smart_person", "none", "person", ["$ctxt","?:Fv45","?:Fv42","?:Fv43","?:Fv44"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "stupid", "?:X", "none", "?:Fv46", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["-has degree property", "stupid", "?:X", "none", "?:Fv47", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "none", "?:Fv48", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "stupid", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv23","?:Fv24","?:Fv25"]],
+            ["-has degree property", "stupid", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","book","$some_book"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [5, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,1], 5, "fromga", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","knowledge","W0"]],
+          ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.99198,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S1","assumption",1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [3, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [4, ["mp", [2,2], 3, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["mp", 1, [4,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","knowledge","?:Y"]], ["-next","?:Y","?:V"]]],
+          [6, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [7, ["mp", [5,3], 6, "fromassumption", 0.99], [["$block", 0, ["moved","knowledge","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [8, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [9, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [10, ["mp", [7,2], [8,1], 9, "fromga", 0.99], [["$block", 0, ["moved","knowledge","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]],
+          [11, ["in","sent_S4","assumption",1], [["isa","book","#:Walden 2"]]],
+          [12, ["mp", [2,2], 11, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [13, ["mp", 1, [12,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","knowledge","?:Y"]], ["-next","?:Y","?:V"]]],
+          [14, ["mp", [13,3], 6, "fromassumption", 0.99], [["$block", 0, ["moved","knowledge","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [15, ["mp", [14,2], [8,1], 9, "fromga", 0.99], [["$block", 0, ["moved","knowledge","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]],
+          [16, ["cumul",10,15,"fromga",0.99198], [["$block", 0, ["moved","knowledge","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:Walden 2","W0"]],
+          ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.991414,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","frm_27","axiom",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["is rel2","contains","?:Y","?:X","?:Z"]]],
+          [3, ["in","sent_S1","assumption",1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [4, ["in","sent_S4","assumption",1], [["isa","book","#:Walden 2"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["mp", 2, [5,1], "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","#:Walden 2","?:Y"]], ["-next","?:Y","?:V"]]],
+          [8, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [9, ["mp", [7,3], 8, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [10, ["in","frm_26","axiom",1], [["-is rel2","contains","?:X","?:Y","?:Z"], ["is rel2","in","?:Y","?:X","?:Z"]]],
+          [11, ["mp", [9,2], 10, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [12, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [13, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [14, ["mp", [11,2], [12,1], 13, "fromga", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]],
+          [15, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [16, ["mp", [3,2], 15, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [17, ["mp", 2, [16,1], "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [18, ["mp", 1, [17,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","#:Walden 2","?:Y"]], ["-next","?:Y","?:V"]]],
+          [19, ["mp", [18,3], 8, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [20, ["mp", [19,2], 10, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [21, ["mp", [20,2], [12,1], 13, "fromga", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]],
+          [22, ["cumul",14,21,"fromga",0.991414], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W1","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.961875,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["isa","book","#:Walden 2"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S6","assumption",0.95], [["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","?:X","?:Y","?:Z"]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.95], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [7, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,2], [6,1], 7, "fromga", 0.95], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [9, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [10, ["mp", [1,2], 9, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["mp", [10,1], [4,1], "fromassumption", 0.95], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [12, ["mp", [11,2], [6,1], 7, "fromga", 0.95], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [13, ["cumul",8,12,"fromga",0.961875], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:Walden 2","W0"]],
+          ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.947495,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","frm_27","axiom",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["is rel2","contains","?:Y","?:X","?:Z"]]],
+          [3, ["in","sent_S1","assumption",1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","book","?:X"]]],
+          [4, ["in","sent_S4","assumption",1], [["isa","book","#:Walden 2"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["mp", 2, [5,1], "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","#:Walden 2","?:Y"]], ["-next","?:Y","?:V"]]],
+          [8, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [9, ["mp", [7,3], 8, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [10, ["in","frm_26","axiom",1], [["-is rel2","contains","?:X","?:Y","?:Z"], ["is rel2","in","?:Y","?:X","?:Z"]]],
+          [11, ["mp", [9,2], 10, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [12, ["in","sent_S6","assumption",0.95], [["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","?:X","?:Y","?:Z"]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [13, ["mp", [11,2], [12,1], "fromassumption", 0.9405], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [14, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [15, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [16, ["mp", [13,3], [14,1], 15, "fromga", 0.9405], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [17, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [18, ["mp", [3,2], 17, "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [19, ["mp", 2, [18,1], "fromassumption", 1], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [20, ["mp", 1, [19,1], "fromassumption", 0.99], [["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","?:V","?:Z","?:U"]], ["$block", 0, ["moved","#:Walden 2","?:Y"]], ["-next","?:Y","?:V"]]],
+          [21, ["mp", [20,3], 8, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "contains", "#:Walden 2", "knowledge", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [22, ["mp", [21,2], 10, "fromassumption", 0.99], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W0","?:Y","?:Z"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","?:X","W1","?:Y","?:Z"]]]],
+          [23, ["mp", [22,2], [12,1], "fromassumption", 0.9405], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]], ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [24, ["mp", [23,3], [14,1], 15, "fromga", 0.9405], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [25, ["cumul",16,24,"fromga",0.947495], [["$block", 0, ["moved","#:Walden 2","W0"]], ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","past","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["is rel2", "in", "knowledge", "#:Walden 2", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Books contain tons of knowledge.",
+"  (2) Harry read the book Walden by Henry Thoreau.",
+"  (3) Does the book Walden by Henry Thoreau contain knowledge?",
+"Proof steps:",
+"  (1) If some X is a book then normally the knowledge is in X  [sentence 1]",
+"  (2) Walden is a book  [sentence 2]",
+"  (3) Normally the knowledge is in Walden  [from steps 1, 2]",
+"  (4) If the knowledge is in Walden then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Outstanding exception: the knowledge is not in Walden  [from steps 3, 4, 5]",
+"Exceptions checked and not holding:",
+"  the knowledge is not in Walden"
+],
+  "timestamp": "2026-06-18T21:06:28Z"
+}

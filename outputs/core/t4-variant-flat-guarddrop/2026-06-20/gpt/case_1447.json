@@ -1,0 +1,229 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1447,
+  "input_text": "Birds fly. No penguin can fly. Penguins are birds. John is a penguin. John flies?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "birds"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "No penguin can fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "No penguin can fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguin", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "penguin"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Penguins are birds.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Penguins are birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a penguin.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 is a penguin.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "penguin", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John flies?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Can John 1 fly?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "John 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","penguin","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","penguin","X"], ["isa","bird","X"]]]]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","penguin","John 1"]]],
+    ["@id","S5",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","fly"],
+            ["has actor","E","John 1"],
+            ["capability","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","penguin","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "No penguin can fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","penguin","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Penguins are birds."},
+{"@name": "sent_S4",
+ "@logic": ["isa","penguin","#:John 1"],
+ "@nl": "John 1 is a penguin."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "fly", "#:John 1", ["$ctxt","present","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "Can John 1 fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "fly", "#:John 1", ["$ctxt","present","?:Fv17","?:Fv15","?:Fv16"]],
+            ["$defq0"]
+           ],
+ "@nl": "Can John 1 fly?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Can John 1 fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "fly", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "fly", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "fly", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Can John 1 fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","penguin","$some_not_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "fly", "$some_fly", ["$ctxt","?:Fv35","?:Fv32","?:Fv33","?:Fv34"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "fly", "$some_not_fly", ["$ctxt","?:Fv39","?:Fv36","?:Fv37","?:Fv38"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv19"], ["has type","?:E","go","?:Fv19"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","penguin","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["-$defq0"], ["has property", "fly", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["has property", "fly", "#:John 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["mp",1,4,"fromga",1], [["-isa","penguin","#:John 1"]]],
+          [6, ["in","sent_S4","assumption",1], [["isa","penguin","#:John 1"]]],
+          [7, ["simp",5,6,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) No penguin can fly.",
+"  (2) John is a penguin.",
+"  (3) John flies?",
+"Proof steps (by contradiction):",
+"  (1) X is not fly  [sentence 1]",
+"  (2) If answer holds then John is fly  [sentence 3]",
+"  (3) Answer holds  [assumption]",
+"  (4) John is fly  [from steps 2, 3]",
+"  (5) John is not a penguin  [from steps 1, 4]",
+"  (6) John is a penguin  [sentence 2]",
+"  (7) Contradiction  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T08:07:52Z"
+}

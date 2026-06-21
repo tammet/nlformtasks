@@ -1,0 +1,152 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 16,
+  "input_text": "All squares are four-sided. All four-sided things are shapes. All squares are shapes?",
+  "expected_answer": "True.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All squares are four-sided.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All squares are four-sided.",
+          "type": "strict_rule",
+          "entities": [{"id": "squares", "type": "generic", "category": "abstract"},
+            {"id": "four-sided things", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All four-sided things are shapes.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All four-sided things are shapes.",
+          "type": "strict_rule",
+          "entities": [{"id": "four-sided things", "type": "generic", "category": "abstract"},
+            {"id": "shapes", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Are all squares shapes?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are all squares shapes?",
+          "type": "query",
+          "entities": [{"id": "squares", "type": "generic", "category": "abstract"},
+            {"id": "shapes", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","square","X"], ["isa","four-sided thing","X"]]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","four-sided thing","X"], ["isa","shape","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["question", ["forall", "X", ["implies", ["isa","square","X"], ["isa","shape","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["isa","round","?:X"], ["isa","four-sided thing","?:X"]],
+ "@nl": "All squares are four-sided."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","four-sided thing","?:X"], ["isa","shape","?:X"]],
+ "@nl": "All four-sided things are shapes."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","round","?:X"], ["isa","shape","?:X"]],
+ "@nl": "Are all squares shapes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","round","sk0_square"], ["$defq0"]],
+ "@nl": "Are all squares shapes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","shape","sk0_square"], ["$defq0"]],
+ "@nl": "Are all squares shapes?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are all squares shapes?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","round","$some_square"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","round","$some_not_square"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","four-sided thing","$some_four-sided_thing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","four-sided thing","$some_not_four-sided_thing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","shape","$some_shape"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","shape","$some_not_shape"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","four-sided thing","?:X"], ["isa","thing","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","four-sided","?:X"], ["-isa","thing","?:X"], ["isa","four-sided thing","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["isa","four-sided thing","?:X"], ["isa","round","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["-isa","four-sided thing","?:X"], ["isa","shape","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","shape","?:X"], ["isa","round","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["-isa","shape","sk0_square"], ["$defq0"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp",3,4,5,"fromga",1], [["isa","round","sk0_square"]]],
+          [7, ["in","sent_S3","assumption",1], [["-isa","round","sk0_square"], ["$defq0"]]],
+          [8, ["mp",6,7,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All squares are four-sided.",
+"  (2) All four-sided things are shapes.",
+"  (3) Are all squares shapes?",
+"Proof steps (by contradiction):",
+"  (1) Some X is a four-sided thing or X is a round  [sentence 1]",
+"  (2) If some X is a four-sided thing then X is a shape  [sentence 2]",
+"  (3) Some X is a shape or X is a round  [from steps 1, 2]",
+"  (4) If some round rou1 is a shape then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Rou1 is a round  [from steps 3, 4, 5]",
+"  (7) If rou1 is a round then answer holds  [sentence 3]",
+"  (8) Contradiction  [from steps 6, 7, 5]"
+],
+  "timestamp": "2026-06-18T21:20:49Z"
+}

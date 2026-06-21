@@ -1,0 +1,231 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 375,
+  "input_text": "John does not eat a carrot. Mike eats carrots. Who eats carrots?",
+  "expected_answer": "Mike",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Mike.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John does not eat a carrot.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 does not eat a carrot.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "carrot"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike eats carrots.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 2 eats carrots.",
+          "type": "normal_rule",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "carrots", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "Mike 2", "target": "carrots"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Who eats carrots?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity eats carrots?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "carrots", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "entity", "target": "carrots"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["normally",
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["exists", "X", ["and", ["isa","carrot","X"], ["has target","E","X"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mike 2"],
+            ["forall","X",
+              ["implies",
+                ["isa","carrot","X"],
+                ["normally",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","Mike 2"],
+                      ["has target","E","X"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","entity","X"],
+          ["normally",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","X"],
+                ["forall", "Y", ["implies", ["isa","carrot","Y"], ["has target","E","Y"]]],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","$generic",1], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]
+           ],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","carrot","?:X"],
+            ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "eat", "?:X", ["eventprop", "$target", ["sk0","?:X"]], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity eats carrots?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","carrot","$some_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","carrot","$some_not_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:Mike 2"]],
+        "blockers": [["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","$some_carrot"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.98], [["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","carrot","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","carrot","$some_carrot"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",1], [["-is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.98], [["$defq0","#:Mike 2"], ["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","$some_carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",0.98], [["$block", ["$","carrot",1], ["$not", ["is rel2", "eat", "#:Mike 2", ["eventprop","$target","$some_carrot"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","#:Mike 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Mike eats carrots.",
+"  (2) Who eats carrots?",
+"Proof steps:",
+"  (1) If some X is a carrot then normally Mike eats X  [sentence 1, confidence 98%]",
+"  (2) A carrot is a carrot  [sentence 1]",
+"  (3) Normally Mike eats a carrot  [from steps 1, 2, confidence 98%]",
+"  (4) If some X eats Y then X is the answer  [sentence 2]",
+"  (5) Mike is the answer, except when Mike does not eat a carrot  [from steps 3, 4, confidence 98%]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) Mike is an answer, except when Mike does not eat a carrot  [from steps 5, 6, confidence 98%]",
+"Exceptions checked and not holding:",
+"  Mike does not eat a carrot"
+],
+  "timestamp": "2026-06-19T11:05:57Z"
+}

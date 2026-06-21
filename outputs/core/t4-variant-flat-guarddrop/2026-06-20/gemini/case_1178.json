@@ -1,0 +1,227 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1178,
+  "input_text": "Before John left, he locked the door. John left?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Before John left, he locked the door.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 locked the door 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "door 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lock", "mode": "event", "roles": {"target": "door 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "John 1 left.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "leave", "mode": "event"}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John left?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 leave?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "leave", "mode": "event"}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","door","door 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lock"],
+                ["has actor","E","John 1"],
+                ["has target","E","door 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leave"],
+                ["has actor","E","John 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","leave"],
+              ["has actor","E","John 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 locked the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","door","#:door 2"],
+ "@nl": "John 1 locked the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "lock", "#:John 1", ["eventprop","$target","#:door 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 locked the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 locked the door 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 left."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "leave", "#:John 1", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 left."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 1 left."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Did John 1 leave?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 leave?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-has property", "leave", "#:John 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 leave?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 leave?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "leave", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "leave", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 leave?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.994145,
+        "positive proof": [[1, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [2, ["in","sent_S2","assumption",1], [["has property", "leave", "#:John 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["has property", "leave", "#:John 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W1","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,2], 7, "fromga", 0.99], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","person","#:John 1"]]],
+          [10, ["mp",8,9,"fromga",0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]]],
+          [11, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [12, ["mp", [3,2], 11, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [13, ["mp", [12,1], [6,2], 7, "fromga", 0.99], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X","?:Y"]]]]]],
+          [14, ["mp",13,9,"fromga",0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]]],
+          [15, ["cumul",10,14,"fromga",0.99198], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]]],
+          [16, ["in","sent_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [17, ["mp",13,16,"fromga",0.99], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]]],
+          [18, ["cumul",15,17,"fromga",0.994145], [["$block", 0, ["$not", ["has property", "leave", "#:John 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) Before John left, he locked the door.",
+"  (2) John left?",
+"Knowledge used:",
+"  If some Y is some X and a situation E1 is followed by a situation U then normally Y is X. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some X and a situation E1 is followed by a situation U then normally Y is X  [background knowledge, confidence 99%]",
+"  (2) John is leave  [sentence 1]",
+"  (3) If the situation W1 is followed by a situation X then normally John is leave  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (5) Normally John is leave  [from steps 3, 4, confidence 99%]",
+"  (6) If John is a person and John is leave then answer holds  [sentence 2]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) John is not a person, except when John is not leave  [from steps 5, 6, 7, confidence 99%]",
+"  (9) John is a person  [sentence 1]",
+"  (10) Outstanding exception: John is not leave  [from steps 8, 9, confidence 99%]",
+"  (11) The situation W1 is followed by the situation W2  [sentence 1]",
+"  (12) Normally John is leave  [from steps 3, 11, confidence 99%]",
+"  (13) John is not a person, except when John is not leave  [from steps 12, 6, 7, confidence 99%]",
+"  (14) Outstanding exception: John is not leave  [from steps 13, 9, confidence 99%]",
+"  (15) Outstanding exception: John is not leave  [from steps 10, 14, confidence 99%]",
+"  (16) John is a person  [sentence 1]",
+"  (17) Outstanding exception: John is not leave  [from steps 13, 16, confidence 99%]",
+"  (18) Outstanding exception: John is not leave  [from steps 15, 17, confidence 99%]",
+"Exceptions checked and not holding:",
+"  John is not leave"
+],
+  "timestamp": "2026-06-19T09:11:57Z"
+}

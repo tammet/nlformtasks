@@ -1,0 +1,230 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1425,
+  "input_text": "Penguins are birds. Penguins do not fly. Birds fly. Who flies?",
+  "expected_answer": "A bird.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "A bird.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Penguins are birds.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Penguins are birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Penguins do not fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Penguins cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Who flies?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity can fly?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","penguin","X"], ["isa","bird","X"]]]]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","penguin","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","fly"],
+            ["has actor","E","X"],
+            ["capability","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","penguin","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Penguins are birds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","penguin","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Penguins cannot fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S4",
+ "@question": ["has property", "fly", "?:X", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+ "@askvars": 1,
+ "@nl": "Which entity can fly?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "fly", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity can fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","penguin","$some_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","penguin","$some_not_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "fly", "$some_fly", ["$ctxt","?:Fv37","?:Fv34","?:Fv35","?:Fv36"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "fly", "$some_not_fly", ["$ctxt","?:Fv41","?:Fv38","?:Fv39","?:Fv40"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv17"], ["has type","?:E","go","?:Fv17"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_fly","?:X3","?:Y3","?:Z3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has property", "fly", "$some_fly", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S4","goal",1], [["-has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_fly","?:X3","?:Y3","?:Z3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_bird","?:X3","?:Y3","?:Z3"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S3","assumption",0.9], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","bird","$some_bird"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "fly", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S4","goal",1], [["-has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [5, ["mp", [3,1], 4, "fromga", 0.9], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_bird","?:X3","?:Y3","?:Z3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_bird","?:X3","?:Y3","?:Z3"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has property", "fly", "$some_bird", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.891,
+        "positive proof": [[1, ["in","sent_S3","assumption",0.9], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","bird","$some_bird"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "fly", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["-has property", "fly", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.891], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_bird", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has property", "fly", "$some_bird", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S4","goal",1], [["-has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$ans","?:X","?:Y","?:Z","?:U"]]],
+          [7, ["mp", [5,2], 6, "fromga", 0.891], [["$block", ["$","bird",1], ["$not", ["has property", "fly", "$some_bird", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has property", "fly", "$some_bird", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_bird","?:X3","?:Y3","?:Z3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Penguins are birds.",
+"  (2) Birds fly.",
+"  (3) Who flies?",
+"Proof steps:",
+"  (1) If some X is a bird then normally X is fly  [sentence 2, confidence 90%]",
+"  (2) A bird is a bird  [sentence 1]",
+"  (3) Normally a bird is fly  [from steps 1, 2, confidence 90%]",
+"  (4) If some X is fly then X is an answer  [from question]",
+"  (5) A bird is an answer, except when a bird is not fly  [from steps 3, 4, confidence 90%]",
+"Exceptions checked and not holding:",
+"  a bird is not fly"
+],
+  "timestamp": "2026-06-19T09:27:41Z"
+}

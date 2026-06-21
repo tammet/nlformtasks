@@ -1,0 +1,154 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 7,
+  "input_text": "Elephants are grey animals. John is an elephant. Who is grey?",
+  "expected_answer": "John.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants are grey animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Elephants are grey.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["grey","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Who is grey?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity is grey?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["grey","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","elephant","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["has degree property","grey","X","none","elephant"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id", "S4", ["ask", "X", ["has degree property","grey","X","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Elephants are animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["has property","grey","?:X","?:Cu3"]],
+ "@confidence": 0.98,
+ "@nl": "Elephants are grey."},
+{"@name": "sent_S3",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S4",
+ "@question": ["has property","grey","?:X","?:Cu5"],
+ "@askvars": 1,
+ "@nl": "Which entity is grey?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property","grey","$some_grey_elephant","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_grey_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","grey","$some_not_grey_elephant","?:Cu12"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_grey_elephant","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has property","grey","$some_grey_elephant","?:X"]]],
+          [2, ["in","sent_S4","goal",1], [["-has property","grey","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_grey_elephant","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1","?:X3"]],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.98], [["has property","grey","?:X","?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has property","grey","#:John 1","?:X"]]],
+          [4, ["in","sent_S4","goal",1], [["-has property","grey","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [5, ["mp",3,4,"fromga",0.98], [["$ans","#:John 1","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Elephants are grey animals.",
+"  (2) John is an elephant.",
+"  (3) Who is grey?",
+"Proof steps:",
+"  (1) If some X is an elephant then X is grey  [sentence 1, confidence 98%]",
+"  (2) John is an elephant  [sentence 2]",
+"  (3) John is grey  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is grey then X is an answer  [from question]",
+"  (5) John is an answer  [from steps 3, 4, confidence 98%]"
+],
+  "timestamp": "2026-06-19T04:36:28Z"
+}

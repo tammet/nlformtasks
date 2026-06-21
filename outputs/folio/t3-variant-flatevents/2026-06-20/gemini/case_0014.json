@@ -1,0 +1,353 @@
+{
+  "test_name": "folio_v2_prenorm_flatevents",
+  "case_id": 14,
+  "input_text": "A Japanese game company created the game the Legend of Zelda. All games on the Top 10 list are made by Japanese game companies. If a game sells more than one million copies, then it will be included in the Top 10 list. The Legend of Zelda sold more than one million copies. FIFA 22 is made by a Japanese video game company?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The Legend of Zelda is made by a Japanese game company.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The Legend of Zelda 1 is made by a Japanese game company.",
+          "type": "real",
+          "entities": [{
+              "id": "The Legend of Zelda 1",
+              "type": "concrete",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/The_Legend_of_Zelda"
+            },
+            {"id": "Japanese game company", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All games on the Top 10 list are made by Japanese game companies.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All games on the Top 10 list 1 are made by Japanese game companies.",
+          "type": "strict_rule",
+          "entities": [{"id": "games", "type": "generic", "category": "artifact"},
+            {
+              "id": "Top 10 list 1",
+              "type": "concrete",
+              "subtype": "compound",
+              "category": "abstract"
+            },
+            {"id": "Japanese game companies", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a game sells more than one million copies, then it will be included in the Top 10 list.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a game sells more than one million copies, then the game will be included in the Top 10 list 1.",
+          "type": "normal_rule",
+          "entities": [{"id": "game", "type": "generic", "category": "artifact"},
+            {"id": "one million copies", "type": "concrete", "category": "measure"},
+            {
+              "id": "Top 10 list 1",
+              "type": "concrete",
+              "subtype": "compound",
+              "category": "abstract"
+            }
+          ],
+          "actions": [{"root": "sell", "mode": "habitual", "roles": {"target": "one million copies"}},
+            {
+              "root": "include",
+              "mode": "event",
+              "roles": {"target": "game", "location": "Top 10 list 1"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "The Legend of Zelda sells more than one million copies.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "The Legend of Zelda 1 sells more than one million copies.",
+          "type": "situation",
+          "entities": [{
+              "id": "The Legend of Zelda 1",
+              "type": "concrete",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/The_Legend_of_Zelda"
+            },
+            {"id": "one million copies", "type": "concrete", "category": "measure"}
+          ],
+          "actions": [{"root": "sell", "mode": "habitual", "roles": {"target": "one million copies"}}],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "FIFA 22 is made by a Japanese game company?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is FIFA 22 2 made by a Japanese game company?",
+          "type": "query",
+          "entities": [{
+              "id": "FIFA 22 2",
+              "type": "concrete",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/FIFA_22"
+            },
+            {"id": "Japanese game company", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","The Legend of Zelda","https://en.wikipedia.org/wiki/The_Legend_of_Zelda"],
+          ["exists","X",
+            ["and",
+              ["isa","Japanese game company","X"],
+              ["is rel2","made by","https://en.wikipedia.org/wiki/The_Legend_of_Zelda","X"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","Top 10 list","Top 10 list 1"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","game","X"], ["is rel2","on","X","Top 10 list 1"]],
+              ["exists","Y",
+                ["and", ["isa","Japanese game company","Y"], ["is rel2","made by","X","Y"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","game","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","sell"],
+                    ["has actor","E1","X"],
+                    ["has target","E1","one million copies"],
+                    ["typical","E1"]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","include"],
+                    ["has target","E2","X"],
+                    ["has location","E2","Top 10 list 1","in"],
+                    ["has time","E2","future","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","The Legend of Zelda","https://en.wikipedia.org/wiki/The_Legend_of_Zelda"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","sell"],
+              ["has actor","E","https://en.wikipedia.org/wiki/The_Legend_of_Zelda"],
+              ["has target","E","one million copies"],
+              ["typical","E"],
+              ["has time","E","present","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["question",
+        ["and",
+          ["isa","FIFA 22","https://en.wikipedia.org/wiki/FIFA_22"],
+          ["exists","X",
+            ["and",
+              ["isa","Japanese game company","X"],
+              ["is rel2","made by","https://en.wikipedia.org/wiki/FIFA_22","X"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","artifact","#:The Legend of Zelda 1"],
+ "@nl": "The Legend of Zelda 1 is made by a Japanese game company."},
+{"@name": "entity_S3",
+ "@logic": ["isa","measure","one million copies"],
+ "@nl": "If a game sells more than one million copies, then the game will be included in the Top 10 list 1."},
+{"@name": "entity_S5",
+ "@logic": ["isa","artifact","#:FIFA 22 2"],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","the legend of zelda","https://en.wikipedia.org/wiki/The_Legend_of_Zelda"],
+ "@nl": "The Legend of Zelda 1 is made by a Japanese game company."},
+{"@name": "sent_S1",
+ "@logic": ["isa","japanese game company","sk0_japanese game company"],
+ "@nl": "The Legend of Zelda 1 is made by a Japanese game company."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "made by", "https://en.wikipedia.org/wiki/The_Legend_of_Zelda", "sk0_japanese game company", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The Legend of Zelda 1 is made by a Japanese game company."},
+{"@name": "sent_S2",
+ "@logic": ["isa","top 10 list","#:Top 10 list 1"],
+ "@nl": "All games on the Top 10 list 1 are made by Japanese game companies."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","game","?:X"],
+            ["-is rel2", "on", "?:X", "#:Top 10 list 1", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["isa", "japanese game company", ["sk1","?:X"]]
+           ],
+ "@nl": "All games on the Top 10 list 1 are made by Japanese game companies."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","game","?:X"],
+            ["-is rel2", "on", "?:X", "#:Top 10 list 1", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["is rel2", "made by", "?:X", ["sk1","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "All games on the Top 10 list 1 are made by Japanese game companies."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","game","?:X"],
+            ["-is rel2", "sell", "?:X", ["eventprop","$target","one million copies"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["is rel2", "include", "?:X", ["eventprop","$location","#:Top 10 list 1"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$block", ["$","game",2], ["$not", ["is rel2", "include", "?:X", ["eventprop","$location","#:Top 10 list 1"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a game sells more than one million copies, then the game will be included in the Top 10 list 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","the legend of zelda","https://en.wikipedia.org/wiki/The_Legend_of_Zelda"],
+ "@nl": "The Legend of Zelda 1 sells more than one million copies."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "sell", "https://en.wikipedia.org/wiki/The_Legend_of_Zelda", ["eventprop","$target","one million copies"], ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "The Legend of Zelda 1 sells more than one million copies."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","fifa 22","https://en.wikipedia.org/wiki/FIFA_22"]],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","japanese game company","sk2_japanese game company"]],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "made by", "https://en.wikipedia.org/wiki/FIFA_22", "sk2_japanese game company", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","fifa 22","https://en.wikipedia.org/wiki/FIFA_22"],
+            ["-isa","japanese game company","?:X"],
+            ["-is rel2", "made by", "https://en.wikipedia.org/wiki/FIFA_22", "?:X", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "made by", "https://en.wikipedia.org/wiki/FIFA_22", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "made by", "https://en.wikipedia.org/wiki/FIFA_22", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "made by", "https://en.wikipedia.org/wiki/FIFA_22", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is FIFA 22 2 made by a Japanese game company?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Japanese game company","$some_Japanese_game_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","Japanese game company","$some_not_Japanese_game_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","game","$some_game"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","game","$some_not_game"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","game","$some_game_on_Top 10 list"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "on", "$some_game_on_Top 10 list", "#:Top 10 list 1", ["$ctxt","?:Fv50","?:Fv47","?:Fv48","?:Fv49"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","FIFA 22","?:X"], ["isa","22","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","FIFA","?:X"], ["-isa","22","?:X"], ["isa","FIFA 22","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Japanese game company","?:X"], ["isa","company","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Japanese game","?:X"],
+            ["-isa","company","?:X"],
+            ["isa","Japanese game company","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","The Legend of Zelda","?:X"], ["isa","Zelda","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","The Legend of","?:X"],
+            ["-isa","Zelda","?:X"],
+            ["isa","The Legend of Zelda","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Top 10 list","?:X"], ["isa","list","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Top 10","?:X"], ["-isa","list","?:X"], ["isa","Top 10 list","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","game","?:X"], ["isa","activity","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","activity","?:X"], ["isa","game","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T20:43:16Z"
+}

@@ -1,0 +1,593 @@
+{
+  "test_name": "folio_v2_prenorm",
+  "case_id": 38,
+  "input_text": "Symphony No. 9 is a music piece. Composers write music pieces. Beethoven wrote Symphony No. 9. Vienna Music Society premiered Symphony No. 9. Vienna Music Society is an orchestra. Beethoven leads the Vienna Music Society. Orchestras are led by conductors. Some orchestras premiered music pieces?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Symphony No. 9 is a music piece.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Symphony No. 9 1 is a music piece.",
+          "type": "real",
+          "entities": [{
+              "id": "Symphony No. 9 1",
+              "type": "concrete",
+              "category": "abstract",
+              "url": "https://en.wikipedia.org/wiki/Symphony_No._9"
+            },
+            {"id": "music piece", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Composers write music pieces.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Composers write music pieces.",
+          "type": "normal_rule",
+          "entities": [{"id": "composers", "type": "generic", "category": "person"},
+            {"id": "music pieces", "type": "generic", "scope": "dependent", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "habitual",
+              "roles": {"actor": "composers", "target": "music pieces"}
+            }
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Beethoven writes Symphony No. 9.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Beethoven 2 writes Symphony No. 9 1.",
+          "type": "real",
+          "entities": [{
+              "id": "Beethoven 2",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"
+            },
+            {
+              "id": "Symphony No. 9 1",
+              "type": "concrete",
+              "category": "abstract",
+              "url": "https://en.wikipedia.org/wiki/Symphony_No._9"
+            }
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "habitual",
+              "roles": {"actor": "Beethoven 2", "target": "Symphony No. 9 1"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Vienna Music Society premiered Symphony No. 9.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Vienna Music Society 3 premiered Symphony No. 9 1.",
+          "type": "situation",
+          "entities": [{"id": "Vienna Music Society 3", "type": "concrete", "category": "organization"},
+            {
+              "id": "Symphony No. 9 1",
+              "type": "concrete",
+              "category": "abstract",
+              "url": "https://en.wikipedia.org/wiki/Symphony_No._9"
+            }
+          ],
+          "actions": [{
+              "root": "premiere",
+              "mode": "event",
+              "roles": {"actor": "Vienna Music Society 3", "target": "Symphony No. 9 1"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Vienna Music Society is an orchestra.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Vienna Music Society 3 is an orchestra.",
+          "type": "real",
+          "entities": [{"id": "Vienna Music Society 3", "type": "concrete", "category": "organization"},
+            {"id": "orchestra", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Beethoven leads the Vienna Music Society.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Beethoven 2 leads the Vienna Music Society 3.",
+          "type": "real",
+          "entities": [{
+              "id": "Beethoven 2",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"
+            },
+            {"id": "Vienna Music Society 3", "type": "concrete", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "lead",
+              "mode": "habitual",
+              "roles": {"actor": "Beethoven 2", "target": "Vienna Music Society 3"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Conductors lead orchestras.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Conductors lead orchestras.",
+          "type": "normal_rule",
+          "entities": [{"id": "conductors", "type": "generic", "category": "person"},
+            {
+              "id": "orchestras",
+              "type": "generic",
+              "scope": "dependent",
+              "category": "organization"
+            }
+          ],
+          "actions": [{
+              "root": "lead",
+              "mode": "habitual",
+              "roles": {"actor": "conductors", "target": "orchestras"}
+            }
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Some orchestras premiered music pieces?",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Did some orchestras premiere music pieces?",
+          "type": "query",
+          "entities": [{"id": "orchestras", "type": "generic", "category": "organization"},
+            {"id": "music pieces", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "premiere",
+              "mode": "event",
+              "roles": {"actor": "orchestras", "target": "music pieces"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["isa","music piece","https://en.wikipedia.org/wiki/Symphony_No._9"]]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","composer","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","write"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","music piece","Y"], ["has target","E","Y"]]],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","person","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+          ["isa","Symphony No. 9","https://en.wikipedia.org/wiki/Symphony_No._9"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+              ["has target","E","https://en.wikipedia.org/wiki/Symphony_No._9"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","organization","Vienna Music Society 3"],
+            ["isa","Symphony No. 9","https://en.wikipedia.org/wiki/Symphony_No._9"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","premiere"],
+                ["has actor","E","Vienna Music Society 3"],
+                ["has target","E","https://en.wikipedia.org/wiki/Symphony_No._9"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","orchestra","Vienna Music Society 3"]]],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","person","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+          ["isa","organization","Vienna Music Society 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","lead"],
+              ["has actor","E","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+              ["has target","E","Vienna Music Society 3"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","conductor","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","lead"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","orchestra","Y"], ["has target","E","Y"]]],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S7",0.99]
+      ]
+    ],
+    ["@id","S8",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","orchestra","X"],
+            ["exists","Y",
+              ["and",
+                ["isa","music piece","Y"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","premiere"],
+                    ["has actor","E","X"],
+                    ["has target","E","Y"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","abstract","Symphony No. 9 1"],
+ "@nl": "Symphony No. 9 1 is a music piece."},
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:Beethoven 2"],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","music piece","https://en.wikipedia.org/wiki/Symphony_No._9"],
+ "@nl": "Symphony No. 9 1 is a music piece."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"],
+            ["has type", ["sk0","?:X"], "write", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"],
+            ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"], ["isa", "music piece", ["sk1","?:X"]]],
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","composer","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$block", ["$","composer",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Composers write music pieces."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","symphony no. 9","https://en.wikipedia.org/wiki/Symphony_No._9"],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk2_activity"],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["has type", "sk2_activity", "write", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["has actor", "sk2_activity", "https://en.wikipedia.org/wiki/Ludwig_van_Beethoven", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["has target", "sk2_activity", "https://en.wikipedia.org/wiki/Symphony_No._9", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S3",
+ "@logic": ["typical", "sk2_activity", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "Beethoven 2 writes Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","organization","#:Vienna Music Society 3"],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","symphony no. 9","https://en.wikipedia.org/wiki/Symphony_No._9"],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk3_activity"],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["has type", "sk3_activity", "premiere", ["$ctxt","past","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["has actor", "sk3_activity", "#:Vienna Music Society 3", ["$ctxt","past","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["has target", "sk3_activity", "https://en.wikipedia.org/wiki/Symphony_No._9", ["$ctxt","past","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk3_activity", "past", "in", ["$ctxt","past","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S4",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Vienna Music Society 3 premiered Symphony No. 9 1."},
+{"@name": "sent_S5",
+ "@logic": ["isa","orchestra","#:Vienna Music Society 3"],
+ "@nl": "Vienna Music Society 3 is an orchestra."},
+{"@name": "sent_S6",
+ "@logic": ["isa","person","https://en.wikipedia.org/wiki/Ludwig_van_Beethoven"],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["isa","organization","#:Vienna Music Society 3"],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["isa","activity","sk4_activity"],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["has type", "sk4_activity", "lead", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["has actor", "sk4_activity", "https://en.wikipedia.org/wiki/Ludwig_van_Beethoven", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["has target", "sk4_activity", "#:Vienna Music Society 3", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S6",
+ "@logic": ["typical", "sk4_activity", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Beethoven 2 leads the Vienna Music Society 3."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"], ["isa", "activity", ["sk5","?:X"]]],
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"],
+            ["has type", ["sk5","?:X"], "lead", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"],
+            ["has actor", ["sk5","?:X"], "?:X", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"], ["isa", "orchestra", ["sk6","?:X"]]],
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"],
+            ["has target", ["sk5","?:X"], ["sk6","?:X"], ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","conductor","?:X"],
+            ["typical", ["sk5","?:X"], ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["$block", ["$","conductor",1], ["$not", ["typical", ["sk5","?:X"], ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Conductors lead orchestras."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","orchestra","sk7_orchestra"]],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","music piece","sk8_music piece"]],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk9_activity"]],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk9_activity", "premiere", ["$ctxt","past","?:Fv28","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk9_activity", "sk7_orchestra", ["$ctxt","past","?:Fv30","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has target", "sk9_activity", "sk8_music piece", ["$ctxt","past","?:Fv32","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk9_activity", "past", "in", ["$ctxt","past","?:Fv34","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-isa","orchestra","?:X"],
+            ["-isa","music piece","?:Y"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "premiere", ["$ctxt","past","?:Fv42","?:Fv19","?:Fv20"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","past","?:Fv44","?:Fv19","?:Fv20"]],
+            ["-has target", "?:E", "?:Y", ["$ctxt","past","?:Fv46","?:Fv19","?:Fv20"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "Did some orchestras premiere music pieces?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","music piece","$some_not_music_piece"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","composer","$some_composer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","composer","$some_not_composer"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","orchestra","$some_not_orchestra"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["isa","conductor","$some_conductor"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","conductor","$some_not_conductor"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Symphony No. 9","?:X"], ["isa","9","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Symphony No.","?:X"], ["-isa","9","?:X"], ["isa","Symphony No. 9","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","music piece","?:X"], ["isa","piece","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","music","?:X"], ["-isa","piece","?:X"], ["isa","music piece","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S8","assumption",1], [["$defq0"], ["-has type", "?:X", "premiere", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has actor", "?:X", "?:V", ["$ctxt","past","?:W","?:Z","?:U"]], ["-has target", "?:X", "?:2006", ["$ctxt","past","?:2007","?:Z","?:U"]], ["-isa","music piece","?:2006"], ["-isa","orchestra","?:V"], ["-isa","activity","?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["has type", "sk3_activity", "premiere", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S8","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-isa","activity","sk3_activity"], ["-has actor", "sk3_activity", "?:X3", ["$ctxt","past","?:Y3","?:Z3","?:U3"]], ["-has target", "sk3_activity", "?:V3", ["$ctxt","past","?:W3","?:Z3","?:U3"]], ["-isa","music piece","?:V3"], ["-isa","orchestra","?:X3"]]],
+          [5, ["in","sent_S4","assumption",1], [["isa","activity","sk3_activity"]]],
+          [6, ["simp",4,5,"fromga",1], [["-has actor", "sk3_activity", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has target", "sk3_activity", "?:V", ["$ctxt","past","?:W","?:Z","?:U"]], ["-isa","music piece","?:V"], ["-isa","orchestra","?:X"]]],
+          [7, ["in","sent_S4","assumption",1], [["has actor", "sk3_activity", "#:Vienna Music Society 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [8, ["mp",6,7,"fromga",1], [["-isa","orchestra","#:Vienna Music Society 3"], ["-has target", "sk3_activity", "?:X3", ["$ctxt","past","?:Y3","?:Z3","?:U3"]], ["-isa","music piece","?:X3"]]],
+          [9, ["in","sent_S5","assumption",1], [["isa","orchestra","#:Vienna Music Society 3"]]],
+          [10, ["simp",8,9,"fromga",1], [["-has target", "sk3_activity", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","music piece","?:X"]]],
+          [11, ["in","sent_S4","assumption",1], [["has target", "sk3_activity", "https://en.wikipedia.org/wiki/Symphony_No._9", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [12, ["mp",10,11,"fromga",1], [["-isa","music piece","https://en.wikipedia.org/wiki/Symphony_No._9"]]],
+          [13, ["in","sent_S1","assumption",1], [["isa","music piece","https://en.wikipedia.org/wiki/Symphony_No._9"]]],
+          [14, ["simp",12,13,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Symphony No. 9 is a music piece.",
+"  (2) Vienna Music Society premiered Symphony No. 9.",
+"  (3) Vienna Music Society is an orchestra.",
+"  (4) Some orchestras premiered music pieces?",
+"Proof steps (by contradiction):",
+"  (1) If X is a premiere event and some V performs X and X targets some E1 and E1 is a music piece and V is an orchestra and X is an activity then answer holds  [sentence 4]",
+"  (2) The event act2 is a premiere event  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If the event act2 is an activity and some orchestra X3 performs the act2 then the act2 does not target V3  [from steps 1, 2, 3]",
+"  (5) The event act2 is an activity  [sentence 2]",
+"  (6) If some orchestra X performs the event act2 then the act2 does not target V  [from steps 4, 5]",
+"  (7) Vienna Music Society performs the event act2  [sentence 2]",
+"  (8) If Vienna Music Society is an orchestra then the act2 does not target X3  [from steps 6, 7]",
+"  (9) Vienna Music Society is an orchestra  [sentence 3]",
+"  (10) The act2 does not target X  [from steps 8, 9]",
+"  (11) The event act2 targets Symphony No. 9  [sentence 2]",
+"  (12) Symphony No. 9 is not a music piece  [from steps 10, 11]",
+"  (13) Symphony No. 9 is a music piece  [sentence 1]",
+"  (14) Contradiction  [from steps 12, 13]"
+],
+  "timestamp": "2026-06-18T19:36:42Z"
+}

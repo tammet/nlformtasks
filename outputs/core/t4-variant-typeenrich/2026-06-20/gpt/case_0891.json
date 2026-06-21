@@ -1,0 +1,184 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 891,
+  "input_text": "The car which John drove was red. Was the car blue?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The car which John drove was red.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 drove the car 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "John 1", "target": "car 2"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 was red.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","none"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Was the car blue?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was the car 2 blue?",
+          "type": "query",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["blue","none","none"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","car","car 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","drive"],
+              ["has actor","E","John 1"],
+              ["has target","E","car 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","car","car 2"], ["has degree property","red","car 2","none","none"]]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and", ["isa","car","car 2"], ["has degree property","blue","car 2","none","none"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","drive","?:Cu5"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu6"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["has target","sk0_activity","#:car 2","?:Cu7"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu8"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S2",
+ "@logic": ["has property","red","#:car 2","?:Cu11"],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","#:car 2"]],
+ "@nl": "Was the car 2 blue?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","blue","#:car 2","?:Cu13"]],
+ "@nl": "Was the car 2 blue?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","#:car 2"], ["-has property","blue","#:car 2","?:Cu14"], ["$defq0"]],
+ "@nl": "Was the car 2 blue?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was the car 2 blue?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv13"], ["has type","?:E","go","?:Fv13"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","blue","?:X","?:Fv14"], ["-has property","red","?:X","?:Fv14"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","blue","?:X","?:Fv15"], ["-has property","red","?:X","?:Fv15"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.965833,
+        "negative proof": [[1, ["in","frm_excl","assumption",0.95], [["-has property","red","?:X","?:Y"], ["-has property","blue","?:X","?:Y"]]],
+          [2, ["in","sent_S2","assumption",1], [["has property","red","#:car 2","?:X"]]],
+          [3, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property","blue","#:car 2","?:X"]]],
+          [4, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [5, ["mp",3,4,"fromga",1], [["has property","blue","#:car 2","?:X3"]]],
+          [6, ["mp",1,2,5,"fromga",0.95], false],
+          [7, ["in","frm_excl","assumption",0.95], [["-has property","red","?:X","?:Y"], ["-has property","blue","?:X","?:Y"]]],
+          [8, ["mp",7,2,5,"fromga",0.95], false],
+          [9, ["cumul",6,8,"fromga",0.965833], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 97%.",
+"Sentences used:",
+"  (1) The car which John drove was red.",
+"  (2) Was the car blue?",
+"Knowledge used:",
+"  If some X is red then X is not blue. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is red then X is not blue  [background knowledge, confidence 95%]",
+"  (2) The car B is red  [sentence 1]",
+"  (3) If answer holds then the car B is blue  [sentence 2]",
+"  (4) Answer holds  [assumption]",
+"  (5) The car B is blue  [from steps 3, 4]",
+"  (6) Contradiction  [from steps 1, 2, 5, confidence 95%]",
+"  (7) If some X is red then X is not blue  [background knowledge, confidence 95%]",
+"  (8) Contradiction  [from steps 7, 2, 5, confidence 95%]",
+"  (9) Contradiction  [from steps 6, 8, confidence 97%]"
+],
+  "timestamp": "2026-06-19T02:47:54Z"
+}

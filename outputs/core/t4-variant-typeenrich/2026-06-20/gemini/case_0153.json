@@ -1,0 +1,201 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 153,
+  "input_text": "The boy lost his backpack. Who does the backpack belong to?",
+  "expected_answer": "The boy.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The boy.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The boy lost his backpack.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The boy 1 lost the backpack 2.",
+          "type": "situation",
+          "entities": [{"id": "boy 1", "type": "concrete", "category": "person"},
+            {"id": "backpack 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lose", "mode": "event", "roles": {"actor": "boy 1", "target": "backpack 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The backpack 2 belonged to the boy 1.",
+          "type": "situation",
+          "entities": [{"id": "backpack 2", "type": "concrete", "category": "artifact"},
+            {"id": "boy 1", "type": "concrete", "category": "person"}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who does the backpack belong to?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity does the backpack 2 belong to?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "backpack 2", "type": "concrete", "category": "artifact"}
+          ],
+          "pre_state": "W1",
+          "time": "present"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","boy 1"],
+            ["isa","backpack","backpack 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lose"],
+                ["has actor","E","boy 1"],
+                ["has target","E","backpack 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","backpack","backpack 2"],
+          ["isa","person","boy 1"],
+          ["@time", "past", ["have","boy 1","backpack 2"]]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["and", ["isa","backpack","backpack 2"], ["have","X","backpack 2"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","boy","#:boy 1"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:boy 1"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","backpack","#:backpack 2"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","lose","?:Cu5"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:boy 1","?:Cu6"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["has target","sk0_activity","#:backpack 2","?:Cu7"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu8"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The boy 1 lost the backpack 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","backpack","#:backpack 2"],
+ "@nl": "The backpack 2 belonged to the boy 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:boy 1"],
+ "@nl": "The backpack 2 belonged to the boy 1."},
+{"@name": "sent_S2",
+ "@logic": ["have","#:boy 1","#:backpack 2","?:Cu13"],
+ "@nl": "The backpack 2 belonged to the boy 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","backpack","#:backpack 2"]],
+ "@nl": "Which entity does the backpack 2 belong to?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["have","?:X","#:backpack 2","?:Cu15"]],
+ "@nl": "Which entity does the backpack 2 belong to?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","backpack","#:backpack 2"],
+            ["-have","?:X","#:backpack 2","?:Cu16"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity does the backpack 2 belong to?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity does the backpack 2 belong to?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","boy","$some_boy"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","backpack","$some_backpack"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","boy","?:Xg"], ["isa","man","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:boy 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","backpack","#:backpack 2"], ["-have","?:X","#:backpack 2","?:Y"], ["$defq0","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","backpack","#:backpack 2"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-have","?:X","#:backpack 2","?:Y"], ["$defq0","?:X"]]],
+          [4, ["in","sent_S2","assumption",1], [["have","#:boy 1","#:backpack 2","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","#:boy 1"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:boy 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The boy lost his backpack.",
+"  (2) Who does the backpack belong to?",
+"Proof steps:",
+"  (1) If some X has the backpack B then X is the answer  [sentence 2]",
+"  (2) The backpack B is a backpack  [sentence 1]",
+"  (3) If some X has the backpack B then X is the answer  [from steps 1, 2]",
+"  (4) The boy A has the backpack B  [sentence 1]",
+"  (5) The boy A is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The boy is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T02:59:59Z"
+}

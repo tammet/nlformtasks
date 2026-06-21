@@ -1,0 +1,298 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 843,
+  "input_text": "John had a car which Mike did not buy. John had a car Mike did not buy?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John had a car which Mike did not buy.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 had a car 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mike 3 did not buy car 2.",
+          "type": "situation",
+          "entities": [{"id": "Mike 3", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"target": "car 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John had a car Mike did not buy?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 have a car that Mike 3 did not buy?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"},
+            {"id": "Mike 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"target": "car"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","person","John 1"], ["isa","car","car 2"], ["have","John 1","car 2"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mike 3"],
+            ["isa","car","car 2"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","buy"],
+                  ["has actor","E","Mike 3"],
+                  ["has target","E","car 2"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","car","X"],
+            ["@time", "past", ["have","John 1","X"]],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","buy"],
+                  ["has actor","E","Mike 3"],
+                  ["has target","E","X"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 had a car 2."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:Mike 3"],
+ "@nl": "Mike 3 did not buy car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 had a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 had a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["have","#:John 1","#:car 2","?:Cu5"],
+ "@nl": "John 1 had a car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 3"],
+ "@nl": "Mike 3 did not buy car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Mike 3 did not buy car 2."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","buy","?:Cu8"],
+            ["-has actor","?:E","#:Mike 3","?:Cu8"],
+            ["-has target","?:E","#:car 2","?:Cu8"],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "Mike 3 did not buy car 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","sk0_car"]],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:John 1","sk0_car","?:Cu10"]],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","buy","?:Cu11"],
+            ["-has actor","?:E","#:Mike 3","?:Cu11"],
+            ["-has target","?:E","sk0_car","?:Cu11"],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu12"],
+            ["isa","activity","sk1_activity"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu13"],
+            ["has type","sk1_activity","buy","?:Cu13"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu14"],
+            ["has actor","sk1_activity","#:Mike 3","?:Cu14"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu15"],
+            ["has target","sk1_activity","?:X","?:Cu15"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu16"],
+            ["has time","sk1_activity","past","in","?:Cu16"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu17"],
+            ["actuality","sk1_activity"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 have a car that Mike 3 did not buy?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu21"],
+            ["-has actor","?:E","?:Owner","?:Cu21"],
+            ["-has target","?:E","?:Obj","?:Cu21"],
+            ["-next","?:Fv51","?:Fv52"],
+            ["have","?:Owner","?:Obj","?:Cu21"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu22"],
+            ["-has beneficiary","?:E","?:Owner","?:Cu22"],
+            ["-has target","?:E","?:Obj","?:Cu22"],
+            ["-next","?:Fv56","?:Fv57"],
+            ["have","?:Owner","?:Obj","?:Cu22"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu23"],
+            ["-has recipient","?:E","?:Owner","?:Cu23"],
+            ["-has target","?:E","?:Obj","?:Cu23"],
+            ["-next","?:Fv61","?:Fv62"],
+            ["have","?:Owner","?:Obj","?:Cu23"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-has type","?:X","buy","?:Y"], ["-has actor","?:X","#:Mike 3","?:Y"], ["-has target","?:X","#:car 2","?:Y"], ["-isa","activity","?:X"], ["-actuality","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["has target","sk1_activity","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["have","#:John 1","#:car 2","?:X"]]],
+          [4, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [5, ["mp", [2,1], 3, 4, "fromga", 1], [["-isa","car","#:car 2"], ["has target","sk1_activity","#:car 2","?:X3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","car","#:car 2"]]],
+          [7, ["simp",5,6,"fromga",1], [["has target","sk1_activity","#:car 2","?:X"]]],
+          [8, ["in","sent_S3","assumption",1], [["$defq0"], ["has type","sk1_activity","buy","?:X"], ["-have","#:John 1","?:Y","?:X"], ["-isa","car","?:Y"]]],
+          [9, ["mp", [8,2], 3, 4, "fromga", 1], [["-isa","car","#:car 2"], ["has type","sk1_activity","buy","?:X3"]]],
+          [10, ["simp",9,6,"fromga",1], [["has type","sk1_activity","buy","?:X3"]]],
+          [11, ["in","sent_S3","assumption",1], [["$defq0"], ["has actor","sk1_activity","#:Mike 3","?:X"], ["-have","#:John 1","?:Y","?:X"], ["-isa","car","?:Y"]]],
+          [12, ["mp", [11,2], 3, 4, "fromga", 1], [["-isa","car","#:car 2"], ["has actor","sk1_activity","#:Mike 3","?:X3"]]],
+          [13, ["simp",12,6,"fromga",1], [["has actor","sk1_activity","#:Mike 3","?:X3"]]],
+          [14, ["in","sent_S3","assumption",1], [["isa","activity","sk1_activity"], ["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [15, ["mp", [14,2], 3, 4, "fromga", 1], [["-isa","car","#:car 2"], ["isa","activity","sk1_activity"]]],
+          [16, ["simp",15,6,"fromga",1], [["isa","activity","sk1_activity"]]],
+          [17, ["in","sent_S3","assumption",1], [["actuality","sk1_activity"], ["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [18, ["mp", [17,2], 3, 4, "fromga", 1], [["-isa","car","#:car 2"], ["actuality","sk1_activity"]]],
+          [19, ["simp",18,6,"fromga",1], [["actuality","sk1_activity"]]],
+          [20, ["mp", [1,2], 7, 10, 13, 16, 19, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John had a car which Mike did not buy.",
+"  (2) John had a car Mike did not buy?",
+"Proof steps (by contradiction):",
+"  (1) If X is a buy event and Mike performs X and X targets the car B then X is not an activity  [sentence 1]",
+"  (2) If John has some X and X is a car then answer holds or the event act1 targets X  [sentence 2]",
+"  (3) John has the car B  [sentence 1]",
+"  (4) assume for contradiction: the answer is no  [from question]",
+"  (5) The event act1 targets the car B  [from steps 2, 3, 4]",
+"  (6) The car B is a car  [sentence 1]",
+"  (7) The event act1 targets the car B  [from steps 5, 6]",
+"  (8) If John has some Y and Y is a car then answer holds or the event act1 is a buy event  [sentence 2]",
+"  (9) The event act1 is a buy event  [from steps 8, 3, 4]",
+"  (10) The event act1 is a buy event  [from steps 9, 6]",
+"  (11) If John has some Y and Y is a car then answer holds or Mike performs the event act1  [sentence 2]",
+"  (12) Mike performs the event act1  [from steps 11, 3, 4]",
+"  (13) Mike performs the event act1  [from steps 12, 6]",
+"  (14) If John has some X and X is a car then the event act1 is an activity or answer holds  [sentence 2]",
+"  (15) The event act1 is an activity  [from steps 14, 3, 4]",
+"  (16) The event act1 is an activity  [from steps 15, 6]",
+"  (17) If John has some X and X is a car then answer holds  [sentence 2]",
+"  (18)   [from steps 17, 3, 4]",
+"  (19)   [from steps 18, 6]",
+"  (20) Contradiction  [from steps 1, 7, 10, 13, 16, 19]"
+],
+  "timestamp": "2026-06-19T04:38:58Z"
+}

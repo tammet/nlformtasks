@@ -1,0 +1,170 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 226,
+  "input_text": "John ate berries with the edge of a spoon. Berries have an edge?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John ate berries with the edge of a spoon.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 ate berries 2 with the edge 1 of a spoon 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "berries 2", "type": "concrete"},
+            {"id": "edge 1", "type": "concrete", "text": "edge", "category": "artifact"},
+            {"id": "spoon 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"actor": "John 1", "target": "berries 2", "instrument": "edge 1"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The edge 1 is the edge of a spoon 2.",
+          "type": "situation",
+          "entities": [{"id": "edge 1", "type": "concrete", "text": "edge", "category": "artifact"},
+            {"id": "spoon 2", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["edge of","edge 1","spoon 2"]],
+          "pre_state": "W0"
+        }
+      ]
+    },
+    {
+      "raw": "Berries have an edge?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Do the berries 2 have an edge?",
+          "type": "query",
+          "entities": [{"id": "berries 2", "type": "concrete"}, {"id": "edge", "type": "generic"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","berry","berries 2"],
+            ["isa","edge","edge 1"],
+            ["isa","spoon","spoon 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","berries 2"],
+                ["has instrument","E","edge 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","edge","edge 1"],
+            ["isa","spoon","spoon 2"],
+            ["has part","spoon 2","edge 1"]
+          ]
+        ],
+        ["@definite","S2","W0","edge of","spoon 2","edge 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question", ["exists", "Y", ["and", ["isa","edge","Y"], ["have","berries 2","Y"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","edge","#:edge 1"],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "edge", ["$theof1", "edge", "#:spoon 2", ["$ctxt","present","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","spoon","#:spoon 2"],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","#:berries 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 ate berries 2 with the edge 1 of a spoon 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "edge", ["$theof1", "edge", "#:spoon 2", ["$ctxt","present","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "The edge 1 is the edge of a spoon 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","spoon","#:spoon 2"],
+ "@nl": "The edge 1 is the edge of a spoon 2."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:spoon 2", ["$theof1", "edge", "#:spoon 2", ["$ctxt","present","W0","?:Fv3","?:Fv4"]], ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The edge 1 is the edge of a spoon 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","edge","sk0_edge"]],
+ "@nl": "Do the berries 2 have an edge?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["have", "#:berries 2", "sk0_edge", ["$ctxt","present","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Do the berries 2 have an edge?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","edge","?:Y"],
+            ["-have", "#:berries 2", "?:Y", ["$ctxt","present","?:Fv13","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Do the berries 2 have an edge?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Do the berries 2 have an edge?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "#:berries 2", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["have", "#:berries 2", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "#:berries 2", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Do the berries 2 have an edge?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:spoon 2", ["$theof1", "edge", "#:spoon 2", ["$ctxt","present","W0","?:Fv3","?:Fv4"]], ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "edge of", ["$theof1","edge","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "edge", ["$theof1","edge","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T10:40:16Z"
+}

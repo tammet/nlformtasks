@@ -1,0 +1,161 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 207,
+  "input_text": "Elephants do not have wings. John is an elephant. John has wings?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants do not have wings.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants do not have wings.",
+          "type": "strict_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has wings?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does John 1 have wings?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["not", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id","S3",
+      ["question", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","John 1","Y"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-isa","wing","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Elephants do not have wings."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","wing","sk0_wing"]],
+ "@nl": "Does John 1 have wings?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has part", "#:John 1", "sk0_wing", ["$ctxt","present","?:Fv13","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Does John 1 have wings?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","wing","?:Y"],
+            ["-has part", "#:John 1", "?:Y", ["$ctxt","present","?:Fv16","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have wings?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","wing","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have wings?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "#:John 1", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does John 1 have wings?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wing","$some_wing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","wing","$some_not_wing"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","wing","?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["-$defq0"], ["isa","wing","sk0_wing"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["isa","wing","sk0_wing"]]],
+          [5, ["mp", [1,1], 4, "fromga", 1], [["-has part", "?:X", "sk0_wing", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["-$defq0"], ["has part", "#:John 1", "sk0_wing", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [7, ["mp",6,3,"fromga",1], [["has part", "#:John 1", "sk0_wing", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [8, ["mp",5,7,"fromga",1], [["-isa","elephant","#:John 1"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [10, ["simp",8,9,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Elephants do not have wings.",
+"  (2) John is an elephant.",
+"  (3) John has wings?",
+"Proof steps (by contradiction):",
+"  (1) X does not have Y as a part  [sentence 1]",
+"  (2) If answer holds then some wing win1 is a wing  [sentence 3]",
+"  (3) Answer holds  [assumption]",
+"  (4) Win1 is a wing  [from steps 2, 3]",
+"  (5) X does not have win1 as a part  [from steps 1, 4]",
+"  (6) If answer holds then John has win1 as a part  [sentence 3]",
+"  (7) John has win1 as a part  [from steps 6, 3]",
+"  (8) John is not an elephant  [from steps 5, 7]",
+"  (9) John is an elephant  [sentence 2]",
+"  (10) Contradiction  [from steps 8, 9]"
+],
+  "timestamp": "2026-06-19T08:01:15Z"
+}

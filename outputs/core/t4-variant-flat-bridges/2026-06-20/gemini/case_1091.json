@@ -1,0 +1,206 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1091,
+  "input_text": "Paul ate a sandwich and Bill a salad. Did Paul eat a salad?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Paul ate a sandwich and Bill a salad.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Paul 1 ate a sandwich 1.",
+          "type": "situation",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"},
+            {"id": "sandwich 1", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "sandwich 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Bill 2 ate a salad 2.",
+          "type": "situation",
+          "entities": [{"id": "Bill 2", "type": "concrete", "category": "person"},
+            {"id": "salad 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "salad 2"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Paul eat a salad?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Paul 1 eat a salad?",
+          "type": "query",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"},
+            {"id": "salad", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "salad"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Paul 1"],
+            ["isa","sandwich","sandwich 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","Paul 1"],
+                ["has target","E","sandwich 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Bill 2"],
+            ["isa","salad","salad 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","Bill 2"],
+                ["has target","E","salad 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","Paul 1"],
+          ["exists","X",
+            ["and",
+              ["isa","salad","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","Paul 1"],
+                  ["has target","E","X"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Paul 1"],
+ "@nl": "Paul 1 ate a sandwich 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","sandwich","#:sandwich 1"],
+ "@nl": "Paul 1 ate a sandwich 1."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "eat", "#:Paul 1", ["eventprop","$target","#:sandwich 1"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Paul 1 ate a sandwich 1."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Paul 1 ate a sandwich 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Bill 2"],
+ "@nl": "Bill 2 ate a salad 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","salad","#:salad 2"],
+ "@nl": "Bill 2 ate a salad 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "eat", "#:Bill 2", ["eventprop","$target","#:salad 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Bill 2 ate a salad 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Bill 2 ate a salad 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Paul 1"]],
+ "@nl": "Did Paul 1 eat a salad?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","salad","sk0_salad"]],
+ "@nl": "Did Paul 1 eat a salad?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "#:Paul 1", ["eventprop","$target","sk0_salad"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Paul 1 eat a salad?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Paul 1"],
+            ["-isa","salad","?:X"],
+            ["-is rel2", "eat", "#:Paul 1", ["eventprop","$target","?:X"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Paul 1 eat a salad?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Paul 1 eat a salad?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T22:36:59Z"
+}

@@ -1,0 +1,341 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1253,
+  "input_text": "John is in a red car. John is a man. The red car is in the house. The black car is in the street.\n      The street is in Tallinn. Where is a car?",
+  "expected_answer": ["In the house, in the street and in Tallinn.","In the house.","In the street.","In the house and in the street.","In Tallinn."],
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "In the house, in the street and in Tallinn.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is in a red car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is in a red car 1.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "John is a man.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a man.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "The red car is in the house.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The red car 1 is in the house 2.",
+          "type": "situation",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"},
+            {"id": "house 2", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "The black car is in the street.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "The black car 3 is in the street 4.",
+          "type": "situation",
+          "entities": [{"id": "car 3", "type": "concrete", "category": "artifact"},
+            {"id": "street 4", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["black","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "The street is in Tallinn.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "The street 4 is in Tallinn 5.",
+          "type": "real",
+          "entities": [{"id": "street 4", "type": "concrete", "category": "place"},
+            {
+              "id": "Tallinn 5",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Where is a car?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Which entity is a car located in?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","car","car 1"],
+          ["has degree property","red","car 1","none","none"],
+          ["is rel2","in","John 1","car 1"]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","man","John 1"]]],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 1"],
+          ["isa","house","house 2"],
+          ["has degree property","red","car 1","none","none"],
+          ["is rel2","in","car 1","house 2"]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 3"],
+          ["isa","street","street 4"],
+          ["has degree property","black","car 3","none","none"],
+          ["is rel2","in","car 3","street 4"]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","street","street 4"],
+          ["isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+          ["is rel2","in","street 4","https://en.wikipedia.org/wiki/Tallinn"]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["ask", "X", ["exists", "Y", ["and", ["isa","car","Y"], ["is rel2","in","Y","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","place","#:Tallinn 5"],
+ "@nl": "The street 4 is in Tallinn 5."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is in a red car 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "John 1 is in a red car 1."},
+{"@name": "sent_S1",
+ "@logic": ["has property","red","#:car 1","?:Cu4"],
+ "@nl": "John 1 is in a red car 1."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","in","#:John 1","#:car 1","?:Cu5"],
+ "@nl": "John 1 is in a red car 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a man."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The red car 1 is in the house 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","house","#:house 2"],
+ "@nl": "The red car 1 is in the house 2."},
+{"@name": "sent_S3",
+ "@logic": ["has property","red","#:car 1","?:Cu9"],
+ "@nl": "The red car 1 is in the house 2."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2","in","#:car 1","#:house 2","?:Cu10"],
+ "@nl": "The red car 1 is in the house 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","car","#:car 3"],
+ "@nl": "The black car 3 is in the street 4."},
+{"@name": "sent_S4",
+ "@logic": ["isa","street","#:street 4"],
+ "@nl": "The black car 3 is in the street 4."},
+{"@name": "sent_S4",
+ "@logic": ["has property","black","#:car 3","?:Cu13"],
+ "@nl": "The black car 3 is in the street 4."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2","in","#:car 3","#:street 4","?:Cu14"],
+ "@nl": "The black car 3 is in the street 4."},
+{"@name": "sent_S5",
+ "@logic": ["isa","street","#:street 4"],
+ "@nl": "The street 4 is in Tallinn 5."},
+{"@name": "sent_S5",
+ "@logic": ["isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+ "@nl": "The street 4 is in Tallinn 5."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2","in","#:street 4","https://en.wikipedia.org/wiki/Tallinn","?:Cu17"],
+ "@nl": "The street 4 is in Tallinn 5."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","in","?:X"], ["isa", "car", ["sk0","?:X"]]],
+ "@nl": "Which entity is a car located in?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","in","?:X"], ["is rel2", "in", ["sk0","?:X"], "?:X", "?:Cu19"]],
+ "@nl": "Which entity is a car located in?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:Y"], ["-is rel2","in","?:Y","?:X","?:Cu20"], ["$defq0","in","?:X"]],
+ "@nl": "Which entity is a car located in?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0","?:Rel","?:X"],
+ "@askvars": 2,
+ "@where_query": true,
+ "@nl": "Which entity is a car located in?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","black","?:X","?:Fv19"], ["-has property","red","?:X","?:Fv19"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","black","?:X","?:Fv20"], ["-has property","red","?:X","?:Fv20"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","car","?:X"], ["-isa","house","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","car","?:X"], ["-isa","house","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","car","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","car","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","place","$some_place"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","street","$some_street"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","house","$some_house"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","in","https://en.wikipedia.org/wiki/Tallinn"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_21","axiom",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["-is rel2","in","?:U","?:X","?:Z"], ["is rel2","in","?:U","?:Y","?:Z"]]],
+          [2, ["in","sent_S5","assumption",1], [["is rel2","in","#:street 4","https://en.wikipedia.org/wiki/Tallinn","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-is rel2","in","?:X","#:street 4","?:Y"], ["is rel2","in","?:X","https://en.wikipedia.org/wiki/Tallinn","?:Y"]]],
+          [4, ["in","sent_S4","assumption",1], [["is rel2","in","#:car 3","#:street 4","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["is rel2","in","#:car 3","https://en.wikipedia.org/wiki/Tallinn","?:X"]]],
+          [6, ["in","sent_S6","assumption",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["-isa","car","?:X"], ["$defq0","in","?:Y"]]],
+          [7, ["in","sent_S4","assumption",1], [["isa","car","#:car 3"]]],
+          [8, ["mp", [6,1], 7, "fromassumption", 1], [["-is rel2","in","#:car 3","?:X","?:Y"], ["$defq0","in","?:X"]]],
+          [9, ["mp",5,8,"fromassumption",1], [["$defq0","in","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [10, ["in","sent_S6","goal",1], [["-$defq0","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [11, ["mp",9,10,"fromga",1], [["$ans","in","https://en.wikipedia.org/wiki/Tallinn"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","in","#:house 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S6","assumption",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["-isa","car","?:X"], ["$defq0","in","?:Y"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","#:car 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-is rel2","in","#:car 1","?:X","?:Y"], ["$defq0","in","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["is rel2","in","#:car 1","#:house 2","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","in","#:house 2"]]],
+          [6, ["in","sent_S6","goal",1], [["-$defq0","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","in","#:house 2"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","in","#:street 4"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S6","assumption",1], [["-is rel2","in","?:X","?:Y","?:Z"], ["-isa","car","?:X"], ["$defq0","in","?:Y"]]],
+          [2, ["in","sent_S4","assumption",1], [["isa","car","#:car 3"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-is rel2","in","#:car 3","?:X","?:Y"], ["$defq0","in","?:X"]]],
+          [4, ["in","sent_S4","assumption",1], [["is rel2","in","#:car 3","#:street 4","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","in","#:street 4"]]],
+          [6, ["in","sent_S6","goal",1], [["-$defq0","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","in","#:street 4"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"[in, the house]:",
+"Sentences used:",
+"  (1) The red car is in the house.",
+"  (2) Where is a car?",
+"Proof steps:",
+"  (1) If some X is in some Y and X is a car then 'in Y' is the answer  [sentence 2]",
+"  (2) The the red car is a car  [sentence 1]",
+"  (3) If the the red car is in some X then 'in X' is the answer  [from steps 1, 2]",
+"  (4) The the red car is in the house B  [sentence 1]",
+"  (5) 'In the house B' is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) 'In the house B' is an answer  [from steps 5, 6]",
+"",
+"[in, the street]:",
+"Sentences used:",
+"  (1) The black car is in the street.",
+"  (2) Where is a car?",
+"Proof steps:",
+"  (1) If some X is in some Y and X is a car then 'in Y' is the answer  [sentence 2]",
+"  (2) The the black car is a car  [sentence 1]",
+"  (3) If the the black car is in some X then 'in X' is the answer  [from steps 1, 2]",
+"  (4) The the black car is in the street D  [sentence 1]",
+"  (5) 'In the street D' is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) 'In the street D' is an answer  [from steps 5, 6]",
+"",
+"[in, Tallinn]:",
+"Sentences used:",
+"  (1) The black car is in the street.",
+"  (2) The street is in Tallinn.",
+"  (3) Where is a car?",
+"Knowledge used:",
+"  If some X is in some Y and some U is in X then U is in Y. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some X is in some Y and some U is in X then U is in Y  [background knowledge]",
+"  (2) The street D is in Tallinn  [sentence 2]",
+"  (3) If some X is in the street D then X is in Tallinn  [from steps 1, 2]",
+"  (4) The the black car is in the street D  [sentence 1]",
+"  (5) The the black car is in Tallinn  [from steps 3, 4]",
+"  (6) If some X is in some Y and X is a car then 'in Y' is the answer  [sentence 3]",
+"  (7) The the black car is a car  [sentence 1]",
+"  (8) If the the black car is in some X then 'in X' is the answer  [from steps 6, 7]",
+"  (9) 'In Tallinn' is the answer  [from steps 5, 8]",
+"  (10) technical answer unwrap step  [from question]",
+"  (11) 'In Tallinn' is an answer  [from steps 9, 10]"
+],
+  "timestamp": "2026-06-19T04:40:30Z"
+}

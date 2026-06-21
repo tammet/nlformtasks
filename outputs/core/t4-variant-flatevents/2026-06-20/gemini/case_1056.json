@@ -1,0 +1,147 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1056,
+  "input_text": "John said that Mary left. Mary left?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John said that Mary left.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 said that Mary 2 left.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "say",
+              "mode": "speech_act",
+              "roles": {
+                "actor": "John 1",
+                "content": {"root": "leave", "mode": "event", "roles": {"actor": "Mary 2"}}
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary left?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Mary 2 leave?",
+          "type": "query",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "leave", "mode": "event", "roles": {"actor": "Mary 2"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","Mary 2"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","say"],
+                ["has actor","E1","John 1"],
+                ["has time","E1","past","in"],
+                ["exists","E2",
+                  ["and",
+                    ["has content","E1","E2"],
+                    ["isa","activity","E2"],
+                    ["has type","E2","leave"],
+                    ["has actor","E2","Mary 2"],
+                    ["has time","E2","past","in"]
+                  ]
+                ],
+                ["speech_act","E1"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["question",
+          ["and",
+            ["isa","person","Mary 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leave"],
+                ["has actor","E","Mary 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W1","past"]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 said that Mary 2 left."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "John 1 said that Mary 2 left."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "say", "#:John 1", ["eventprop","$target","leave"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 said that Mary 2 left."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 said that Mary 2 left."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 2"]],
+ "@nl": "Did Mary 2 leave?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "leave", "#:Mary 2", ["$ctxt","past","W1","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Mary 2 leave?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 2"],
+            ["-has property", "leave", "#:Mary 2", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 2 leave?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 2 leave?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "leave", "#:Mary 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "leave", "#:Mary 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "leave", "#:Mary 2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Mary 2 leave?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T16:52:15Z"
+}

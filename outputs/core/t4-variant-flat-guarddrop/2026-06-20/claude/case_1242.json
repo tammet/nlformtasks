@@ -1,0 +1,235 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1242,
+  "input_text": "If a city is in Estonia, it is an Estonian city. Tallinn is in Estonia. Tallinn is a city.\n     What is an Estonian city?",
+  "expected_answer": "Tallinn.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Tallinn.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a city is in Estonia, it is an Estonian city.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a city is in Estonia, the city is an Estonian city.",
+          "type": "strict_rule",
+          "entities": [{"id": "city", "type": "generic", "category": "place"},
+            {
+              "id": "Estonia 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Estonia"
+            },
+            {"id": "Estonian city", "type": "generic", "category": "place"}
+          ],
+          "adjectives": [["Estonian","none","city"]]
+        }
+      ]
+    },
+    {
+      "raw": "Tallinn is in Estonia.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Tallinn 2 is in Estonia 1.",
+          "type": "real",
+          "entities": [{
+              "id": "Tallinn 2",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            },
+            {
+              "id": "Estonia 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Estonia"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tallinn is a city.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Tallinn 2 is a city.",
+          "type": "real",
+          "entities": [{
+              "id": "Tallinn 2",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            },
+            {"id": "city", "type": "generic", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "What is an Estonian city?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity is an Estonian city?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "Estonian city", "type": "generic", "category": "place"}
+          ],
+          "adjectives": [["Estonian","none","city"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","city","X"],
+              ["is rel2","in","X","https://en.wikipedia.org/wiki/Estonia"]
+            ],
+            ["and",
+              ["isa","Estonian city","X"],
+              ["has degree property","Estonian","X","none","city"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["is rel2","in","https://en.wikipedia.org/wiki/Tallinn","https://en.wikipedia.org/wiki/Estonia"]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","city","https://en.wikipedia.org/wiki/Tallinn"]]],
+    ["@id","S4",
+      ["ask","X",
+        ["and", ["isa","Estonian city","X"], ["has degree property","Estonian","X","none","city"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Estonia 1"],
+ "@nl": "If a city is in Estonia, the city is an Estonian city."},
+{"@name": "entity_S2",
+ "@logic": ["isa","place","#:Tallinn 2"],
+ "@nl": "Tallinn 2 is in Estonia 1."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa","estonian city","?:X"]
+           ],
+ "@nl": "If a city is in Estonia, the city is an Estonian city."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has property", "Estonian", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a city is in Estonia, the city is an Estonian city."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "in", "https://en.wikipedia.org/wiki/Tallinn", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "Tallinn 2 is in Estonia 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","city","https://en.wikipedia.org/wiki/Tallinn"],
+ "@nl": "Tallinn 2 is a city."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","estonian city","?:X"]],
+ "@nl": "Which entity is an Estonian city?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "Estonian", "?:X", ["$ctxt","present","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Which entity is an Estonian city?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","estonian city","?:X"],
+            ["-has property", "Estonian", "?:X", ["$ctxt","present","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity is an Estonian city?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity is an Estonian city?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "Estonian", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "Estonian", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "Estonian", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity is an Estonian city?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Estonian city","$some_Estonian_city"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","Estonian city","$some_not_Estonian_city"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "Estonian", "$some_Estonian_city", ["$ctxt","?:Fv28","?:Fv25","?:Fv26","?:Fv27"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","city","$some_Estonian_city"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "Estonian", "$some_not_Estonian_city", ["$ctxt","?:Fv36","?:Fv33","?:Fv34","?:Fv35"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Estonian city","?:X"], ["isa","city","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Estonian","?:X"], ["-isa","city","?:X"], ["isa","Estonian city","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "pop_what",
+ "@logic": ["isa","place","$some_place"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","https://en.wikipedia.org/wiki/Tallinn"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "Estonian", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "in", "https://en.wikipedia.org/wiki/Tallinn", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["has property", "Estonian", "https://en.wikipedia.org/wiki/Tallinn", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S4","assumption",1], [["-has property", "Estonian", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","estonian city","?:X"], ["$defq0","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["-isa","estonian city","https://en.wikipedia.org/wiki/Tallinn"], ["$defq0","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [6, ["in","sent_S1","assumption",1], [["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Estonia", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["isa","estonian city","?:X"]]],
+          [7, ["mp",6,2,"fromassumption",1], [["isa","estonian city","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [8, ["simp",5,7,"fromassumption",1], [["$defq0","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [9, ["in","sent_S4","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [10, ["mp",8,9,"fromga",1], [["$ans","https://en.wikipedia.org/wiki/Tallinn"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If a city is in Estonia, it is an Estonian city.",
+"  (2) Tallinn is in Estonia.",
+"  (3) What is an Estonian city?",
+"Proof steps:",
+"  (1) If some X is in Estonia then X is Estonian  [sentence 1]",
+"  (2) Tallinn is in Estonia  [sentence 2]",
+"  (3) Tallinn is Estonian  [from steps 1, 2]",
+"  (4) If some X is Estonian and X is an estonian city then X is the answer  [sentence 3]",
+"  (5) If Tallinn is an estonian city then Tallinn is the answer  [from steps 3, 4]",
+"  (6) If some X is in Estonia then X is an estonian city  [sentence 1]",
+"  (7) Tallinn is an estonian city  [from steps 6, 2]",
+"  (8) Tallinn is the answer  [from steps 5, 7]",
+"  (9) technical answer unwrap step  [from question]",
+"  (10) Tallinn is an answer  [from steps 8, 9]"
+],
+  "timestamp": "2026-06-19T07:56:43Z"
+}

@@ -1,0 +1,120 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1209,
+  "input_text": "We are in the barn. We are in the barn?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "We are in the barn.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "We 1 are in the barn 2.",
+          "type": "situation",
+          "entities": [{"id": "we 1", "type": "concrete", "category": "person"},
+            {"id": "barn 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "We are in the barn?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Are we 1 in the barn 2?",
+          "type": "query",
+          "entities": [{"id": "we 1", "type": "concrete", "category": "person"},
+            {"id": "barn 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and", ["isa","person","we 1"], ["isa","barn","barn 2"], ["is rel2","in","we 1","barn 2"]]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and", ["isa","person","we 1"], ["isa","barn","barn 2"], ["is rel2","in","we 1","barn 2"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","we","#:we 1"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:we 1"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","barn","#:barn 2"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","in","#:we 1","#:barn 2","?:Cu4"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:we 1"]],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","barn","#:barn 2"]],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","in","#:we 1","#:barn 2","?:Cu7"]],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:we 1"],
+            ["-isa","barn","#:barn 2"],
+            ["-is rel2","in","#:we 1","#:barn 2","?:Cu8"],
+            ["$defq0"]
+           ],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Are we 1 in the barn 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","barn","#:barn 2"], ["-isa","person","#:we 1"], ["$defq0"], ["-is rel2","in","#:we 1","#:barn 2","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2","in","#:we 1","#:barn 2","?:X"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","barn","#:barn 2"], ["-isa","person","#:we 1"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","barn","#:barn 2"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","person","#:we 1"]]],
+          [7, ["in","sent_S1","assumption",1], [["isa","person","#:we 1"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) We are in the barn.",
+"  (2) We are in the barn?",
+"Proof steps (by contradiction):",
+"  (1) If the we A is a person and the we A is in the barn B then answer holds  [sentence 2]",
+"  (2) The we A is in the barn B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) The we A is not a person  [from steps 1, 2, 3]",
+"  (5) The barn B is a barn  [sentence 1]",
+"  (6) The we A is not a person  [from steps 4, 5]",
+"  (7) The we A is a person  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-19T04:40:18Z"
+}

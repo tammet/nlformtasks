@@ -1,0 +1,256 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1090,
+  "input_text": "Paul ate a sandwich and Bill a salad. What did Bill eat?",
+  "expected_answer": "A salad.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The salad.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Paul ate a sandwich and Bill a salad.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Paul 1 ate a sandwich 2.",
+          "type": "situation",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"},
+            {"id": "sandwich 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "Paul 1", "target": "sandwich 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Bill 3 ate a salad 4.",
+          "type": "situation",
+          "entities": [{"id": "Bill 3", "type": "concrete", "category": "person"},
+            {"id": "salad 4", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "Bill 3", "target": "salad 4"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What did Bill eat?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity did Bill 3 eat?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "Bill 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "Bill 3", "target": "entity"}}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Paul 1"],
+            ["isa","sandwich","sandwich 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","Paul 1"],
+                ["has target","E","sandwich 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Bill 3"],
+            ["isa","salad","salad 4"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","Bill 3"],
+                ["has target","E","salad 4"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has actor","E","Bill 3"],
+            ["has target","E","X"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Paul 1"],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","sandwich","#:sandwich 2"],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S1",
+ "@logic": ["event", "eat", "#:Paul 1", "#:sandwich 2", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Paul 1 ate a sandwich 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Bill 3"],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S2",
+ "@logic": ["isa","salad","#:salad 4"],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S2",
+ "@logic": ["event", "eat", "#:Bill 3", "#:salad 4", "sk1", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk1", "past", "in", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk1"],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Bill 3 ate a salad 4."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["event", "eat", "#:Bill 3", "?:X", ["sk2","?:X"], ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity did Bill 3 eat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has time", ["sk2","?:X"], "past", "in", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity did Bill 3 eat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["actuality", ["sk2","?:X"]]],
+ "@nl": "Which entity did Bill 3 eat?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "eat", "#:Bill 3", "?:X", "?:E", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity did Bill 3 eat?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity did Bill 3 eat?"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","salad","$some_salad"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","sandwich","$some_sandwich"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:salad 4"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-event", "eat", "#:Bill 3", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-actuality","?:Y"], ["$defq0","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["event", "eat", "#:Bill 3", "#:salad 4", "sk1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-actuality","sk1"], ["$defq0","#:salad 4"]]],
+          [4, ["in","sent_S2","assumption",1], [["actuality","sk1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:salad 4"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:salad 4"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Paul ate a sandwich and Bill a salad.",
+"  (2) What did Bill eat?",
+"Proof steps:",
+"  (1) If Bill eats some X then X is the answer  [sentence 2]",
+"  (2) Bill eats the salad D  [sentence 1]",
+"  (3) The salad D is the answer  [from steps 1, 2]",
+"  (4)   [sentence 1]",
+"  (5) The salad D is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The salad is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-20T12:43:15Z"
+}

@@ -1,0 +1,184 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 621,
+  "input_text": "Red cars are not nice. Cars are nice. Cars are nice?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Red cars are not nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Red cars are not nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["red","none","car"], ["nice","none","car"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Cars are nice.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["nice","none","car"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Cars are nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are cars nice?",
+          "type": "query",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["nice","none","car"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","car","X"], ["has degree property","red","X","none","car"]],
+              ["normally", ["not", ["has degree property","nice","X","none","car"]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","nice","X","none","car"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","car","X"],
+            ["normally", ["has degree property","nice","X","none","car"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["-has property","red","?:X","?:Cu1"],
+            ["-has degree property","good","?:X","none","car","?:Cu1"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Red cars are not nice."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["has degree property","good","?:X","none","car","?:Cu2"]],
+ "@confidence": 0.98,
+ "@nl": "Cars are nice."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","car","skq_S3_car"],
+ "@nl": "Are cars nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","skq_S3_car","none","car","?:Cu4"]],
+ "@nl": "Are cars nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","skq_S3_car","none","car","?:Cu5"], ["$defq0"]],
+ "@nl": "Are cars nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are cars nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red_car","?:Cu8"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_red_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","red","$some_not_red_car","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_car","none","car","?:Cu11"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_nice_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_car","none","car","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_red_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red_car","?:Cu15"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.98], [["has degree property","good","?:X","none","car","?:Y"], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","skq_S3_car"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has degree property","good","skq_S3_car","none","car","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property","good","skq_S3_car","none","car","?:X"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Cars are nice.",
+"  (2) Cars are nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a car then X is a good car  [sentence 1, confidence 98%]",
+"  (2) Skq_S3_car is a car  [sentence 2]",
+"  (3) Skq_S3_car is a good car  [from steps 1, 2, confidence 98%]",
+"  (4) If skq_S3_car is a good car then answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Contradiction  [from steps 3, 4, 5, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:40:13Z"
+}

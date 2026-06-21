@@ -1,0 +1,520 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_existfold_fix",
+  "case_id": 62,
+  "input_text": "International students in the US have either an F1 visa or a J1 visa. An international student in the US with an F1 visa needs to apply for CPT or OPT if the student wants to work in the US. Mike is an international student. Mike needs to apply for CPT if he wants to work in the US. Mike has a J1 visa?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "International students in the US have either an F1 visa or a J1 visa.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "International students in the US 1 have either an F1 visa or a J1 visa.",
+          "type": "normal_rule",
+          "entities": [{"id": "international students", "type": "generic", "category": "person"},
+            {
+              "id": "US 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "F1 visa", "type": "generic", "category": "abstract"},
+            {"id": "J1 visa", "type": "generic", "category": "abstract"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "An international student in the US with an F1 visa needs to apply for CPT or OPT if the student wants to work in the US.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT.",
+          "type": "normal_rule",
+          "entities": [{"id": "international student", "type": "generic", "category": "person"},
+            {
+              "id": "US 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "F1 visa", "type": "generic", "category": "abstract"},
+            {"id": "CPT", "type": "generic", "category": "abstract"},
+            {"id": "OPT", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "apply",
+              "mode": "necessity",
+              "roles": {"actor": "international student", "target": "CPT or OPT"}
+            }
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike is an international student.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Mike 1 is an international student.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"},
+            {"id": "international student", "type": "generic", "category": "person"}
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Mike needs to apply for CPT if Mike wants to work in the US.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If Mike 1 wants to work in the US 1, Mike 1 needs to apply for CPT.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"},
+            {
+              "id": "US 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "CPT", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{"root": "apply", "mode": "necessity", "roles": {"actor": "Mike 1", "target": "CPT"}}],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Mike has a J1 visa?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Does Mike 1 have a J1 visa?",
+          "type": "query",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"},
+            {"id": "J1 visa", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["forall","X",
+              ["implies",
+                ["and",
+                  ["isa","international student","X"],
+                  ["is rel2","in","X","https://en.wikipedia.org/wiki/United_States"]
+                ],
+                ["xor",
+                  ["exists", "Y", ["and", ["isa","F1 visa","Y"], ["have","X","Y"]]],
+                  ["exists", "Z", ["and", ["isa","J1 visa","Z"], ["have","X","Z"]]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["forall","X",
+              ["implies",
+                ["and",
+                  ["isa","international student","X"],
+                  ["is rel2","in","X","https://en.wikipedia.org/wiki/United_States"],
+                  ["exists", "Y", ["and", ["isa","F1 visa","Y"], ["have","X","Y"]]],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","want"],
+                      ["has actor","E1","X"],
+                      ["exists","E2",
+                        ["and",
+                          ["has content","E1","E2"],
+                          ["isa","activity","E2"],
+                          ["has type","E2","work"],
+                          ["has actor","E2","X"],
+                          ["has location","E2","https://en.wikipedia.org/wiki/United_States","in"]
+                        ]
+                      ],
+                      ["volition","E1"]
+                    ]
+                  ]
+                ],
+                ["exists","E3",
+                  ["and",
+                    ["isa","activity","E3"],
+                    ["has type","E3","apply"],
+                    ["has actor","E3","X"],
+                    ["xor",
+                      ["exists", "Z", ["and", ["isa","CPT","Z"], ["has target","E3","Z"]]],
+                      ["exists", "V", ["and", ["isa","OPT","V"], ["has target","E3","V"]]]
+                    ],
+                    ["necessity","E3"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","person","Mike 1"], ["isa","international student","Mike 1"]]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mike 1"],
+            ["implies",
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","want"],
+                  ["has actor","E1","Mike 1"],
+                  ["has time","E1","present","in"],
+                  ["exists","E2",
+                    ["and",
+                      ["has content","E1","E2"],
+                      ["isa","activity","E2"],
+                      ["has type","E2","work"],
+                      ["has actor","E2","Mike 1"],
+                      ["has location","E2","https://en.wikipedia.org/wiki/United_States","in"],
+                      ["has time","E2","present","in"]
+                    ]
+                  ],
+                  ["volition","E1"]
+                ]
+              ],
+              ["exists","E3",
+                ["and",
+                  ["isa","activity","E3"],
+                  ["has type","E3","apply"],
+                  ["has actor","E3","Mike 1"],
+                  ["exists", "X", ["and", ["isa","CPT","X"], ["has target","E3","X"]]],
+                  ["necessity","E3"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S5",
+      ["question",
+        ["exists","X",
+          ["and", ["isa","person","Mike 1"], ["isa","J1 visa","X"], ["have","Mike 1","X"]]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class, constant_vs_class, constant_vs_class, constant_vs_class, inner_content_event_missing_time, either_or_not_xor"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:US 1"],
+ "@nl": "International students in the US 1 have either an F1 visa or a J1 visa."},
+{"@name": "entity_S3",
+ "@logic": ["isa","man","#:Mike 1"],
+ "@nl": "Mike 1 is an international student."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu3"],
+            ["has property", ["$have","F1 visa"], "?:X", "?:Cu3"],
+            ["has property", ["$have","J1 visa"], "?:X", "?:Cu3"]
+           ],
+ "@nl": "International students in the US 1 have either an F1 visa or a J1 visa."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu5"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu5"],
+            ["-event","want","?:X","work","?:E1","?:Cu5"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu5"],
+            ["-has actor","?:E2","?:X","?:Cu5"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu5"],
+            ["-volition","?:E1"],
+            ["event", "apply", "?:X", "CPT", ["sk0","?:X"], "?:Cu5"]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu6"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu6"],
+            ["-event","want","?:X","work","?:E1","?:Cu6"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu6"],
+            ["-has actor","?:E2","?:X","?:Cu6"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu6"],
+            ["-volition","?:E1"],
+            ["isa", "cpt", ["sk1","?:X"]],
+            ["isa", "opt", ["sk2","?:X"]]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu7"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu7"],
+            ["-event","want","?:X","work","?:E1","?:Cu7"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu7"],
+            ["-has actor","?:E2","?:X","?:Cu7"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu7"],
+            ["-volition","?:E1"],
+            ["isa", "cpt", ["sk1","?:X"]],
+            ["has target", ["sk0","?:X"], ["sk2","?:X"], "?:Cu7"]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu8"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu8"],
+            ["-event","want","?:X","work","?:E1","?:Cu8"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu8"],
+            ["-has actor","?:E2","?:X","?:Cu8"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu8"],
+            ["-volition","?:E1"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], "?:Cu8"],
+            ["isa", "opt", ["sk2","?:X"]]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu9"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu9"],
+            ["-event","want","?:X","work","?:E1","?:Cu9"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu9"],
+            ["-has actor","?:E2","?:X","?:Cu9"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu9"],
+            ["-volition","?:E1"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], "?:Cu9"],
+            ["has target", ["sk0","?:X"], ["sk2","?:X"], "?:Cu9"]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu10"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu10"],
+            ["-event","want","?:X","work","?:E1","?:Cu10"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu10"],
+            ["-has actor","?:E2","?:X","?:Cu10"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu10"],
+            ["-volition","?:E1"],
+            ["-isa","cpt","?:Z"],
+            ["-has target", ["sk0","?:X"], "?:Z", "?:Cu10"],
+            ["-isa","opt","?:V"],
+            ["-has target", ["sk0","?:X"], "?:V", "?:Cu10"]
+           ],
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","in","?:X","https://en.wikipedia.org/wiki/United_States","?:Cu11"],
+            ["-has property", ["$have","F1 visa"], "?:X", "?:Cu11"],
+            ["-event","want","?:X","work","?:E1","?:Cu11"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu11"],
+            ["-has actor","?:E2","?:X","?:Cu11"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu11"],
+            ["-volition","?:E1"],
+            ["necessity", ["sk0","?:X"]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "If an international student in the US 1 with an F1 visa wants to work in the US 1, the international student needs to apply for CPT or OPT."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Mike 1"],
+ "@nl": "Mike 1 is an international student."},
+{"@name": "sent_S3",
+ "@logic": ["isa","international student","#:Mike 1"],
+ "@nl": "Mike 1 is an international student."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Mike 1"],
+ "@nl": "If Mike 1 wants to work in the US 1, Mike 1 needs to apply for CPT."},
+{"@name": "sent_S4",
+ "@logic": [["-event","want","#:Mike 1","work","?:E1","?:Cu15"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu15"],
+            ["-has actor","?:E2","#:Mike 1","?:Cu15"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu15"],
+            ["-volition","?:E1"],
+            ["event","apply","#:Mike 1","CPT","sk3","?:Cu15"]
+           ],
+ "@nl": "If Mike 1 wants to work in the US 1, Mike 1 needs to apply for CPT."},
+{"@name": "sent_S4",
+ "@logic": [["-event","want","#:Mike 1","work","?:E1","?:Cu16"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu16"],
+            ["-has actor","?:E2","#:Mike 1","?:Cu16"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu16"],
+            ["-volition","?:E1"],
+            ["isa","cpt","sk4_cpt"]
+           ],
+ "@nl": "If Mike 1 wants to work in the US 1, Mike 1 needs to apply for CPT."},
+{"@name": "sent_S4",
+ "@logic": [["-event","want","#:Mike 1","work","?:E1","?:Cu17"],
+            ["-has content","?:E1","?:E2"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","work","?:Cu17"],
+            ["-has actor","?:E2","#:Mike 1","?:Cu17"],
+            ["-has location","?:E2","https://en.wikipedia.org/wiki/United_States","in","?:Cu17"],
+            ["-volition","?:E1"],
+            ["necessity","sk3"]
+           ],
+ "@nl": "If Mike 1 wants to work in the US 1, Mike 1 needs to apply for CPT."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property", ["$have","J1 visa"], "#:Mike 1", "?:Cu18"]],
+ "@nl": "Does Mike 1 have a J1 visa?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mike 1"]],
+ "@nl": "Does Mike 1 have a J1 visa?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has property", ["$have","J1 visa"], "#:Mike 1", "?:Cu20"],
+            ["-isa","person","#:Mike 1"],
+            ["$defq0"]
+           ],
+ "@nl": "Does Mike 1 have a J1 visa?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","?:cef","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Does Mike 1 have a J1 visa?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","cpt","$some_CPT"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","cpt","$some_not_CPT"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","opt","$some_OPT"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","['$have', 'F1 visa']","$some_['$have',_'F1_visa']","?:Cu27"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","['$have', 'J1 visa']","$some_['$have',_'J1_visa']","?:Cu28"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","international student","?:X"], ["isa","student","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","international","?:X"],
+            ["-isa","student","?:X"],
+            ["isa","international student","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_occasion_loc",
+ "@logic": [["-is rel2","in","?:Occ","?:Place","?:Fv21"],
+            ["-has location","?:E","?:Place","in","?:Fv22"],
+            ["-isa","place","?:Place"],
+            ["has location","?:E","?:Occ","in","?:Fv22"]
+           ],
+ "@nl": "[generated: frm_occasion_loc]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:cef", ["$typed_partof","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["has part", "?:Xef", ["$typed_partof","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:cef","?:Yef"],
+            ["-has part","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:cef", ["$typed_have","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["have", "?:Xef", ["$typed_have","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:cef","?:Yef"],
+            ["-have","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T13:49:07Z"
+}

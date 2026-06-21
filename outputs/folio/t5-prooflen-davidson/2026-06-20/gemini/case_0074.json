@@ -1,0 +1,467 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 74,
+  "input_text": "All vehicle registration plates in Istanbul begin with the number 34. Plates that do not begin with the number 34 are not from Istanbul. Joe's vehicle registration plate is from Istanbul. Tom's license plate begins with the number 35. If a license plate begins with the number 35, then it does not begin with the number 34. Joe's license plate begins with the number 34?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All vehicle registration plates in Istanbul begin with the number 34.",
+      "units": [{
+          "actions": [{"mode": "habitual", "roles": {"target": "number 34"}, "root": "begin"}],
+          "entities": [{"category": "artifact", "id": "vehicle registration plate", "type": "generic"},
+            {
+              "category": "place",
+              "id": "Istanbul 3",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            },
+            {"category": "number", "id": "number 34", "type": "concrete"}
+          ],
+          "text": "All vehicle registration plates that are in Istanbul 3 begin with the number 34.",
+          "type": "strict_rule",
+          "unit_id": "S1"
+        }
+      ]
+    },
+    {
+      "raw": "Plates that do not begin with the number 34 are not from Istanbul.",
+      "units": [{
+          "actions": [{"mode": "habitual", "roles": {"target": "number 34"}, "root": "begin"}],
+          "entities": [{"category": "artifact", "id": "vehicle registration plate", "type": "generic"},
+            {"category": "number", "id": "number 34", "type": "concrete"},
+            {
+              "category": "place",
+              "id": "Istanbul 3",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "text": "A vehicle registration plate that does not begin with the number 34 is not from Istanbul 3.",
+          "type": "strict_rule",
+          "unit_id": "S2"
+        }
+      ]
+    },
+    {
+      "raw": "Joe's vehicle registration plate is from Istanbul.",
+      "units": [{
+          "definites": [["vehicle registration plate of","plate 2","Joe 1"]],
+          "entities": [{"category": "person", "id": "Joe 1", "type": "concrete"},
+            {
+              "category": "artifact",
+              "id": "plate 2",
+              "text": "vehicle registration plate",
+              "type": "concrete"
+            },
+            {
+              "category": "place",
+              "id": "Istanbul 3",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "text": "Joe 1's vehicle registration plate 2 is from Istanbul 3.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S3"
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate begins with the number 35.",
+      "units": [{
+          "actions": [{"mode": "event", "roles": {"target": "number 35"}, "root": "begin"}],
+          "definites": [["vehicle registration plate of","plate 5","Tom 4"]],
+          "entities": [{"category": "person", "id": "Tom 4", "type": "concrete"},
+            {
+              "category": "artifact",
+              "id": "plate 5",
+              "text": "vehicle registration plate",
+              "type": "concrete"
+            },
+            {"category": "number", "id": "number 35", "type": "concrete"}
+          ],
+          "text": "Tom 4's vehicle registration plate 5 begins with the number 35.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S4"
+        }
+      ]
+    },
+    {
+      "raw": "If a license plate begins with the number 35, then it does not begin with the number 34.",
+      "units": [{
+          "actions": [{"mode": "habitual", "roles": {"target": "number 35"}, "root": "begin"},
+            {"mode": "habitual", "roles": {"target": "number 34"}, "root": "begin"}
+          ],
+          "entities": [{"category": "artifact", "id": "vehicle registration plate", "type": "generic"},
+            {"category": "number", "id": "number 35", "type": "concrete"},
+            {"category": "number", "id": "number 34", "type": "concrete"}
+          ],
+          "text": "If a vehicle registration plate begins with the number 35, then the vehicle registration plate does not begin with the number 34.",
+          "type": "strict_rule",
+          "unit_id": "S5"
+        }
+      ]
+    },
+    {
+      "raw": "Joe's license plate begins with the number 34?",
+      "units": [{
+          "actions": [{"mode": "habitual", "roles": {"target": "number 34"}, "root": "begin"}],
+          "definites": [["vehicle registration plate of","plate 2","Joe 1"]],
+          "entities": [{"category": "person", "id": "Joe 1", "type": "concrete"},
+            {
+              "category": "artifact",
+              "id": "plate 2",
+              "text": "vehicle registration plate",
+              "type": "concrete"
+            },
+            {"category": "number", "id": "number 34", "type": "concrete"}
+          ],
+          "text": "Does Joe 1's vehicle registration plate 2 begin with the number 34?",
+          "type": "query",
+          "unit_id": "S6"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location, entity_used_as_location, entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","vehicle registration plate","X"],
+              ["is rel2","in","X","https://en.wikipedia.org/wiki/Istanbul"]
+            ],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","begin"],
+                ["has actor","E","X"],
+                ["has target","E","number 34"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","vehicle registration plate","X"],
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","begin"],
+                    ["has actor","E","X"],
+                    ["has target","E","number 34"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ],
+            ["not", ["is rel2","from","X","https://en.wikipedia.org/wiki/Istanbul"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Joe 1"],
+            ["isa","vehicle registration plate","plate 2"],
+            ["have","Joe 1","plate 2"],
+            ["is rel2","from","plate 2","https://en.wikipedia.org/wiki/Istanbul"]
+          ]
+        ],
+        ["state time","W0","present"],
+        ["@definite","S3","W0","vehicle registration plate of","Joe 1","plate 2"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Tom 4"],
+            ["isa","vehicle registration plate","plate 5"],
+            ["have","Tom 4","plate 5"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","begin"],
+                ["has actor","E","plate 5"],
+                ["has target","E","number 35"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","present"],
+        ["@definite","S4","W0","vehicle registration plate of","Tom 4","plate 5"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","vehicle registration plate","X"],
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","begin"],
+                  ["has actor","E1","X"],
+                  ["has target","E1","number 35"],
+                  ["typical","E1"]
+                ]
+              ]
+            ],
+            ["not",
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","begin"],
+                  ["has actor","E2","X"],
+                  ["has target","E2","number 34"],
+                  ["typical","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["and",
+          ["isa","person","Joe 1"],
+          ["isa","vehicle registration plate","plate 2"],
+          ["have","Joe 1","plate 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","begin"],
+              ["has actor","E","plate 2"],
+              ["has target","E","number 34"],
+              ["typical","E"],
+              ["has time","E","present","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Istanbul 3"],
+ "@nl": "All vehicle registration plates that are in Istanbul 3 begin with the number 34."},
+{"@name": "entity_S1",
+ "@logic": ["isa","number","#:number 34"],
+ "@nl": "All vehicle registration plates that are in Istanbul 3 begin with the number 34."},
+{"@name": "entity_S3",
+ "@logic": ["isa","plate","#:plate 2"],
+ "@nl": "Joe 1's vehicle registration plate 2 is from Istanbul 3."},
+{"@name": "entity_S4",
+ "@logic": ["isa","plate","#:plate 5"],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "entity_S4",
+ "@logic": ["isa","number","#:number 35"],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","vehicle registration plate","?:X"],
+            ["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["event", "begin", "?:X", "#:number 34", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All vehicle registration plates that are in Istanbul 3 begin with the number 34."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","vehicle registration plate","?:X"],
+            ["-is rel2", "in", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All vehicle registration plates that are in Istanbul 3 begin with the number 34."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","vehicle registration plate","?:X"],
+            ["event", "begin", "?:X", "#:number 34", ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "from", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "A vehicle registration plate that does not begin with the number 34 is not from Istanbul 3."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","vehicle registration plate","?:X"],
+            ["typical", ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "from", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "A vehicle registration plate that does not begin with the number 34 is not from Istanbul 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Joe 1"],
+ "@nl": "Joe 1's vehicle registration plate 2 is from Istanbul 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa", "vehicle registration plate", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]]],
+ "@nl": "Joe 1's vehicle registration plate 2 is from Istanbul 3."},
+{"@name": "sent_S3",
+ "@logic": ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Joe 1's vehicle registration plate 2 is from Istanbul 3."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "from", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Joe 1's vehicle registration plate 2 is from Istanbul 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Tom 4"],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["isa","vehicle registration plate","#:plate 5"],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["have", "#:Tom 4", "#:plate 5", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["event", "begin", "#:plate 5", "#:number 35", "sk2", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk2", "present", "in", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "Tom 4's vehicle registration plate 5 begins with the number 35."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","vehicle registration plate","?:X"],
+            ["-event", "begin", "?:X", "#:number 35", "?:E1", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-event", "begin", "?:X", "#:number 34", "?:E2", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-typical", "?:E2", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "If a vehicle registration plate begins with the number 35, then the vehicle registration plate does not begin with the number 34."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Joe 1"]],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa", "vehicle registration plate", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]]]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","?:Fv25","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "begin", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], "#:number 34", "sk3", ["$ctxt","?:Fv27","?:Fv26","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["typical", "sk3", ["$ctxt","?:Fv29","?:Fv28","?:Fv17","?:Fv18"]]],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk3", "present", "in", ["$ctxt","?:Fv31","?:Fv30","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Joe 1"],
+            ["-isa", "vehicle registration plate", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]]],
+            ["-have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","?:Fv36","?:Fv17","?:Fv18"]],
+            ["-event", "begin", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], "#:number 34", "?:E", ["$ctxt","?:Fv38","?:Fv37","?:Fv17","?:Fv18"]],
+            ["-typical", "?:E", ["$ctxt","?:Fv40","?:Fv39","?:Fv17","?:Fv18"]],
+            ["-has time", "?:E", "present", "in", ["$ctxt","?:Fv42","?:Fv41","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","past","?:W","?:L","?:K"]],
+            ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does Joe 1's vehicle registration plate 2 begin with the number 34?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Joe 1", ["$theof1", "vehicle registration plate", "#:Joe 1", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "vehicle registration plate of", ["$theof1","vehicle registration plate","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "vehicle registration plate", ["$theof1","vehicle registration plate","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","vehicle registration plate","$some_not_vehicle_registration_plate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","vehicle registration plate","$some_vehicle_registration_plate_in_Istanbul"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "in", "$some_vehicle_registration_plate_in_Istanbul", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv55","?:Fv52","?:Fv53","?:Fv54"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","vehicle registration plate","?:X"], ["isa","plate","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","vehicle registration","?:X"],
+            ["-isa","plate","?:X"],
+            ["isa","vehicle registration plate","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_carrier_lift",
+ "@logic": [["-isa","plate","?:X","?:Fv43"], ["isa","carrier","?:X","?:Fv43"]],
+ "@nl": "[generated: frm_carrier_lift]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:40:33Z"
+}

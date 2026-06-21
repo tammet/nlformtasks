@@ -1,0 +1,456 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 143,
+  "input_text": "Breeding back is a form of artificial selection by the deliberate selective breeding of domestic animals. Heck cattle were bred back in the 1920s to resemble the aurochs. Heck cattle are animals. Aurochs are animals. Some animals to be bred back resemble extinct animals. Some Heck cattle are artificially selected?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Breeding back is a form of artificial selection by the deliberate selective breeding of domestic animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Breeding back is artificial selection.",
+          "type": "strict_rule",
+          "entities": [{"id": "breeding back", "type": "generic", "category": "abstract"},
+            {"id": "artificial selection", "type": "generic", "category": "abstract"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Artificial selection is done by breeding domestic animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "artificial selection", "type": "generic", "category": "abstract"},
+            {
+              "id": "domestic animals",
+              "type": "generic",
+              "category": "animal",
+              "scope": "dependent"
+            }
+          ],
+          "actions": [{
+              "root": "breed",
+              "mode": "habitual",
+              "roles": {"target": "domestic animals", "manner": "deliberate and selective"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Heck cattle were bred back in the 1920s to resemble the aurochs.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Heck cattle were bred back.",
+          "type": "situation",
+          "entities": [{"id": "Heck cattle", "type": "generic", "category": "animal"},
+            {"id": "1920s", "type": "concrete", "category": "measure"}
+          ],
+          "actions": [{"root": "breed back", "mode": "event", "roles": {"target": "Heck cattle"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "1920s",
+          "time_prep": "in",
+          "state_tense": "past"
+        },
+        {
+          "unit_id": "S4",
+          "text": "Heck cattle resemble the aurochs.",
+          "type": "situation",
+          "entities": [{"id": "Heck cattle", "type": "generic", "category": "animal"},
+            {"id": "aurochs", "type": "generic", "category": "animal"}
+          ],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Heck cattle are animals.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Heck cattle are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "Heck cattle", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The aurochs are animals.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "The aurochs are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "aurochs", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Some animals to be bred back resemble extinct animals.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Some animals that are bred back resemble extinct animals.",
+          "type": "normal_rule",
+          "entities": [{"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "extinct animals", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "breed back", "mode": "capability", "roles": {"target": "animals"}}],
+          "adjectives": [["extinct","none","animal"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Some Heck cattle are artificially selected?",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Are some Heck cattle artificially selected?",
+          "type": "query",
+          "entities": [{"id": "Heck cattle", "type": "generic", "category": "animal"}],
+          "adjectives": [["artificially selected","none","animal"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","breeding back","X"], ["isa","artificial selection","X"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","artificial selection","X"],
+            ["and",
+              ["isa","activity","X"],
+              ["has type","X","breed"],
+              ["exists", "Y", ["and", ["isa","domestic animal","Y"], ["has target","X","Y"]]],
+              ["has manner","X","deliberate and selective"],
+              ["typical","X"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","Heck cattle","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","breed back"],
+                  ["has target","E","X"],
+                  ["has time","E","1920s","in"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W1",
+          ["exists","X",
+            ["exists","Y",
+              ["and",
+                ["isa","Heck cattle","X"],
+                ["isa","aurochs","Y"],
+                ["is rel2","resemble","X","Y"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W1","past"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","Heck cattle","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S6",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","aurochs","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S7",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["implies",
+              ["and",
+                ["isa","animal","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","breed back"],
+                    ["has target","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["exists","Y",
+                  ["and",
+                    ["isa","animal","Y"],
+                    ["has degree property","extinct","Y","none","animal"],
+                    ["is rel2","resemble","X","Y"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S7",0.99]
+      ]
+    ],
+    ["@id","S8",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","Heck cattle","X"],
+            ["has degree property","artificially selected","X","none","animal"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","measure","1920s"],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","breeding back","?:X"], ["isa","artificial selection","?:X"]],
+ "@nl": "Breeding back is artificial selection."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"], ["isa","activity","?:X"]],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"],
+            ["has type", "?:X", "breed", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"], ["isa", "domestic animal", ["sk0","?:X"]]],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"],
+            ["has target", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"],
+            ["has manner", "?:X", "deliberate and selective", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","artificial selection","?:X"],
+            ["typical", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Artificial selection is done by breeding domestic animals."},
+{"@name": "sent_S3",
+ "@logic": ["isa","heck cattle","sk1_heck cattle"],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk2_activity"],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["has type", "sk2_activity", "breed back", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["has target", "sk2_activity", "sk1_heck cattle", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["has time", "sk2_activity", "1920s", "in", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv11"], ["$datetime","1920s"]],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S3",
+ "@logic": ["is_past_world","W0"],
+ "@nl": "Heck cattle were bred back."},
+{"@name": "sent_S4",
+ "@logic": ["isa","heck cattle","sk3"],
+ "@nl": "Heck cattle resemble the aurochs."},
+{"@name": "sent_S4",
+ "@logic": ["isa","auroch","sk4_aurochs"],
+ "@nl": "Heck cattle resemble the aurochs."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "resemble", "sk3", "sk4_aurochs", ["$ctxt","past","W1","?:Fv12","?:Fv13"]],
+ "@nl": "Heck cattle resemble the aurochs."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","heck cattle","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Heck cattle are animals."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","auroch","?:X"], ["isa","animal","?:X"]],
+ "@nl": "The aurochs are animals."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","animal","sk5"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "breed back", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-has target", "?:E", "sk5", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-capability","?:E"],
+            ["isa","animal","sk6_animal"]
+           ],
+ "@nl": "Some animals that are bred back resemble extinct animals."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","animal","sk5"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "breed back", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-has target", "?:E", "sk5", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-capability","?:E"],
+            ["-has property", "active", "sk6_animal", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]]
+           ],
+ "@nl": "Some animals that are bred back resemble extinct animals."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","animal","sk5"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "breed back", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-has target", "?:E", "sk5", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["-capability","?:E"],
+            ["is rel2", "resemble", "sk5", "sk6_animal", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]],
+            ["$block", ["$","activity",4], ["$not", ["is rel2", "resemble", "sk5", "sk6_animal", ["$ctxt","?:Fv25","?:Fv24","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some animals that are bred back resemble extinct animals."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","heck cattle","sk7_heck cattle"]],
+ "@nl": "Are some Heck cattle artificially selected?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "artificially selected", "sk7_heck cattle", ["$ctxt","?:Fv32","?:Fv31","?:Fv26","?:Fv27"]]
+           ],
+ "@nl": "Are some Heck cattle artificially selected?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-isa","heck cattle","?:X"],
+            ["-has property", "artificially selected", "?:X", ["$ctxt","?:Fv36","?:Fv35","?:Fv26","?:Fv27"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are some Heck cattle artificially selected?"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "Are some Heck cattle artificially selected?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","breeding back","$some_breeding_back"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","breeding back","$some_not_breeding_back"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","artificial selection","$some_artificial_selection"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","artificial selection","$some_not_artificial_selection"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","domestic animal","$some_domestic_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","domestic animal","$some_not_domestic_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","Heck cattle","$some_Heck_cattle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","Heck cattle","$some_not_Heck_cattle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","auroch","$some_aurochs"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","auroch","$some_not_aurochs"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "active", "$some_extinct_animal", ["$ctxt","?:Fv96","?:Fv93","?:Fv94","?:Fv95"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_extinct_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "active", "$some_not_extinct_animal", ["$ctxt","?:Fv104","?:Fv101","?:Fv102","?:Fv103"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Heck cattle","?:X"], ["isa","cattle","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Heck","?:X"], ["-isa","cattle","?:X"], ["isa","Heck cattle","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","artificial selection","?:X"], ["isa","selection","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","bogus","?:X"],
+            ["-isa","selection","?:X"],
+            ["isa","artificial selection","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","breeding back","?:X"], ["isa","back","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","breeding","?:X"], ["-isa","back","?:X"], ["isa","breeding back","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","domestic animal","?:X"], ["isa","animal","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["isa","foreign","?:X"], ["-isa","animal","?:X"], ["isa","domestic animal","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T21:33:41Z"
+}

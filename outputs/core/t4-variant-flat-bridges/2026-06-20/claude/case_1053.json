@@ -1,0 +1,162 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1053,
+  "input_text": "The mouse was chased by the cat. Who was the cat chasing?",
+  "expected_answer": "The mouse.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The mouse.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The mouse was chased by the cat.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The cat 1 chased the mouse 2.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"},
+            {"id": "mouse 2", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "chase", "mode": "event", "roles": {"actor": "cat 1", "target": "mouse 2"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who was the cat chasing?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity was the cat 1 chasing?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "cat 1", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "chase", "mode": "event", "roles": {"actor": "cat 1", "target": "entity"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","cat","cat 1"],
+          ["isa","mouse","mouse 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","chase"],
+              ["has actor","E","cat 1"],
+              ["has target","E","mouse 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","chase"],
+            ["has actor","E","cat 1"],
+            ["has target","E","X"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 chased the mouse 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","mouse","#:mouse 2"],
+ "@nl": "The cat 1 chased the mouse 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "chase", "#:cat 1", ["eventprop","$target","#:mouse 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cat 1 chased the mouse 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "chase", "#:cat 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity was the cat 1 chasing?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "chase", "#:cat 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was the cat 1 chasing?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity was the cat 1 chasing?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","mouse","$some_mouse"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","cat","$some_cat"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:mouse 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "chase", "#:cat 1", ["eventprop","$target","#:mouse 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["-is rel2", "chase", "#:cat 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:mouse 2"]]],
+          [4, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","#:mouse 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The mouse was chased by the cat.",
+"  (2) Who was the cat chasing?",
+"Proof steps:",
+"  (1) The cat A chases mouse B  [sentence 1]",
+"  (2) If the cat A chases X then some X is the answer  [sentence 2]",
+"  (3) The mouse B is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) The mouse is an answer  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T10:57:36Z"
+}

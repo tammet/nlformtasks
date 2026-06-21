@@ -1,0 +1,267 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1114,
+  "input_text": "If a bear quickly eats berries in a deep forest, it is hungry. John is a bear.\n     John eats berries in a deep forest. John is hungry?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear quickly eats berries in a deep forest, it is hungry.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear quickly eats berries in a deep forest, the bear is hungry.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest", "type": "generic", "scope": "dependent", "category": "place"}
+          ],
+          "adjectives": [["deep","none","forest"], ["hungry","none","bear"]],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {
+                "actor": "bear",
+                "target": "berries",
+                "location": "forest",
+                "location_prep": "in",
+                "manner": "quickly"
+              }
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John eats berries in a deep forest.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 eats berries 3 in a deep forest 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries 3", "type": "concrete", "category": "plant"},
+            {"id": "forest 2", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["deep","none","forest"]],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {
+                "actor": "John 1",
+                "target": "berries 3",
+                "location": "forest 2",
+                "location_prep": "in"
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1"
+        }
+      ]
+    },
+    {
+      "raw": "John is hungry?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 hungry?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["hungry","none","bear"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","bear","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                      ["exists","Z",
+                        ["and",
+                          ["isa","forest","Z"],
+                          ["has degree property","deep","Z","none","forest"],
+                          ["has location","E","Z","in"]
+                        ]
+                      ],
+                      ["has manner","E","quickly"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ],
+                ["has degree property","hungry","X","none","bear"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","berry","berries 3"],
+            ["isa","forest","forest 2"],
+            ["has degree property","deep","forest 2","none","forest"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","berries 3"],
+                ["has location","E","forest 2","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id", "S4", ["question", ["has degree property","hungry","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "entity_S3",
+ "@logic": ["isa","berries","#:berries 3"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu3"],
+            ["-has actor","?:E","?:X","?:Cu3"],
+            ["-isa","berry","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu3"],
+            ["-isa","forest","?:Z"],
+            ["-has degree property","deep","?:Z","none","forest","?:Cu3"],
+            ["-has location","?:E","?:Z","in","?:Cu3"],
+            ["-has manner","?:E","quickly","?:Cu3"],
+            ["has degree property","hungry","?:X","none","bear","?:Cu3"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear quickly eats berries in a deep forest, the bear is hungry."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","berry","#:berries 3"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","forest","#:forest 2"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property","deep","#:forest 2","none","forest","?:Cu7"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has type","sk0_activity","eat","?:Cu9"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu10"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has target","sk0_activity","#:berries 3","?:Cu11"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has location","sk0_activity","#:forest 2","in","?:Cu12"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 eats berries 3 in a deep forest 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","hungry","#:John 1","none","bear","?:Cu14"]],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","hungry","#:John 1","none","bear","?:Cu15"], ["$defq0"]],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","forest","$some_not_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","deep","$some_not_deep_forest","none","forest","?:Cu22"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","hungry","$some_hungry_bear","none","bear","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_hungry_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","hungry","$some_not_hungry_bear","none","bear","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","animal","?:X"], ["-isa","forest","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","animal","?:X"], ["-isa","forest","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","deep","?:X","none","?:Fv54","?:Cu28"],
+            ["has degree property","deep","?:X","none","?:Fv55","?:Cu28"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T04:39:56Z"
+}

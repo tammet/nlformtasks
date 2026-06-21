@@ -1,0 +1,238 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1428,
+  "input_text": "Penguins are birds. Penguins do not fly. Birds fly. Mike is a bird. Mike is a penguin?",
+  "expected_answer": ["Likely false.","Probably false."],
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Penguins are birds.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Penguins are birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Penguins do not fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Penguins cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "penguins"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "birds"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Mike 1 is a bird.",
+          "type": "real",
+          "entities": [{"id": "Mike 1", "type": "concrete"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a penguin?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is Mike 1 a penguin?",
+          "type": "query",
+          "entities": [{"id": "Mike 1", "type": "concrete"},
+            {"id": "penguin", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","penguin","X"], ["isa","bird","X"]]]]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","penguin","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.99]
+      ]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","bird","Mike 1"]]],
+    ["@id", "S5", ["question", ["isa","penguin","Mike 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","penguin","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Penguins are birds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","penguin","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu2"],
+            ["-has actor","?:E","?:X","?:Cu2"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Penguins cannot fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk0","?:X"], "fly", "?:Cu4"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu5"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"], ["capability", ["sk0","?:X"]]],
+ "@confidence": 0.98,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bird","#:Mike 1"],
+ "@nl": "Mike 1 is a bird."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","penguin","#:Mike 1"]],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","penguin","#:Mike 1"], ["$defq0"]],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","penguin","$some_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","penguin","$some_not_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv23"], ["has type","?:E","go","?:Fv23"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.98,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-has type","?:X","fly","?:Y"], ["-has actor","?:X","?:Z","?:Y"], ["-isa","penguin","?:Z"], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["has type", ["sk0","?:X"], "fly", "?:Y"], ["-isa","bird","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["-isa","penguin","?:X"], ["isa","bird","?:X"]]],
+          [4, ["in","sent_S5","assumption",1], [["-$defq0"], ["isa","penguin","#:Mike 1"]]],
+          [5, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [6, ["mp",4,5,"fromga",1], [["isa","penguin","#:Mike 1"]]],
+          [7, ["mp",3,6,"fromga",1], [["isa","bird","#:Mike 1"]]],
+          [8, ["mp", [2,1], 7, "fromga", 1], [["has type", ["sk0","#:Mike 1"], "fly", "?:X"]]],
+          [9, ["in","sent_S3","assumption",1], [["isa", "activity", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [10, ["mp", [9,1], 7, "fromga", 1], [["isa", "activity", ["sk0","#:Mike 1"]]]],
+          [11, ["mp",1,8,10,"fromga",1], [["-capability", ["sk0","#:Mike 1"]], ["-has actor", ["sk0","#:Mike 1"], "?:X3", "?:Y3"], ["-isa","penguin","?:X3"]]],
+          [12, ["in","sent_S3","assumption",0.98], [["capability", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [13, ["mp", [12,1], 7, "fromga", 0.98], [["capability", ["sk0","#:Mike 1"]]]],
+          [14, ["simp",11,13,"fromga",0.98], [["-has actor", ["sk0","#:Mike 1"], "?:X", "?:Y"], ["-isa","penguin","?:X"]]],
+          [15, ["in","sent_S3","assumption",1], [["has actor", ["sk0","?:X"], "?:X", "?:Y"], ["-isa","bird","?:X"]]],
+          [16, ["mp", [15,1], 7, "fromga", 1], [["has actor", ["sk0","#:Mike 1"], "#:Mike 1", "?:X"]]],
+          [17, ["mp",14,16,6,"fromga",0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Penguins are birds.",
+"  (2) Penguins do not fly.",
+"  (3) Birds fly.",
+"  (4) Mike is a penguin?",
+"Proof steps (by contradiction):",
+"  (1) If X is a fly event and some penguin Z performs X and X is an activity then X is not a capability  [sentence 2]",
+"  (2) If some X is a bird then sk0 of X is a fly event  [sentence 3]",
+"  (3) If some X is a penguin then X is a bird  [sentence 1]",
+"  (4) If answer holds then Mike is a penguin  [sentence 4]",
+"  (5) Answer holds  [assumption]",
+"  (6) Mike is a penguin  [from steps 4, 5]",
+"  (7) Mike is a bird  [from steps 3, 6]",
+"  (8) sk0 of Mike 1 is a fly event  [from steps 2, 7]",
+"  (9) If some X is a bird then the flying event sk0 of X is an activity  [sentence 3]",
+"  (10) The flying event sk0 of Mike 1 is an activity  [from steps 9, 7]",
+"  (11) If some penguin X3 performs the flying event sk0 of Mike 1 then sk0 of Mike 1 is not a capability  [from steps 1, 8, 10]",
+"  (12) If some X is a bird then the flying event sk0 of X is a capability  [sentence 3, confidence 98%]",
+"  (13) The flying event sk0 of Mike 1 is a capability  [from steps 12, 7, confidence 98%]",
+"  (14) X does not perform sk0 of Mike 1  [from steps 11, 13, confidence 98%]",
+"  (15) If some X is a bird then X performs the flying event sk0 of X  [sentence 3]",
+"  (16) Mike performs the flying event sk0 of Mike 1  [from steps 15, 7]",
+"  (17) Contradiction  [from steps 14, 16, 6, confidence 98%]"
+],
+  "timestamp": "2026-06-19T04:42:16Z"
+}

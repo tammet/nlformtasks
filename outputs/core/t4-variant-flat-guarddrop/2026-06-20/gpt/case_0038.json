@@ -1,0 +1,125 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 38,
+  "input_text": "John is somewhat big. Mike is very big. Who is very big?",
+  "expected_answer": "Mike",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Mike.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is somewhat big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is somewhat big.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["big","low","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is very big.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 2 is very big.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"}],
+          "adjectives": [["big","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is very big?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is very big?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["big","high","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and", ["isa","person","John 1"], ["has degree property","big","John 1","low","person"]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","person","Mike 2"], ["has degree property","big","Mike 2","high","person"]]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["has degree property","big","X","high","entity"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is somewhat big."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "big", "#:John 1", "low", "person", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 is somewhat big."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Mike 2 is very big."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "big", "#:Mike 2", "high", "person", ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Mike 2 is very big."},
+{"@name": "sent_S3",
+ "@question": ["has degree property", "big", "?:X", "high", "?:Fv15", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+ "@askvars": 1,
+ "@nl": "Which entity is very big?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "big", "?:Br1", "high", "?:Fv16", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "big", "?:Br1", "high", "?:Fv17", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:Br1", "high", "?:Fv18", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity is very big?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "none", "?:Fv19", ["$ctxt","past","?:Fv9","?:Fv10","?:Fv11"]],
+            ["has degree property", "big", "?:X", "none", "?:Fv20", ["$ctxt","present","?:Fv9","?:Fv10","?:Fv11"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Fv21", ["$ctxt","present","?:Fv9","?:Fv10","?:Fv11"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv12","?:Fv13","?:Fv14"]],
+            ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv12","?:Fv13","?:Fv14"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv12","?:Fv13","?:Fv14"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:Mike 2","person","W0","?:X3","?:Y3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree property", "big", "#:Mike 2", "high", "person", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","goal",1], [["-has degree property", "big", "?:X", "high", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$ans","?:X","?:Y","?:Z","?:U","?:V"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","#:Mike 2","person","W0","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mike is very big.",
+"  (2) Who is very big?",
+"Proof steps:",
+"  (1) Mike is a very big person  [sentence 1]",
+"  (2) If some X is very big then X is an answer  [from question]",
+"  (3) [Mike, person] is an answer  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T08:00:47Z"
+}

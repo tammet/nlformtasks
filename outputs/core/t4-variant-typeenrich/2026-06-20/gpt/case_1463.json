@@ -1,0 +1,223 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1463,
+  "input_text": "Elephants are big. Young elephants are not big.\n      Mike is an elephant. John is a young elephant. Mike is big?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants are big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants are big.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Young elephants are not big.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Young elephants are not big.",
+          "type": "normal_rule",
+          "entities": [{"id": "young elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["young","none","elephant"], ["big","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike is an elephant.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Mike 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a young elephant.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 2 is a young elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 2", "type": "concrete", "category": "animal"},
+            {"id": "young elephant", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["young","none","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is big?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is Mike 1 big?",
+          "type": "query",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","elephant"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["has degree property","big","X","none","elephant"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","elephant","X"], ["has degree property","young","X","none","elephant"]],
+              ["normally", ["not", ["has degree property","big","X","none","elephant"]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","elephant","Mike 1"]]],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","elephant","John 2"],
+          ["has degree property","young","John 2","none","elephant"]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["question", ["has degree property","big","Mike 1","none","elephant"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","animal","#:Mike 1"],
+ "@nl": "Mike 1 is an elephant."},
+{"@name": "entity_S4",
+ "@logic": ["isa","animal","#:John 2"],
+ "@nl": "John 2 is a young elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has degree property","big","?:X","none","elephant","?:Cu3"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Elephants are big."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has degree property","young","?:X","none","elephant","?:Cu4"],
+            ["-has degree property","big","?:X","none","elephant","?:Cu4"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Young elephants are not big."},
+{"@name": "sent_S3",
+ "@logic": ["isa","elephant","#:Mike 1"],
+ "@nl": "Mike 1 is an elephant."},
+{"@name": "sent_S4",
+ "@logic": ["isa","elephant","#:John 2"],
+ "@nl": "John 2 is a young elephant."},
+{"@name": "sent_S4",
+ "@logic": ["has degree property","young","#:John 2","none","elephant","?:Cu7"],
+ "@nl": "John 2 is a young elephant."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","big","#:Mike 1","none","elephant","?:Cu8"]],
+ "@nl": "Is Mike 1 big?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","big","#:Mike 1","none","elephant","?:Cu9"], ["$defq0"]],
+ "@nl": "Is Mike 1 big?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is Mike 1 big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_elephant","none","elephant","?:Cu12"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_big_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_elephant","none","elephant","?:Cu14"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","young","$some_not_young_elephant","none","elephant","?:Cu15"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","animal","?:X"], ["isa","young","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","young","?:X"], ["isa","animal","?:X"]],
+ "@confidence": 0.76,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv51","?:Cu18"],
+            ["has degree property","big","?:X","none","?:Fv52","?:Cu18"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","young","?:X","none","?:Fv54","?:Cu20"],
+            ["has degree property","young","?:X","none","?:Fv55","?:Cu20"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has degree property","big","?:X","none","elephant","?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","#:Mike 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has degree property","big","#:Mike 1","none","elephant","?:X"]]],
+          [4, ["in","sent_S5","assumption",1], [["$defq0"], ["-has degree property","big","#:Mike 1","none","elephant","?:X"]]],
+          [5, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Elephants are big.",
+"  (2) Mike is an elephant.",
+"  (3) Mike is big?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then X is a big elephant  [sentence 1, confidence 98%]",
+"  (2) Mike is an elephant  [sentence 2]",
+"  (3) Mike is a big elephant  [from steps 1, 2, confidence 98%]",
+"  (4) If Mike is a big elephant then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Contradiction  [from steps 3, 4, 5, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:51:18Z"
+}

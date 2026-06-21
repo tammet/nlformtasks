@@ -1,0 +1,220 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 348,
+  "input_text": "The hand of a man moved a wheel. A man had a hand?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The hand of a man moved a wheel.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The hand 2 of man 1 moved wheel 3.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "hand 2", "type": "concrete", "text": "hand"},
+            {"id": "wheel 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "move", "mode": "event", "roles": {"actor": "hand 2", "target": "wheel 3"}}],
+          "definites": [["hand of","hand 2","man 1"]],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Hand 2 is the hand of man 1.",
+          "type": "situation",
+          "entities": [{"id": "hand 2", "type": "concrete", "text": "hand"},
+            {"id": "man 1", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["hand of","hand 2","man 1"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A man had a hand?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did a man have a hand?",
+          "type": "query",
+          "entities": [{"id": "man", "type": "generic", "category": "person"},
+            {"id": "hand", "type": "generic", "scope": "dependent"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","man","man 1"],
+            ["isa","hand","hand 2"],
+            ["isa","wheel","wheel 3"],
+            ["has part","man 1","hand 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","move"],
+                ["has actor","E","hand 2"],
+                ["has target","E","wheel 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"],
+        ["@definite","S1","W0","hand of","man 1","hand 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","hand","hand 2"], ["isa","man","man 1"], ["has part","man 1","hand 2"]]
+        ],
+        ["state time","W0","past"],
+        ["@definite","S2","W0","hand of","man 1","hand 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","man","X"],
+            ["exists", "Y", ["and", ["isa","hand","Y"], ["@time", "past", ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: dropped_specific_noun"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "hand", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","wheel","#:wheel 3"],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S1",
+ "@logic": ["has part", "#:man 1", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "go", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["eventprop","$target","#:wheel 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The hand 2 of man 1 moved wheel 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "hand", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "Hand 2 is the hand of man 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "Hand 2 is the hand of man 1."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:man 1", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Hand 2 is the hand of man 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","man","sk0_man"]],
+ "@nl": "Did a man have a hand?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","hand","sk1_hand"]],
+ "@nl": "Did a man have a hand?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have", "sk0_man", "sk1_hand", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]]],
+ "@nl": "Did a man have a hand?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","hand","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","past","?:Fv17","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did a man have a hand?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did a man have a hand?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did a man have a hand?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:man 1", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:man 1", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "hand of", ["$theof1","hand","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "hand", ["$theof1","hand","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","hand","?:Fv18"], ["has type","?:E","give","?:Fv18"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv19"], ["has type","?:E","go","?:Fv19"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_theof","assumption",1], [["have", "#:man 1", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:X","?:Y"]], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["$defq0"], ["-have", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-isa","man","?:X"], ["-isa","hand","?:Y"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["-isa","man","#:man 1"], ["-isa", "hand", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:X3","?:Y3"]]]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","man","#:man 1"]]],
+          [6, ["simp",4,5,"fromga",1], [["-isa", "hand", ["$theof1", "hand", "#:man 1", ["$ctxt","past","W0","?:X","?:Y"]]]]],
+          [7, ["in","frm_theof","assumption",1], [["isa", "hand", ["$theof1","hand","?:X","?:Y"]]]],
+          [8, ["mp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The hand of a man moved a wheel.",
+"  (2) A man had a hand?",
+"Knowledge used:",
+"  The man A has the hand of man A. Why: assumed basic knowledge.",
+"  X's hand is a hand. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) The man A has the hand of man A  [background knowledge]",
+"  (2) If some X has some Y and X is a man and Y is a hand then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) The hand of man A is not a hand  [from steps 1, 2, 3]",
+"  (5) The man A is a man  [sentence 1]",
+"  (6) The hand of man A is not a hand  [from steps 4, 5]",
+"  (7) X's hand is a hand  [background knowledge]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-19T08:27:05Z"
+}

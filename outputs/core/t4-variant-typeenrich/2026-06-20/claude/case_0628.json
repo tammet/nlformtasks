@@ -1,0 +1,142 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 628,
+  "input_text": "Mary, a pilot, smiled. Who is a pilot?",
+  "expected_answer": "Mary.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Mary.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary, a pilot, smiled.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 smiled.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "smile", "mode": "event", "roles": {"actor": "Mary 1"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 1 is a pilot.",
+          "type": "real",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "pilot", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Who is a pilot?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is a pilot?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "pilot", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Mary 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","smile"],
+              ["has actor","E","Mary 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","pilot","Mary 1"]]],
+    ["@id", "S3", ["ask", "X", ["isa","pilot","X"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","woman","#:Mary 1"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","smile","?:Cu4"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:Mary 1","?:Cu5"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu6"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Mary 1 smiled."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pilot","#:Mary 1"],
+ "@nl": "Mary 1 is a pilot."},
+{"@name": "sent_S3",
+ "@question": ["isa","pilot","?:X"],
+ "@askvars": 1,
+ "@nl": "Which entity is a pilot?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","woman","$some_woman"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","pilot","$some_pilot"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_pilot"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","pop_what","assumption",1], [["isa","pilot","$some_pilot"]]],
+          [2, ["in","sent_S3","goal",1], [["-isa","pilot","?:X"], ["$ans","?:X"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_pilot"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:Mary 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["isa","pilot","#:Mary 1"]]],
+          [2, ["in","sent_S3","goal",1], [["-isa","pilot","?:X"], ["$ans","?:X"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","#:Mary 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary, a pilot, smiled.",
+"  (2) Who is a pilot?",
+"Proof steps:",
+"  (1) Mary is a pilot  [sentence 1]",
+"  (2) X is an answer  [from question]",
+"  (3) Mary is an answer  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T02:40:14Z"
+}

@@ -1,0 +1,164 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1013,
+  "input_text": "John and Mike were defeated. Who defeated John and Mike?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "A.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John and Mike were defeated.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 and Mike 2 were defeated.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "defeat", "mode": "event", "roles": {"target": ["John 1","Mike 2"]}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who defeated John and Mike?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity defeated John 1 and Mike 2?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "defeat",
+              "mode": "event",
+              "roles": {"actor": "entity", "target": ["John 1","Mike 2"]}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","Mike 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","defeat"],
+                ["exists", "A", ["has actor","E","A"]],
+                ["has target","E","John 1"],
+                ["has target","E","Mike 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Mike 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","defeat"],
+              ["has actor","E","X"],
+              ["has target","E","John 1"],
+              ["has target","E","Mike 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 and Mike 2 were defeated."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "John 1 and Mike 2 were defeated."},
+{"@name": "sent_S1",
+ "@logic": ["-is rel2", "victory", "A", ["eventprop","$target","#:John 1"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 and Mike 2 were defeated."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","person","#:John 1"]],
+ "@nl": "Which entity defeated John 1 and Mike 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","person","#:Mike 2"]],
+ "@nl": "Which entity defeated John 1 and Mike 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-is rel2", "victory", "?:X", ["eventprop","$target","#:John 1"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity defeated John 1 and Mike 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","person","#:Mike 2"],
+            ["is rel2", "victory", "?:X", ["eventprop","$target","#:John 1"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity defeated John 1 and Mike 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity defeated John 1 and Mike 2?"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","A"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","person","#:Mike 2"], ["-isa","person","#:John 1"], ["is rel2", "victory", "?:X", ["eventprop","$target","#:John 1"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","person","#:Mike 2"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","person","#:John 1"], ["is rel2", "victory", "?:X3", ["eventprop","$target","#:John 1"], ["$ctxt","past","?:Y3","?:Z3","?:U3"]], ["$defq0","?:X3"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["is rel2", "victory", "?:X", ["eventprop","$target","#:John 1"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [6, ["in","sent_S1","assumption",1], [["-is rel2", "victory", "A", ["eventprop","$target","#:John 1"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [7, ["mp",5,6,"fromassumption",1], [["$defq0","A"]]],
+          [8, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [9, ["mp",7,8,"fromga",1], [["$ans","A"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John and Mike were defeated.",
+"  (2) Who defeated John and Mike?",
+"Proof steps:",
+"  (1) If Mike is a person and John is a person then some X is victory of John or X is the answer  [sentence 2]",
+"  (2) Mike is a person  [sentence 1]",
+"  (3) If John is a person then some X3 is victory of John or X3 is the answer  [from steps 1, 2]",
+"  (4) John is a person  [sentence 1]",
+"  (5) Some X is victory of John or X is the answer  [from steps 3, 4]",
+"  (6) A is not victory of John  [sentence 1]",
+"  (7) Some A is the answer  [from steps 5, 6]",
+"  (8) technical answer unwrap step  [from question]",
+"  (9) A is an answer  [from steps 7, 8]"
+],
+  "timestamp": "2026-06-19T10:44:49Z"
+}

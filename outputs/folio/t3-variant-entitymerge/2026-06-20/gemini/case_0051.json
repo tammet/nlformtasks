@@ -1,0 +1,251 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 51,
+  "input_text": "No digital media are analog. Every printed text is analog media. All streaming services are digital media. If an object is a hardcover book, then it is printed text. If 1984 is a streaming service, then 1984 is a hardcover book. 1984 is not a streaming service?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "No digital media are analog media.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No digital media are analog media.",
+          "type": "strict_rule",
+          "entities": [{"id": "digital media", "type": "generic", "category": "abstract"},
+            {"id": "analog media", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Every printed text is analog media.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Every printed text is analog media.",
+          "type": "strict_rule",
+          "entities": [{"id": "printed text", "type": "generic", "category": "abstract"},
+            {"id": "analog media", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All streaming services are digital media.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All streaming services are digital media.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "streaming services",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "abstract"
+            },
+            {"id": "digital media", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If an object is a hardcover book, then it is printed text.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If an object is a hardcover book, then the object is printed text.",
+          "type": "strict_rule",
+          "entities": [{"id": "object", "type": "generic", "category": "abstract"},
+            {
+              "id": "hardcover book",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            },
+            {"id": "printed text", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If 1984 is a streaming service, then 1984 is a hardcover book.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If 1984 1 is a streaming service, then 1984 1 is a hardcover book.",
+          "type": "strict_rule",
+          "entities": [{"id": "1984 1", "type": "concrete", "category": "abstract"},
+            {
+              "id": "streaming service",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "abstract"
+            },
+            {
+              "id": "hardcover book",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "1984 is not a streaming service?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is 1984 1 not a streaming service?",
+          "type": "query",
+          "entities": [{"id": "1984 1", "type": "concrete", "category": "abstract"},
+            {
+              "id": "streaming service",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "abstract"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","digital media","X"], ["not", ["isa","analog media","X"]]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","printed text","X"], ["isa","analog media","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","streaming service","X"], ["isa","digital media","X"]]]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","object","X"], ["isa","hardcover book","X"]],
+            ["isa","printed text","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["implies", ["isa","streaming service","1984 1"], ["isa","hardcover book","1984 1"]]
+      ]
+    ],
+    ["@id", "S6", ["question", ["not", ["isa","streaming service","1984 1"]]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","digital media","?:X"], ["-isa","analog media","?:X"]],
+ "@nl": "No digital media are analog media."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","printed text","?:X"], ["isa","analog media","?:X"]],
+ "@nl": "Every printed text is analog media."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","streaming service","?:X"], ["isa","digital media","?:X"]],
+ "@nl": "All streaming services are digital media."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","object","?:X"], ["-isa","hardcover book","?:X"], ["isa","printed text","?:X"]],
+ "@nl": "If an object is a hardcover book, then the object is printed text."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","streaming service","1984 1"], ["isa","hardcover book","1984 1"]],
+ "@nl": "If 1984 1 is a streaming service, then 1984 1 is a hardcover book."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","streaming service","1984 1"]],
+ "@nl": "Is 1984 1 not a streaming service?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","streaming service","1984 1"], ["$defq0"]],
+ "@nl": "Is 1984 1 not a streaming service?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is 1984 1 not a streaming service?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","digital media","$some_digital_media"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","digital media","$some_not_digital_media"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","analog media","$some_analog_media"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","analog media","$some_not_analog_media"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","printed text","$some_printed_text"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","printed text","$some_not_printed_text"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","streaming service","$some_not_streaming_service"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","object","$some_object"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","object","$some_not_object"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","hardcover book","$some_not_hardcover_book"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","analog media","?:X"], ["isa","media","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","analog","?:X"], ["-isa","media","?:X"], ["isa","analog media","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","digital media","?:X"], ["isa","media","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","digital","?:X"], ["-isa","media","?:X"], ["isa","digital media","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","hardcover book","?:X"], ["isa","book","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","hardcover","?:X"], ["-isa","book","?:X"], ["isa","hardcover book","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","printed text","?:X"], ["isa","text","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","printed","?:X"], ["-isa","text","?:X"], ["isa","printed text","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","streaming service","?:X"], ["isa","service","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","streaming","?:X"], ["-isa","service","?:X"], ["isa","streaming service","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T21:26:30Z"
+}

@@ -1,0 +1,157 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 170,
+  "input_text": "The girls admired themselves. The girls admired the girls?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The girls admired themselves.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The girls [set 1] admired themselves.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "person"}],
+          "actions": [{"root": "admire", "mode": "event", "roles": {"actor": "set 1", "target": "set 1"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The girls admired the girls?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did the girls [set 1] admire the girls [set 1]?",
+          "type": "query",
+          "entities": [{"id": "set 1", "type": "set", "category": "person"}],
+          "actions": [{"root": "admire", "mode": "event", "roles": {"actor": "set 1", "target": "set 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","?:M",
+          ["implies",
+            ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","person","?:X"]]]],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","admire"],
+                ["has actor","E","?:M"],
+                ["has target", "E", ["$setof", "?:X", "set 1", ["and", ["isa","person","?:X"]]]],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","?:M",
+          ["implies",
+            ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","person","?:X"]]]],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","admire"],
+                ["has actor","E","?:M"],
+                ["has target", "E", ["$setof", "?:X", "set 1", ["and", ["isa","person","?:X"]]]],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]],
+            ["has degree rel2", "admire", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:Fv9", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The girls [set 1] admired themselves."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_person", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]],
+            ["has degree rel2", "admire", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:Fv10", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did the girls [set 1] admire the girls [set 1]?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["member", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the girls [set 1] admire the girls [set 1]?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-has degree rel2", "admire", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:Fv11", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the girls [set 1] admire the girls [set 1]?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did the girls [set 1] admire the girls [set 1]?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree rel2", "admire", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]]]],
+          [2, ["in","frm_set","assumption",1], [["member", "?:X", ["$setof", "id", "?:Y", ["$and", ["isa","?:Z","$arg1"]]]], ["-isa","?:Z","?:X"]]],
+          [3, ["in","frm_set","assumption",1], [["-member", "?:X", ["$setof", "id", "?:Y", ["$and", ["isa","?:Z","$arg1"]]]], ["isa","?:Z","?:X"]]],
+          [4, ["in","sent_S2","assumption",1], [["member", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]]], ["$defq0"]]],
+          [5, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [6, ["mp",3,4,5,"fromga",1], [["isa","person","sk0"]]],
+          [7, ["mp", [2,1], 6, "fromga", 1], [["member", "sk0", ["$setof", "id", "?:X", ["$and", ["isa","person","$arg1"]]]]]],
+          [8, ["mp", [1,1], 7, "fromga", 1], [["has degree rel2", "admire", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [9, ["in","sent_S2","assumption",1], [["$defq0"], ["-has degree rel2", "admire", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","person","$arg1"]]], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [10, ["mp", 8, [9,1], 5, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The girls admired themselves.",
+"  (2) The girls admired the girls?",
+"Knowledge used:",
+"  If some X is a ?:Z then X is among ?:Zs in ?:Y. Why: assumed basic knowledge.",
+"  If some X is among ?:Zs in ?:Y then X is a ?:Z. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is among persons in set 1 then X is admire of persons in set 1  [sentence 1]",
+"  (2) If some X is a ?:Z then X is among ?:Zs in ?:Y  [background knowledge]",
+"  (3) If some X is among ?:Zs in ?:Y then X is a ?:Z  [background knowledge]",
+"  (4) Some person per1 is among persons in set 1 or answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Per1 is a person  [from steps 3, 4, 5]",
+"  (7) Per1 is among persons in ?:X  [from steps 2, 6]",
+"  (8) Per1 is admire of persons in set 1  [from steps 1, 7]",
+"  (9) If per1 is admire of persons in set 1 then answer holds  [sentence 2]",
+"  (10) Contradiction  [from steps 8, 9, 5]"
+],
+  "timestamp": "2026-06-19T00:08:28Z"
+}

@@ -1,0 +1,193 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1207,
+  "input_text": "Mary started the car. Was the car running before?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary started the car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 started the car 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "start", "mode": "event", "roles": {"actor": "Mary 1", "target": "car 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 was not running.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["running","none","car"]],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S3",
+          "text": "The car 2 is running.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["running","none","car"]],
+          "pre_state": "W1",
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Was the car running before?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Was the car 2 running before Mary 1 started the car 2?",
+          "type": "query",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "Mary 1", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["running","none","car"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","start"],
+                ["has actor","E","Mary 1"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","car","car 2"],
+            ["not", ["has degree property","running","car 2","none","car"]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W1",
+          ["and", ["isa","car","car 2"], ["has degree property","running","car 2","none","car"]]
+        ],
+        ["state time","W1","present"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and", ["isa","car","car 2"], ["has degree property","running","car 2","none","car"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "start", "#:Mary 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 was not running."},
+{"@name": "sent_S2",
+ "@logic": ["-has property", "running", "#:car 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The car 2 was not running."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S3",
+ "@logic": ["has property", "running", "#:car 2", ["$ctxt","present","W1","?:Fv5","?:Fv6"]],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","#:car 2"]],
+ "@nl": "Was the car 2 running before Mary 1 started the car 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "running", "#:car 2", ["$ctxt","past","W0","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Was the car 2 running before Mary 1 started the car 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","#:car 2"],
+            ["-has property", "running", "#:car 2", ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was the car 2 running before Mary 1 started the car 2?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Was the car 2 running before Mary 1 started the car 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "running", "#:car 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "running", "#:car 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "running", "#:car 2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was the car 2 running before Mary 1 started the car 2?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S4","assumption",1], [["-$defq0"], ["has property", "running", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["mp",1,2,"fromga",1], [["has property", "running", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S2","assumption",1], [["-has property", "running", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [5, ["mp",3,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary started the car.",
+"  (2) Was the car running before?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds then the car B is running  [sentence 2]",
+"  (2) Answer holds  [assumption]",
+"  (3) The car B is running  [from steps 1, 2]",
+"  (4) The car B is not running  [sentence 1]",
+"  (5) Contradiction  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T08:04:35Z"
+}

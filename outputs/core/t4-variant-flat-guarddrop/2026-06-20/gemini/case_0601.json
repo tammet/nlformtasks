@@ -1,0 +1,176 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 601,
+  "input_text": "The cat sat on the mat and purred. Did the cat bark?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The cat sat on the mat and purred.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The cat 1 sat on the mat 2.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"},
+            {"id": "mat 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "sit",
+              "mode": "event",
+              "roles": {"actor": "cat 1", "location": "mat 2", "location_prep": "on"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The cat 1 purred.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "purr", "mode": "event", "roles": {"actor": "cat 1"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did the cat bark?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did the cat 1 bark?",
+          "type": "query",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "bark", "mode": "event", "roles": {"actor": "cat 1"}}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["isa","mat","mat 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","sit"],
+                ["has actor","E","cat 1"],
+                ["has location","E","mat 2","on"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","purr"],
+                ["has actor","E","cat 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["question",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","bark"],
+                ["has actor","E","cat 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W2","past"]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","mat","#:mat 2"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "sit", "#:cat 1", ["eventprop","$location","#:mat 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "purr", "#:cat 1", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","cat","#:cat 1"]],
+ "@nl": "Did the cat 1 bark?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property", "bark", "#:cat 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]]],
+ "@nl": "Did the cat 1 bark?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","cat","#:cat 1"],
+            ["-has property", "bark", "#:cat 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the cat 1 bark?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did the cat 1 bark?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "bark", "#:cat 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "bark", "#:cat 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "bark", "#:cat 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did the cat 1 bark?"},
+{"@name": "frm_carrier_lift",
+ "@logic": [["-isa","mat","?:X","?:Fv12"], ["isa","carrier","?:X","?:Fv12"]],
+ "@nl": "[generated: frm_carrier_lift]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T08:40:38Z"
+}

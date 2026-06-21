@@ -1,0 +1,147 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1002,
+  "input_text": "John shot an elephant in his pyjamas. John shot in his pyjamas?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John shot an elephant in his pyjamas.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 shot an elephant 2 in John 1's pyjamas 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant 2", "type": "concrete", "category": "animal"},
+            {"id": "pyjamas 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "shoot",
+              "mode": "event",
+              "roles": {"target": "elephant 2", "location": "pyjamas 3", "location_prep": "in"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John shot in his pyjamas?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did John 1 shoot in John 1's pyjamas 3?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "pyjamas 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "shoot",
+              "mode": "event",
+              "roles": {"location": "pyjamas 3", "location_prep": "in"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","animal","elephant 2"],
+          ["isa","artifact","pyjamas 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","shoot"],
+              ["has actor","E","John 1"],
+              ["has target","E","elephant 2"],
+              ["has location","E","pyjamas 3","in"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","artifact","pyjamas 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","shoot"],
+              ["has actor","E","John 1"],
+              ["has location","E","pyjamas 3","in"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","elephant","#:elephant 2"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","pyjamas","#:pyjamas 3"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","pyjama","#:pyjamas 3"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","animal","#:elephant 2"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","artifact","#:pyjamas 3"],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "shoot", "#:John 1", ["eventprop","$target","#:elephant 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 shot an elephant 2 in John 1's pyjamas 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Did John 1 shoot in John 1's pyjamas 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","artifact","#:pyjamas 3"]],
+ "@nl": "Did John 1 shoot in John 1's pyjamas 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "shoot", "#:John 1", ["eventprop","$location","#:pyjamas 3"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did John 1 shoot in John 1's pyjamas 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","artifact","#:pyjamas 3"],
+            ["-is rel2", "shoot", "#:John 1", ["eventprop","$location","#:pyjamas 3"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 shoot in John 1's pyjamas 3?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 shoot in John 1's pyjamas 3?"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","artifact","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","artifact","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T17:36:24Z"
+}

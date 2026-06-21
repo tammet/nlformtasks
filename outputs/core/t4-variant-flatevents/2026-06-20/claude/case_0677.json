@@ -1,0 +1,270 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 677,
+  "input_text": "The dog chased by the boy was black. The dog was white?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The dog chased by the boy was black.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The dog 1 was black.",
+          "type": "situation",
+          "entities": [{"id": "dog 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["black","none","dog"]],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The boy 2 chased the dog 1.",
+          "type": "situation",
+          "entities": [{"id": "boy 2", "type": "concrete", "category": "person"},
+            {"id": "dog 1", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "chase", "mode": "event", "roles": {"actor": "boy 2", "target": "dog 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The dog was white?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was the dog 1 white?",
+          "type": "query",
+          "entities": [{"id": "dog 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["white","none","dog"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","dog","dog 1"], ["has degree property","black","dog 1","none","dog"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","boy","boy 2"],
+            ["isa","dog","dog 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","chase"],
+                ["has actor","E","boy 2"],
+                ["has target","E","dog 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and", ["isa","dog","dog 1"], ["has degree property","white","dog 1","none","dog"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","dog","#:dog 1"],
+ "@nl": "The dog 1 was black."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "black", "#:dog 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The dog 1 was black."},
+{"@name": "sent_S2",
+ "@logic": ["isa","boy","#:boy 2"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","dog","#:dog 1"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "chase", "#:boy 2", ["eventprop","$target","#:dog 1"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","dog","#:dog 1"]],
+ "@nl": "Was the dog 1 white?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Was the dog 1 white?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","dog","#:dog 1"],
+            ["-has property", "white", "#:dog 1", ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was the dog 1 white?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was the dog 1 white?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "white", "#:dog 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "white", "#:dog 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "white", "#:dog 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was the dog 1 white?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","black","?:X","?:Fv12"],
+            ["-has property","white","?:X","?:Fv12"],
+            ["$block", 0, ["has property","white","?:X","?:Fv12"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","black","?:X","?:Fv13"],
+            ["-has property","white","?:X","?:Fv13"],
+            ["$block", 0, ["has property","black","?:X","?:Fv13"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "black", "?:X", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has property", "black", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has property", "black", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "black", "?:X", ["$ctxt","past","?:Fv17","?:Fv18","?:Fv19"]],
+            ["has property", "black", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]],
+            ["$block", 0, ["$not", ["has property", "black", "?:X", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "white", "?:X", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["has property", "white", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has property", "white", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "white", "?:X", ["$ctxt","past","?:Fv23","?:Fv24","?:Fv25"]],
+            ["has property", "white", "?:X", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]],
+            ["$block", 0, ["$not", ["has property", "white", "?:X", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]],
+          ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]
+        ],
+        "confidence": 0.951692,
+        "negative proof": [[1, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [2, ["in","sent_S1","assumption",1], [["has property", "black", "#:dog 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["in","frm_excl","assumption",0.95], [["$block", 0, ["has property","white","?:X","?:Y"]], ["-has property","white","?:X","?:Y"], ["-has property","black","?:X","?:Y"]]],
+          [7, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [8, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [9, ["mp",7,8,"fromga",1], [["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [10, ["mp", [6,1], 9, "fromga", 0.95], [["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]], ["-has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [11, ["mp", [5,1], [10,1], "fromga", 0.9405], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [12, ["in","sent_S2","assumption",1], [["next","W0","W1"]]],
+          [13, ["mp", [3,2], 12, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [14, ["mp", [13,1], [10,1], "fromga", 0.9405], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [15, ["cumul",11,14,"fromga",0.951692], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]
+        ]
+      },
+      {
+        "answer": false,
+        "blockers": [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]
+        ],
+        "confidence": 0.9304,
+        "negative proof": [[1, ["in","frm_93","axiom",1], [["-has property", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["has property", "?:X", "?:Y", ["$ctxt","past","?:W","?:U","?:V"]], ["-before","?:Z","?:W"]]],
+          [2, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has property", "black", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["-has property", "black", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["has property", "black", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [3, ["in","sent_S1","assumption",1], [["has property", "black", "#:dog 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [4, ["mp", [2,1], 3, "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [5, ["mp", 1, [4,1], "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-before","W0","?:Z"]]],
+          [6, ["in","frm_91","axiom",1], [["-next","?:X","?:Y"], ["before","?:X","?:Y"]]],
+          [7, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [8, ["mp",6,7,"fromassumption",1], [["before","W0","W1"]]],
+          [9, ["mp", [5,2], 8, "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [10, ["in","frm_excl","assumption",0.95], [["$block", 0, ["has property","white","?:X","?:Y"]], ["-has property","white","?:X","?:Y"], ["-has property","black","?:X","?:Y"]]],
+          [11, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [12, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [13, ["mp",11,12,"fromga",1], [["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [14, ["mp", [10,1], 13, "fromga", 0.95], [["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]], ["-has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [15, ["mp", [9,1], [14,1], "fromga", 0.9025], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [16, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has property", "black", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["-has property", "black", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["has property", "black", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [17, ["mp", [16,1], 3, "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [18, ["mp", 1, [17,1], "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-before","W0","?:Z"]]],
+          [19, ["mp", [18,2], 8, "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [20, ["mp", [19,1], [14,1], "fromga", 0.9025], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [21, ["cumul",15,20,"fromga",0.91507], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [22, ["in","sent_S2","assumption",1], [["next","W0","W1"]]],
+          [23, ["mp",6,22,"fromassumption",1], [["before","W0","W1"]]],
+          [24, ["mp", [18,2], 23, "fromassumption", 0.95], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "black", "#:dog 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [25, ["mp", [24,1], [14,1], "fromga", 0.9025], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]],
+          [26, ["cumul",21,25,"fromga",0.9304], [["$block", 0, ["$not", ["has property", "black", "#:dog 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["has property", "white", "#:dog 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) The dog chased by the boy was black.",
+"  (2) The dog was white?",
+"Knowledge used:",
+"  If some Y is some X and a situation E1 is followed by a situation U then normally Y is X. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"  If some X is white then X is not black, except when X is white. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some X and a situation E1 is followed by a situation U then normally Y is X  [background knowledge, confidence 99%]",
+"  (2) The dog A is black  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then normally the dog A is black  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (5) Normally the dog A is black  [from steps 3, 4, confidence 99%]",
+"  (6) If some X is white then X is not black, except when X is white  [background knowledge, confidence 95%]",
+"  (7) If answer holds then the dog A is white  [sentence 2]",
+"  (8) Answer holds  [assumption]",
+"  (9) The dog A is white  [from steps 7, 8]",
+"  (10) The dog A is not black, except when the dog A is white  [from steps 6, 9, confidence 95%]",
+"  (11) Outstanding exception: the dog A is not black and the dog A is white  [from steps 5, 10, confidence 94%]",
+"  (12) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (13) Normally the dog A is black  [from steps 3, 12, confidence 99%]",
+"  (14) Outstanding exception: the dog A is not black and the dog A is white  [from steps 13, 10, confidence 94%]",
+"  (15) Outstanding exception: the dog A is not black and the dog A is white  [from steps 11, 14, confidence 95%]",
+"Exceptions checked and not holding:",
+"  dog A is not black",
+"  dog A is white"
+],
+  "timestamp": "2026-06-18T15:27:15Z"
+}

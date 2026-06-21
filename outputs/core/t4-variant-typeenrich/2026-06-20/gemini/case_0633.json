@@ -1,0 +1,166 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 633,
+  "input_text": "My neighbor, John, owns a bicycle. Who is my neighbor?",
+  "expected_answer": "John.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "My neighbor, John, owns a bicycle.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 owns a bicycle 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bicycle 2", "type": "concrete", "category": "artifact"}
+          ],
+          "time": "present"
+        },
+        {
+          "unit_id": "S2",
+          "text": "John 1 is the neighbor of me 0.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "me 0", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["neighbor of","John 1","me 0"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Who is my neighbor?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is the neighbor of me 0?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "me 0", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["neighbor of","entity","me 0"]],
+          "time": "present"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","bicycle","bicycle 2"],
+            ["have","John 1","bicycle 2"]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","me 0"],
+            ["is rel2","neighbor of","John 1","me 0"]
+          ]
+        ],
+        ["state time","W0","present"],
+        ["@definite","S2","W0","neighbor of","me 0","John 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["ask", "X", ["and", ["isa","person","me 0"], ["is rel2","neighbor of","X","me 0"]]],
+        ["state time","W0","present"]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: free_variable"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 owns a bicycle 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 owns a bicycle 2."},
+{"@name": "entity_S2",
+ "@logic": ["isa","me","#:me 0"],
+ "@nl": "John 1 is the neighbor of me 0."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "person", ["$theof1","neighbor","#:me 0","?:Cu4"]],
+ "@nl": "John 1 owns a bicycle 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","bicycle","#:bicycle 2"],
+ "@nl": "John 1 owns a bicycle 2."},
+{"@name": "sent_S1",
+ "@logic": ["have", ["$theof1","neighbor","#:me 0","?:Cu6"], "#:bicycle 2", "?:Cu6"],
+ "@nl": "John 1 owns a bicycle 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "person", ["$theof1","neighbor","#:me 0","?:Cu7"]],
+ "@nl": "John 1 is the neighbor of me 0."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:me 0"],
+ "@nl": "John 1 is the neighbor of me 0."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0", ["$theof1","neighbor","#:me 0","?:Cu9"]], ["isa","person","#:me 0"]],
+ "@nl": "Which entity is the neighbor of me 0?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:me 0"],
+            ["-is rel2", "neighbor of", ["$theof1","neighbor","#:me 0","?:Cu10"], "#:me 0", "?:Cu10"],
+            ["$defq0", ["$theof1","neighbor","#:me 0","?:Cu10"]]
+           ],
+ "@nl": "Which entity is the neighbor of me 0?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0", ["$theof1","neighbor","#:me 0","?:Cu11"]],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity is the neighbor of me 0?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:me 0", ["$theof1","neighbor","#:me 0","?:Cu13"], "?:Cu13"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:me 0", ["$theof1","neighbor","#:me 0","?:Cu14"], "?:Cu14"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "neighbor of", ["$theof1","neighbor","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "neighbor", ["$theof1","neighbor","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bicycle","$some_bicycle"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","me","$some_me"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","person","#:me 0"], ["-is rel2", "neighbor of", ["$theof1","neighbor","#:me 0","?:X"], "#:me 0", "?:X"], ["$defq0", ["$theof1","neighbor","#:me 0","?:X"]]]],
+          [2, ["in","frm_theof","assumption",1], [["is rel2", "neighbor of", ["$theof1","neighbor","?:X","?:Y"], "?:X", "?:Y"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","person","#:me 0"], ["$defq0", ["$theof1","neighbor","#:me 0","?:X3"]]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","person","#:me 0"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0", ["$theof1","neighbor","#:me 0","?:X"]]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0", ["$theof1","neighbor","#:me 0","?:X"]], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "timestamp": "2026-06-19T03:25:38Z"
+}

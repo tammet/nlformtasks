@@ -1,0 +1,281 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 691,
+  "input_text": "John's friend from Paris bought a camera. John had a friend?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John's friend from Paris bought a camera.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1's friend 2 from Paris 3 bought a camera 4.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "friend 2", "type": "concrete", "text": "friend", "category": "person"},
+            {
+              "id": "Paris 3",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Paris"
+            },
+            {"id": "camera 4", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "friend 2", "target": "camera 4"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Friend 2 is the friend of John 1.",
+          "type": "situation",
+          "entities": [{"id": "friend 2", "type": "concrete", "text": "friend", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["friend of","friend 2","John 1"]],
+          "pre_state": "W0"
+        },
+        {
+          "unit_id": "S3",
+          "text": "Friend 2 is from Paris 3.",
+          "type": "situation",
+          "entities": [{"id": "friend 2", "type": "concrete", "text": "friend", "category": "person"},
+            {
+              "id": "Paris 3",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Paris"
+            }
+          ],
+          "pre_state": "W0"
+        }
+      ]
+    },
+    {
+      "raw": "John had a friend?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Did John 1 have a friend?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "friend", "type": "generic", "category": "person"}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","friend","friend 2"],
+            ["isa","place","Paris 3"],
+            ["isa","camera","camera 4"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","friend 2"],
+                ["has target","E","camera 4"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","friend","friend 2"],
+            ["isa","person","John 1"],
+            ["is rel2","friend of","friend 2","John 1"]
+          ]
+        ],
+        ["@definite","S2","W0","friend of","John 1","friend 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","friend","friend 2"],
+          ["is rel2","from","friend 2","https://en.wikipedia.org/wiki/Paris"]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["exists", "X", ["and", ["isa","friend","X"], ["@time", "past", ["have","John 1","X"]]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:friend 2"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "entity_S1",
+ "@logic": ["isa","friend","#:friend 2"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "friend", ["$theof1","friend","#:John 1","?:Cu5"]],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa","place","#:Paris 3"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa","camera","#:camera 4"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","buy","?:Cu9"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["has actor", "sk0_activity", ["$theof1","friend","#:John 1","?:Cu10"], "?:Cu10"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["has target","sk0_activity","#:camera 4","?:Cu11"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu12"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1's friend 2 from Paris 3 bought a camera 4."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "friend", ["$theof1","friend","#:John 1","?:Cu15"]],
+ "@nl": "Friend 2 is the friend of John 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Friend 2 is the friend of John 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa", "friend", ["$theof1","friend","#:John 1","?:Cu17"]],
+ "@nl": "Friend 2 is from Paris 3."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "from", ["$theof1","friend","#:John 1","?:Cu18"], "https://en.wikipedia.org/wiki/Paris", "?:Cu18"],
+ "@nl": "Friend 2 is from Paris 3."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","friend","sk1_friend"]],
+ "@nl": "Did John 1 have a friend?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:John 1","sk1_friend","?:Cu20"]],
+ "@nl": "Did John 1 have a friend?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","friend","?:X"], ["-have","#:John 1","?:X","?:Cu21"], ["$defq0"]],
+ "@nl": "Did John 1 have a friend?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 have a friend?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:John 1", ["$theof1","friend","#:John 1","?:Cu23"], "?:Cu23"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "friend of", ["$theof1","friend","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "friend", ["$theof1","friend","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","person","?:X"], ["isa","friend","?:X"]],
+ "@confidence": 0.75,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","friend","?:X"], ["isa","person","?:X"]],
+ "@confidence": 0.75,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu30"],
+            ["-has actor","?:E","?:Owner","?:Cu30"],
+            ["-has target","?:E","?:Obj","?:Cu30"],
+            ["-next","?:Fv19","?:Fv20"],
+            ["have","?:Owner","?:Obj","?:Cu30"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu31"],
+            ["-has beneficiary","?:E","?:Owner","?:Cu31"],
+            ["-has target","?:E","?:Obj","?:Cu31"],
+            ["-next","?:Fv24","?:Fv25"],
+            ["have","?:Owner","?:Obj","?:Cu31"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type","?:E","buy","?:Cu32"],
+            ["-has recipient","?:E","?:Owner","?:Cu32"],
+            ["-has target","?:E","?:Obj","?:Cu32"],
+            ["-next","?:Fv29","?:Fv30"],
+            ["have","?:Owner","?:Obj","?:Cu32"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_theof","assumption",1], [["have", "#:John 1", ["$theof1","friend","#:John 1","?:X"], "?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["-isa","friend","?:X"]]],
+          [3, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["-isa", "friend", ["$theof1","friend","#:John 1","?:X"]]]],
+          [5, ["in","frm_theof","assumption",1], [["isa", "friend", ["$theof1","friend","?:X","?:Y"]]]],
+          [6, ["mp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John had a friend?",
+"Knowledge used:",
+"  John has John's friend. Why: assumed basic knowledge.",
+"  X's friend is a friend. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) John has John's friend  [background knowledge]",
+"  (2) If John has some X and X is a friend then answer holds  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) John's friend is not a friend  [from steps 1, 2, 3]",
+"  (5) X's friend is a friend  [background knowledge]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-19T02:40:27Z"
+}

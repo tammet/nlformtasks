@@ -1,0 +1,351 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 90,
+  "input_text": "A big old grey elephant was strong. The big animal lifted a stone. The stone was heavy. The old animal lifted a heavy stone?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A big old grey elephant was strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A big old grey elephant 1 was strong.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","elephant"],
+            ["old","none","elephant"],
+            ["grey","none","elephant"],
+            ["strong","none","elephant"]
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The big animal lifted a stone.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The big elephant 1 lifted a stone 2.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"},
+            {"id": "stone 2", "type": "concrete"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"actor": "elephant 1", "target": "stone 2"}}],
+          "adjectives": [["big","none","elephant"]],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The stone was heavy.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The stone 2 was heavy.",
+          "type": "situation",
+          "entities": [{"id": "stone 2", "type": "concrete"}],
+          "adjectives": [["heavy","none","stone"]],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The old animal lifted a heavy stone?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Did the old elephant 1 lift a heavy stone?",
+          "type": "query",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"},
+            {"id": "stone", "type": "generic"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"actor": "elephant 1", "target": "stone"}}],
+          "adjectives": [["old","none","elephant"], ["heavy","none","stone"]],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["has degree property","big","elephant 1","none","elephant"],
+            ["has degree property","old","elephant 1","none","elephant"],
+            ["has degree property","grey","elephant 1","none","elephant"],
+            ["has degree property","strong","elephant 1","none","elephant"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["has degree property","big","elephant 1","none","elephant"],
+            ["isa","stone","stone 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lift"],
+                ["has actor","E","elephant 1"],
+                ["has target","E","stone 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","stone","stone 2"],
+            ["has degree property","heavy","stone 2","none","stone"]
+          ]
+        ],
+        ["state time","W1","past"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","stone","X"],
+            ["has degree property","heavy","X","none","stone"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lift"],
+                ["has actor","E","elephant 1"],
+                ["has target","E","X"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "A big old grey elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "big", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A big old grey elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["-has degree property", "new", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A big old grey elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "grey", "#:elephant 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A big old grey elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "strong", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A big old grey elephant 1 was strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "The big elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "big", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The big elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","stone","#:stone 2"],
+ "@nl": "The big elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The big elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The big elephant 1 lifted a stone 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","stone","#:stone 2"],
+ "@nl": "The stone 2 was heavy."},
+{"@name": "sent_S3",
+ "@logic": ["-has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+ "@nl": "The stone 2 was heavy."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","stone","sk0_stone"]],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree property", "light", "sk0_stone", "none", "stone", ["$ctxt","past","?:Fv12","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","sk0_stone"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","stone","?:X"],
+            ["has degree property", "light", "?:X", "none", "stone", ["$ctxt","past","?:Fv16","?:Fv7","?:Fv8"]],
+            ["-is rel2", "lift", "#:elephant 1", ["eventprop","$target","?:X"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["has degree property", "light", "?:Br1", "none", "stone", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["-has degree property", "light", "?:Br1", "none", "stone", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "heavy", "?:Br1", "none", "stone", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did the old elephant 1 lift a heavy stone?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "none", "?:Fv48", ["$ctxt","past","?:Fv18","?:Fv19","?:Fv20"]],
+            ["has degree property", "big", "?:X", "none", "?:Fv49", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Fv50", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv21","?:Fv22","?:Fv23"]],
+            ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "grey", "?:X", ["$ctxt","past","?:Fv24","?:Fv25","?:Fv26"]],
+            ["has property", "grey", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]],
+            ["$block", 0, ["$not", ["has property", "grey", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "grey", "?:X", ["$ctxt","past","?:Fv27","?:Fv28","?:Fv29"]],
+            ["has property", "grey", "?:X", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]],
+            ["$block", 0, ["$not", ["has property", "grey", "?:X", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "light", "?:X", "none", "?:Fv51", ["$ctxt","past","?:Fv30","?:Fv31","?:Fv32"]],
+            ["-has degree property", "light", "?:X", "none", "?:Fv52", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]],
+            ["$block", 0, ["$not", ["has degree property", "heavy", "?:X", "none", "?:Fv53", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "light", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv33","?:Fv34","?:Fv35"]],
+            ["-has degree property", "light", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv33","?:Fv34","?:Fv35"]],
+            ["$block", 0, ["$not", ["has degree property", "heavy", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv33","?:Fv34","?:Fv35"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "new", "?:X", "none", "?:Fv54", ["$ctxt","past","?:Fv36","?:Fv37","?:Fv38"]],
+            ["-has degree property", "new", "?:X", "none", "?:Fv55", ["$ctxt","present","?:Fv36","?:Fv37","?:Fv38"]],
+            ["$block", 0, ["$not", ["has degree property", "old", "?:X", "none", "?:Fv56", ["$ctxt","present","?:Fv36","?:Fv37","?:Fv38"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "new", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv39","?:Fv40","?:Fv41"]],
+            ["-has degree property", "new", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv39","?:Fv40","?:Fv41"]],
+            ["$block", 0, ["$not", ["has degree property", "old", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv39","?:Fv40","?:Fv41"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "none", "?:Fv57", ["$ctxt","past","?:Fv42","?:Fv43","?:Fv44"]],
+            ["has degree property", "strong", "?:X", "none", "?:Fv58", ["$ctxt","present","?:Fv42","?:Fv43","?:Fv44"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "none", "?:Fv59", ["$ctxt","present","?:Fv42","?:Fv43","?:Fv44"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv45","?:Fv46","?:Fv47"]],
+            ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv45","?:Fv46","?:Fv47"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv45","?:Fv46","?:Fv47"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:elephant 1","W0"]]],
+        "confidence": 0.99165,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["in","sent_S4","assumption",1], [["$defq0"], ["-is rel2", "lift", "#:elephant 1", ["eventprop","$target","?:X"], ["$ctxt","past","W1","?:Y","?:Z"]], ["has degree property", "light", "?:X", "none", "stone", ["$ctxt","past","?:U","?:Y","?:Z"]], ["-isa","stone","?:X"]]],
+          [7, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,1], 7, "fromga", 0.99], [["-isa","stone","#:stone 2"], ["$block", 0, ["moved","#:elephant 1","W0"]], ["has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","stone","#:stone 2"]]],
+          [10, ["simp",8,9,"fromga",0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [11, ["in","sent_S3","assumption",1], [["-has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [12, ["mp", [10,1], 11, "fromga", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]]]],
+          [13, ["in","sent_S2","assumption",1], [["next","W0","W1"]]],
+          [14, ["mp", [3,2], 13, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [15, ["mp", [14,1], [6,1], 7, "fromga", 0.99], [["-isa","stone","#:stone 2"], ["$block", 0, ["moved","#:elephant 1","W0"]], ["has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [16, ["simp",15,9,"fromga",0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["has degree property", "light", "#:stone 2", "none", "stone", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [17, ["mp", [16,1], 11, "fromga", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]]]],
+          [18, ["cumul",12,17,"fromga",0.99165], [["$block", 0, ["moved","#:elephant 1","W0"]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) The big animal lifted a stone.",
+"  (2) The stone was heavy.",
+"  (3) The old animal lifted a heavy stone?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) The elephant A is lift of stone B  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then the elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (5) The elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 3, 4, confidence 99%]",
+"  (6) If the elephant A is lift of X and some X is a stone then answer holds or X is a light stone  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) The stone B is light, except when the elephant A moved in the situation W0  [from steps 5, 6, 7, confidence 99%]",
+"  (9) The stone B is a stone  [sentence 1]",
+"  (10) The stone B is light, except when the elephant A moved in the situation W0  [from steps 8, 9, confidence 99%]",
+"  (11) The stone B is not light  [sentence 2]",
+"  (12) Outstanding exception: the elephant A moved in the situation W0  [from steps 10, 11, confidence 99%]",
+"  (13) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (14) The elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 3, 13, confidence 99%]",
+"  (15) The stone B is light, except when the elephant A moved in the situation W0  [from steps 14, 6, 7, confidence 99%]",
+"  (16) The stone B is light, except when the elephant A moved in the situation W0  [from steps 15, 9, confidence 99%]",
+"  (17) Outstanding exception: the elephant A moved in the situation W0  [from steps 16, 11, confidence 99%]",
+"  (18) Outstanding exception: the elephant A moved in the situation W0  [from steps 12, 17, confidence 99%]",
+"Exceptions checked and not holding:",
+"  elephant A moved in W0"
+],
+  "timestamp": "2026-06-18T15:24:47Z"
+}

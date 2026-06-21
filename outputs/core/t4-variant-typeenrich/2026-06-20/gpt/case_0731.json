@@ -1,0 +1,318 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 731,
+  "input_text": "Nice bears who eat big fish are strong. John is a nice bear. John eats big fish. John is strong?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Nice bears who eat big fish are strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Nice bears that eat big fish are strong.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "fish", "type": "generic", "scope": "dependent", "category": "animal"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "bears", "target": "fish"}}],
+          "adjectives": [["nice","none","bear"], ["big","none","fish"], ["strong","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a nice bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        },
+        {
+          "unit_id": "S3",
+          "text": "John 1 is nice.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John eats big fish.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 eats big fish.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "fish", "type": "generic", "scope": "dependent", "category": "animal"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "fish"}}],
+          "adjectives": [["big","none","fish"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is strong?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is John 1 strong?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["strong","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","bear","X"], ["has degree property","nice","X","none","bear"]],
+              ["normally",
+                ["and",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists","Y",
+                        ["and",
+                          ["isa","fish","Y"],
+                          ["has degree property","big","Y","none","fish"],
+                          ["has target","E","Y"]
+                        ]
+                      ],
+                      ["typical","E"]
+                    ]
+                  ],
+                  ["has degree property","strong","X","none","bear"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id", "S3", ["holds", "W0", ["has degree property","nice","John 1","none","bear"]]],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","animal","John 1"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","fish","Y"],
+                      ["has degree property","big","Y","none","fish"],
+                      ["has target","E","Y"]
+                    ]
+                  ],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.99]
+      ]
+    ],
+    ["@id", "S5", ["question", ["has degree property","strong","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu1"],
+            ["isa", "activity", ["sk0","?:X"]]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu2"],
+            ["has type", ["sk0","?:X"], "eat", "?:Cu2"]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu3"],
+            ["has actor", ["sk0","?:X"], "?:X", "?:Cu3"]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu4"],
+            ["isa", "fish", ["sk1","?:X"]]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu5"],
+            ["has degree property", "big", ["sk1","?:X"], "none", "fish", "?:Cu5"]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu6"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], "?:Cu6"]
+           ],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["-has degree property","good","?:X","none","bear","?:Cu7"]],
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu8"],
+            ["has degree property","strong","?:X","none","bear","?:Cu8"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Nice bears that eat big fish are strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property","good","#:John 1","none","bear","?:Cu10"],
+ "@nl": "John 1 is nice."},
+{"@name": "sent_S4",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk2_activity"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["has type","sk2_activity","eat","?:Cu13"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["has actor","sk2_activity","#:John 1","?:Cu14"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["isa","fish","sk3_fish"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["has degree property","big","sk3_fish","none","fish","?:Cu16"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S4",
+ "@logic": ["has target","sk2_activity","sk3_fish","?:Cu17"],
+ "@nl": "John 1 eats big fish."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","strong","#:John 1","none","bear","?:Cu19"]],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","strong","#:John 1","none","bear","?:Cu20"], ["$defq0"]],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","fish","$some_fish"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","fish","$some_not_fish"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_bear","none","bear","?:Cu27"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_fish","none","fish","?:Cu28"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","fish","$some_big_fish"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_fish","none","fish","?:Cu30"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","strong","$some_strong_bear","none","bear","?:Cu31"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_strong_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","strong","$some_not_strong_bear","none","bear","?:Cu33"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv77","?:Cu34"],
+            ["has degree property","big","?:X","none","?:Fv78","?:Cu34"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","strong","?:X","none","?:Fv80","?:Cu36"],
+            ["has degree property","strong","?:X","none","?:Fv81","?:Cu36"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["-has degree property","good","?:X","none","bear","?:Y"], ["has degree property","strong","?:X","none","bear","?:Y"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["has degree property","good","#:John 1","none","bear","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.9], [["-isa","bear","#:John 1"], ["has degree property","strong","#:John 1","none","bear","?:X3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["has degree property","strong","#:John 1","none","bear","?:X"]]],
+          [6, ["in","sent_S5","assumption",1], [["$defq0"], ["-has degree property","strong","#:John 1","none","bear","?:X"]]],
+          [7, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Nice bears who eat big fish are strong.",
+"  (2) John is a nice bear.",
+"  (3) John is strong?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a good bear and X is a bear then X is a strong bear  [sentence 1, confidence 90%]",
+"  (2) John is a good bear  [sentence 2]",
+"  (3) If John is a bear then John is a strong bear  [from steps 1, 2, confidence 90%]",
+"  (4) John is a bear  [sentence 2]",
+"  (5) John is a strong bear  [from steps 3, 4, confidence 90%]",
+"  (6) If John is a strong bear then answer holds  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7, confidence 90%]"
+],
+  "timestamp": "2026-06-19T02:47:21Z"
+}

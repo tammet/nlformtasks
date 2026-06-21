@@ -1,0 +1,132 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 389,
+  "input_text": "Animals have two nice legs. Animals have two long legs?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Animals have two nice legs.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Animals have two nice legs.",
+          "type": "normal_rule",
+          "entities": [{"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["nice","none","leg"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Animals have two long legs?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Do animals have two long legs?",
+          "type": "query",
+          "entities": [{"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["long","none","leg"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","animal","X"],
+              ["normally",
+                ["=", 2, ["$count", ["$setof", "?:Y", ["and", ["isa","leg","?:Y"], ["has degree property","nice","?:Y","none","leg"], ["has part","X","?:Y"]]]]]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","animal","X"],
+            ["normally",
+              ["=", 2, ["$count", ["$setof", "?:Y", ["and", ["isa","leg","?:Y"], ["has degree property","long","?:Y","none","leg"], ["has part","X","?:Y"]]]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["=", 2, ["$count", ["$setof", "has part", "?:X", ["$and", ["$isa","leg","$arg1"], ["$has_degree_property","good","$arg1","none","leg"]]]]],
+            ["$block", ["$","animal",1], ["$not", ["=", 2, ["$count", ["$setof", "has part", "?:X", ["$and", ["$isa","leg","$arg1"], ["$has_degree_property","good","$arg1","none","leg"]]]]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Animals have two nice legs."},
+{"@name": "sent_S2",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","animal","skq_S2_animal"],
+ "@nl": "Do animals have two long legs?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["=", 2, ["$count", ["$setof", "has part", "skq_S2_animal", ["$and", ["$isa","leg","$arg1"], ["$has_degree_property","long","$arg1","none","leg"]]]]]
+           ],
+ "@nl": "Do animals have two long legs?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-=", 2, ["$count", ["$setof", "has part", "skq_S2_animal", ["$and", ["$isa","leg","$arg1"], ["$has_degree_property","long","$arg1","none","leg"]]]]],
+            ["$defq0"]
+           ],
+ "@nl": "Do animals have two long legs?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","?:C","?:Y"], ["-have","?:X","?:Y","?:Ctxt"], ["has part","?:X","?:Y","?:Ctxt"]],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Do animals have two long legs?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["-has property","?:D","?:M"],
+            ["-has part","?:S","?:M"],
+            ["member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"], ["$has_degree_property","?:D","$arg1","?:E","?:C"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"], ["$has_degree_property","?:D","$arg1","?:E","?:C"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"], ["$has_degree_property","?:D","$arg1","?:E","?:C"]]]],
+            ["has property","?:D","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "has part", "?:S", ["$and", ["$isa","?:C","$arg1"], ["$has_degree_property","?:D","$arg1","?:E","?:C"]]]],
+            ["has part","?:S","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T15:25:57Z"
+}

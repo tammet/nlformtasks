@@ -1,0 +1,205 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1342,
+  "input_text": "If cars are red, elephants are nice. Cars are red. Elephants are nice?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If cars are red, elephants are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If cars are red, elephants are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "elephants", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["red","none","none"], ["nice","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Cars are red.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars are red.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["red","none","none"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Elephants are nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are elephants nice?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["nice","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["implies",
+              ["forall","X",
+                ["implies", ["isa","car","X"], ["has degree property","red","X","none","none"]]
+              ],
+              ["forall","Y",
+                ["implies",
+                  ["isa","elephant","Y"],
+                  ["has degree property","nice","Y","none","entity"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","red","X","none","none"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["normally", ["has degree property","nice","X","none","entity"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:Y"],
+            ["isa","car","sk0_car"],
+            ["has degree property","good","?:Y","none","?:Fv55","?:Cu1"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "If cars are red, elephants are nice."},
+{"@name": "sent_S1",
+ "@logic": [["-has property","red","sk0_car","?:Cu2"],
+            ["-isa","elephant","?:Y"],
+            ["has degree property","good","?:Y","none","?:Fv57","?:Cu2"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "If cars are red, elephants are nice."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["has property","red","?:X","?:Cu3"]],
+ "@confidence": 0.98,
+ "@nl": "Cars are red."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","elephant","skq_S3_elephant"],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","skq_S3_elephant","none","?:Fv59","?:Cu5"]],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","skq_S3_elephant","none","?:Fv60","?:Cu6"], ["$defq0"]],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red","?:Cu11"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","red","$some_not_red","?:Cu12"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_entity","none","?:Fv61","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_entity","none","?:Fv62","?:Cu14"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.882031,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9487], [["isa","car","sk0_car"], ["has degree property","good","?:X","none","?:Y","?:Z"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","skq_S3_elephant"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9487], [["isa","car","sk0_car"], ["has degree property","good","skq_S3_elephant","none","?:X","?:Y"]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property","good","skq_S3_elephant","none","?:X","?:Y"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,1], 5, "fromga", 0.9487], [["isa","car","sk0_car"]]],
+          [7, ["in","sent_S2","assumption",0.98], [["has property","red","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [8, ["mp", 6, [7,1], "fromga", 0.929726], [["has property","red","sk0_car","?:X"]]],
+          [9, ["in","sent_S1","assumption",0.9487], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-has property","red","sk0_car","?:Z"], ["-isa","elephant","?:X"]]],
+          [10, ["mp", 8, [9,1], "fromga", 0.882031], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-isa","elephant","?:X"]]],
+          [11, ["mp", [10,1], 2, "fromga", 0.882031], [["has degree property","good","skq_S3_elephant","none","?:X","?:Y"]]],
+          [12, ["mp", 11, [4,1], 5, "fromga", 0.882031], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 88%.",
+"Sentences used:",
+"  (1) If cars are red, elephants are nice.",
+"  (2) Cars are red.",
+"  (3) Elephants are nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then some car car1 is a car or X is good  [sentence 1, confidence 95%]",
+"  (2) Skq_S3_elephant is an elephant  [sentence 3]",
+"  (3) Car1 is a car or skq_S3_elephant is good  [from steps 1, 2, confidence 95%]",
+"  (4) If skq_S3_elephant is good then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Car1 is a car  [from steps 3, 4, 5, confidence 95%]",
+"  (7) If some X is a car then X is red  [sentence 2, confidence 98%]",
+"  (8) Car1 is red  [from steps 6, 7, confidence 93%]",
+"  (9) If car1 is red and some X is an elephant then X is good  [sentence 1, confidence 95%]",
+"  (10) If some X is an elephant then X is good  [from steps 8, 9, confidence 88%]",
+"  (11) Skq_S3_elephant is good  [from steps 10, 2, confidence 88%]",
+"  (12) Contradiction  [from steps 11, 4, 5, confidence 88%]"
+],
+  "timestamp": "2026-06-19T04:22:00Z"
+}

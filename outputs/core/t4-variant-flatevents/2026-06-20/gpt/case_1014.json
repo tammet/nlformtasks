@@ -1,0 +1,182 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1014,
+  "input_text": "An apple was eaten. John ate a pear. What was eaten?",
+  "expected_answer": ["The apple and the pear.","An apple and a pear.","An apple.","A pear."],
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "The apple.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "An apple was eaten.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An apple 1 was eaten.",
+          "type": "situation",
+          "entities": [{"id": "apple 1", "type": "concrete", "category": "plant"}],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "apple 1"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John ate a pear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 2 ate a pear 3.",
+          "type": "situation",
+          "entities": [{"id": "John 2", "type": "concrete", "category": "person"},
+            {"id": "pear 3", "type": "concrete", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "John 2", "target": "pear 3"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What was eaten?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity was eaten?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","apple","apple 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has target","E","apple 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 2"],
+          ["isa","pear","pear 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 2"],
+              ["has target","E","pear 3"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has target","E","X"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","apple","#:apple 1"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "eat", "#:apple 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 2"],
+ "@nl": "John 2 ate a pear 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pear","#:pear 3"],
+ "@nl": "John 2 ate a pear 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "eat", "#:John 2", ["eventprop","$target","#:pear 3"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 2 ate a pear 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "eat", "?:X", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "eat", "?:X", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "eat", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "eat", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "eat", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","pear","$some_pear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","apple","$some_apple"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:apple 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has property", "eat", "#:apple 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:apple 1"]]],
+          [4, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","#:apple 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) An apple was eaten.",
+"  (2) What was eaten?",
+"Proof steps:",
+"  (1) The apple A is eat  [sentence 1]",
+"  (2) If some X is eat then X is the answer  [sentence 2]",
+"  (3) The apple A is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) The apple is an answer  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-18T15:43:34Z"
+}

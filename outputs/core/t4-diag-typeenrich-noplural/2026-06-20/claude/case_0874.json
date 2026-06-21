@@ -1,0 +1,146 @@
+{
+  "test_name": "core_typeenrich_noplural",
+  "case_id": 874,
+  "input_text": "John is a man Eve liked. John is a man whom Eve liked?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is a man Eve liked.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is a man.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Eve 2 liked John 1.",
+          "type": "situation",
+          "entities": [{"id": "Eve 2", "type": "concrete", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John is a man whom Eve liked?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 a man whom Eve 2 liked?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Eve 2", "type": "concrete", "category": "person"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["isa","man","John 1"]]],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Eve 2"],
+          ["isa","person","John 1"],
+          ["@time", "past", ["is rel2","like","Eve 2","John 1"]]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and", ["isa","man","John 1"], ["@time", "past", ["is rel2","like","Eve 2","John 1"]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","woman","#:Eve 2"],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a man."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Eve 2"],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv14", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Eve 2 liked John 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","man","#:John 1"]],
+ "@nl": "Is John 1 a man whom Eve 2 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv20", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Is John 1 a man whom Eve 2 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","man","#:John 1"],
+            ["-has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv21", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 a man whom Eve 2 liked?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 a man whom Eve 2 liked?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv17", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv18", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:Fv19", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 a man whom Eve 2 liked?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","man","?:X","?:Fv13"], ["-has property","woman","?:X","?:Fv13"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","man","?:Xg"], ["isa","man","?:Xg"]],
+ "@nl": "[generated: frm_gender]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","woman","?:Xg"], ["isa","woman","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-isa","man","#:John 1"], ["$defq0"], ["-has degree rel2", "like", "#:Eve 2", "#:John 1", "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,2], 3, "fromga", 1], [["-isa","man","#:John 1"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","man","#:John 1"]]],
+          [6, ["simp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John is a man Eve liked.",
+"  (2) John is a man whom Eve liked?",
+"Proof steps (by contradiction):",
+"  (1) The man Eve is like of John  [sentence 1]",
+"  (2) If John is a man and the man Eve is like of John then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) John is not a man  [from steps 1, 2, 3]",
+"  (5) John is a man  [sentence 1]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-20T10:37:21Z"
+}

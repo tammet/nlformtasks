@@ -1,0 +1,98 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1046,
+  "input_text": "The cake was eaten. Who ate the cake?",
+  "expected_answer": null,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The cake was eaten.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The cake 1 was eaten.",
+          "type": "situation",
+          "entities": [{"id": "cake 1", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "cake 1"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who ate the cake?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity ate the cake 1?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "cake 1", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"target": "cake 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","cake","cake 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has target","E","cake 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has actor","E","X"],
+            ["has target","E","cake 1"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","cake","#:cake 1"],
+ "@nl": "The cake 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "eat", "#:cake 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cake 1 was eaten."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "eat", "?:X", ["eventprop","$target","#:cake 1"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity ate the cake 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "eat", "?:X", ["eventprop","$target","#:cake 1"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity ate the cake 1?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity ate the cake 1?"},
+{"@name": "pop_what",
+ "@logic": ["isa","cake","$some_cake"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-18T15:43:42Z"
+}

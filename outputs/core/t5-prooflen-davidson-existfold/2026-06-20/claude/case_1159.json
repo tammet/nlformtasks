@@ -1,0 +1,250 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1159,
+  "input_text": "John gave Mary a red book. Mary got a red book?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John gave Mary a red book.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 gave Mary 2 a book 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "book 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "give",
+              "mode": "event",
+              "roles": {"actor": "John 1", "recipient": "Mary 2", "target": "book 3"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The book 3 is red.",
+          "type": "situation",
+          "entities": [{"id": "book 3", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","none"]],
+          "pre_state": "W0"
+        }
+      ]
+    },
+    {
+      "raw": "Mary got a red book?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 2 get the book 3?",
+          "type": "query",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "book 3", "type": "concrete", "category": "artifact"}
+          ],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","Mary 2"],
+            ["isa","book","book 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","give"],
+                ["has actor","E","John 1"],
+                ["has recipient","E","Mary 2"],
+                ["has target","E","book 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","book","book 3"], ["has degree property","red","book 3","none","none"]]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","get"],
+            ["has actor","E","Mary 2"],
+            ["has target","E","book 3"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","book","#:book 3"],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["event", "give", "#:John 1", "#:book 3", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["has recipient", "sk0", "#:Mary 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 gave Mary 2 a book 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","book","#:book 3"],
+ "@nl": "The book 3 is red."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "red", "#:book 3", ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The book 3 is red."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "give", "sk2", "#:book 3", "sk1", ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has recipient", "sk1", "#:Mary 2", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk1", "past", "in", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk1"]],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "give", "?:Dava1", "#:book 3", "?:E", ["$ctxt","past","?:Fv14","?:Fv5","?:Fv6"]],
+            ["-has recipient", "?:E", "#:Mary 2", ["$ctxt","past","?:Fv16","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 2 get the book 3?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv20"], ["has type","?:E","give","?:Fv20"]],
+ "@confidence": 0.91,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv21","?:Fv22","?:Fv23"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv24","?:Fv25","?:Fv26"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-event", "give", "?:X", "#:book 3", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-has recipient", "?:Y", "#:Mary 2", ["$ctxt","past","?:W","?:U","?:V"]], ["-actuality","?:Y"]]],
+          [2, ["in","sent_S1","assumption",1], [["event", "give", "#:John 1", "#:book 3", "sk0", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-actuality","sk0"], ["-has recipient", "sk0", "#:Mary 2", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [5, ["in","sent_S1","assumption",1], [["actuality","sk0"]]],
+          [6, ["simp",4,5,"fromga",1], [["-has recipient", "sk0", "#:Mary 2", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [7, ["in","sent_S1","assumption",1], [["has recipient", "sk0", "#:Mary 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [8, ["mp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John gave Mary a red book.",
+"  (2) Mary got a red book?",
+"Proof steps (by contradiction):",
+"  (1) If some X give the book C and Mary is a recipient of an event Y then answer holds  [sentence 2]",
+"  (2) John give the book C  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Mary is not the recipient of sk0  [from steps 1, 2, 3]",
+"  (5)   [sentence 1]",
+"  (6) Mary is not the recipient of sk0  [from steps 4, 5]",
+"  (7) Mary is the recipient of sk0  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-20T12:43:33Z"
+}

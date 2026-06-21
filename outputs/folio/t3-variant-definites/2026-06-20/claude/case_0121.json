@@ -1,0 +1,144 @@
+{
+  "test_name": "folio_v2_prenorm_definites",
+  "case_id": 121,
+  "input_text": "Some affection is love. Some love is positive. Some affection is positive?",
+  "expected_answer": "Unknown.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some affection is love.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some affection is love.",
+          "type": "normal_rule",
+          "entities": [{"id": "affection", "type": "generic", "category": "abstract"},
+            {"id": "love", "type": "generic", "category": "abstract"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Some love is positive.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some love is positive.",
+          "type": "normal_rule",
+          "entities": [{"id": "love", "type": "generic", "category": "abstract"}],
+          "adjectives": [["positive","none","entity"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Is some affection positive?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is some affection positive?",
+          "type": "query",
+          "entities": [{"id": "affection", "type": "generic", "category": "abstract"}],
+          "adjectives": [["positive","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["exists", "X", ["and", ["isa","affection","X"], ["normally", ["isa","love","X"]]]]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","love","X"],
+              ["normally", ["has degree property","positive","X","none","entity"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and", ["isa","affection","X"], ["has degree property","positive","X","none","entity"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","affection","sk0_affection"],
+ "@nl": "Some affection is love."},
+{"@name": "sent_S1",
+ "@logic": [["isa","love","sk0_affection"],
+            ["$block", ["$","$generic",1], ["$not", ["isa","love","sk0_affection"]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some affection is love."},
+{"@name": "sent_S2",
+ "@logic": ["isa","love","sk1_love"],
+ "@nl": "Some love is positive."},
+{"@name": "sent_S2",
+ "@logic": [["has property", "positive", "sk1_love", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","$generic",1], ["$not", ["has property", "positive", "sk1_love", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some love is positive."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","affection","sk2_affection"]],
+ "@nl": "Is some affection positive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "positive", "sk2_affection", ["$ctxt","?:Fv16","?:Fv15","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Is some affection positive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","affection","?:X"],
+            ["-has property", "positive", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is some affection positive?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is some affection positive?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","affection","$some_affection"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","affection","$some_not_affection"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","love","$some_love"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","love","$some_not_love"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "positive", "$some_positive_entity", ["$ctxt","?:Fv40","?:Fv37","?:Fv38","?:Fv39"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "positive", "$some_not_positive_entity", ["$ctxt","?:Fv48","?:Fv45","?:Fv46","?:Fv47"]],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T22:34:26Z"
+}

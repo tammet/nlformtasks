@@ -1,0 +1,155 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1568,
+  "input_text": "John tried to open the door. John opened the door?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John tried to open the door.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 tried to open the door 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "door 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "try",
+              "mode": "volition",
+              "roles": {
+                "actor": "John 1",
+                "content": {"root": "open", "mode": "event", "roles": {"actor": "John 1", "target": "door 2"}}
+              }
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John opened the door?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did John 1 open the door 2?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "door 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "open", "mode": "event", "roles": {"actor": "John 1", "target": "door 2"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","door","door 2"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","try"],
+              ["has actor","E1","John 1"],
+              ["has time","E1","past","in"],
+              ["exists","E2",
+                ["and",
+                  ["has content","E1","E2"],
+                  ["isa","activity","E2"],
+                  ["has type","E2","open"],
+                  ["has actor","E2","John 1"],
+                  ["has target","E2","door 2"],
+                  ["has time","E2","past","in"]
+                ]
+              ],
+              ["volition","E1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","open"],
+            ["has actor","E","John 1"],
+            ["has target","E","door 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 tried to open the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","door","#:door 2"],
+ "@nl": "John 1 tried to open the door 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "try", "#:John 1", ["eventprop","$target","open"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 tried to open the door 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree rel2", "open", "#:John 1", ["eventprop","$target","#:door 2"], "none", "?:Fv11", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-has degree rel2", "open", "#:John 1", ["eventprop","$target","#:door 2"], "none", "?:Fv12", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 open the door 2?"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","open","?:X"], ["isa","outside","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","outside","?:X"], ["isa","open","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T11:03:56Z"
+}

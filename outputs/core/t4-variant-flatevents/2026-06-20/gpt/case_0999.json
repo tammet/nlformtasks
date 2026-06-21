@@ -1,0 +1,195 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 999,
+  "input_text": "John met the girl from Paris. The girl was from Paris?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John met the girl from Paris.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 met the girl 2 from Paris 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "girl 2", "type": "concrete", "category": "person"},
+            {
+              "id": "Paris 3",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Paris"
+            }
+          ],
+          "actions": [{"root": "meet", "mode": "event", "roles": {"actor": "John 1", "target": "girl 2"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The girl 2 is from Paris 3.",
+          "type": "situation",
+          "entities": [{"id": "girl 2", "type": "concrete", "category": "person"},
+            {
+              "id": "Paris 3",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Paris"
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The girl was from Paris?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was the girl 2 from Paris 3?",
+          "type": "query",
+          "entities": [{"id": "girl 2", "type": "concrete", "category": "person"},
+            {
+              "id": "Paris 3",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Paris"
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","girl 2"],
+          ["isa","place","Paris 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","meet"],
+              ["has actor","E","John 1"],
+              ["has target","E","girl 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","girl 2"],
+          ["isa","place","Paris 3"],
+          ["is rel2","from","girl 2","https://en.wikipedia.org/wiki/Paris"]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","girl 2"],
+          ["isa","place","Paris 3"],
+          ["@time", "past", ["is rel2","from","girl 2","https://en.wikipedia.org/wiki/Paris"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","girl","#:girl 2"],
+ "@nl": "John 1 met the girl 2 from Paris 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 met the girl 2 from Paris 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:girl 2"],
+ "@nl": "John 1 met the girl 2 from Paris 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","place","#:Paris 3"],
+ "@nl": "John 1 met the girl 2 from Paris 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "meet", "#:John 1", ["eventprop","$target","#:girl 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 met the girl 2 from Paris 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:girl 2"],
+ "@nl": "The girl 2 is from Paris 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","place","#:Paris 3"],
+ "@nl": "The girl 2 is from Paris 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The girl 2 is from Paris 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:girl 2"]],
+ "@nl": "Was the girl 2 from Paris 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","place","#:Paris 3"]],
+ "@nl": "Was the girl 2 from Paris 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Was the girl 2 from Paris 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:girl 2"],
+            ["-isa","place","#:Paris 3"],
+            ["-is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was the girl 2 from Paris 3?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was the girl 2 from Paris 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was the girl 2 from Paris 3?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","place","#:Paris 3"], ["-isa","person","#:girl 2"], ["$defq0"], ["-is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "from", "#:girl 2", "https://en.wikipedia.org/wiki/Paris", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","place","#:Paris 3"], ["-isa","person","#:girl 2"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","place","#:Paris 3"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","person","#:girl 2"]]],
+          [7, ["in","sent_S2","assumption",1], [["isa","person","#:girl 2"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John met the girl from Paris.",
+"  (2) The girl was from Paris?",
+"Proof steps (by contradiction):",
+"  (1) If Paris is a place and the girl B is a person and the girl B is from Paris then answer holds  [sentence 2]",
+"  (2) The girl B is from Paris  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If Paris is a place then the girl B is not a person  [from steps 1, 2, 3]",
+"  (5) Paris is a place  [sentence 1]",
+"  (6) The girl B is not a person  [from steps 4, 5]",
+"  (7) The girl B is a person  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-18T15:42:58Z"
+}

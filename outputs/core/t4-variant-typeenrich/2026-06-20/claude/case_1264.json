@@ -1,0 +1,125 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1264,
+  "input_text": "John is in the box at a red house. The red box is at a house?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is in the box at a red house.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is in the box 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "box 2", "type": "concrete", "category": "artifact"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The box 2 is at a red house 3.",
+          "type": "situation",
+          "entities": [{"id": "box 2", "type": "concrete", "category": "artifact"},
+            {"id": "house 3", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "The red box is at a house?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is the red box 2 at a house?",
+          "type": "query",
+          "entities": [{"id": "box 2", "type": "concrete", "category": "artifact"},
+            {"id": "house", "type": "generic", "category": "place"}
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and", ["isa","person","John 1"], ["isa","box","box 2"], ["is rel2","in","John 1","box 2"]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","box","box 2"],
+          ["isa","house","house 3"],
+          ["has degree property","red","house 3","none","none"],
+          ["is rel2","at","box 2","house 3"]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","Y",
+          ["and",
+            ["isa","house","Y"],
+            ["has degree property","red","box 2","none","none"],
+            ["is rel2","at","box 2","Y"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is in the box 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is in the box 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","box","#:box 2"],
+ "@nl": "John 1 is in the box 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","in","#:John 1","#:box 2","?:Cu4"],
+ "@nl": "John 1 is in the box 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","box","#:box 2"],
+ "@nl": "The box 2 is at a red house 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","house","#:house 3"],
+ "@nl": "The box 2 is at a red house 3."},
+{"@name": "sent_S2",
+ "@logic": ["has property","red","#:house 3","?:Cu7"],
+ "@nl": "The box 2 is at a red house 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2","at","#:box 2","#:house 3","?:Cu8"],
+ "@nl": "The box 2 is at a red house 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","house","sk0_house"]],
+ "@nl": "Is the red box 2 at a house?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","red","#:box 2","?:Cu10"]],
+ "@nl": "Is the red box 2 at a house?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","at","#:box 2","sk0_house","?:Cu11"]],
+ "@nl": "Is the red box 2 at a house?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","house","?:Y"],
+            ["-has property","red","#:box 2","?:Cu12"],
+            ["-is rel2","at","#:box 2","?:Y","?:Cu12"],
+            ["$defq0"]
+           ],
+ "@nl": "Is the red box 2 at a house?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is the red box 2 at a house?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T02:42:40Z"
+}

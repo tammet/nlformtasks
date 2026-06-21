@@ -1,0 +1,417 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 164,
+  "input_text": "Some show airing at 8 pm on Monday gives out roses on TV. If a show gives out roses on TV, then the show is an episode of The Bachelor. The Bachelor portrays the lives of real people. All shows portraying the lives of real people are reality TV shows. Breaking Bad is a show. Breaking Bad is not a reality TV show. Breaking Bad is on Monday at 8 pm?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some show airing at 8 pm on Monday gives out roses on TV.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some show 1 is on Monday at 8 pm and gives out roses on TV.",
+          "type": "situation",
+          "entities": [{"id": "show 1", "type": "concrete", "category": "event"}],
+          "actions": [{
+              "root": "give",
+              "mode": "event",
+              "roles": {"actor": "show 1", "target": "roses", "location": "TV"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a show gives out roses on TV, then the show is an episode of The Bachelor.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a show gives out roses on TV, the show is an episode of The Bachelor 1.",
+          "type": "normal_rule",
+          "entities": [{"id": "show", "type": "generic", "category": "event"},
+            {"id": "The Bachelor 1", "type": "concrete", "category": "event"}
+          ],
+          "actions": [{
+              "root": "give",
+              "mode": "event",
+              "roles": {"actor": "show", "target": "roses", "location": "TV"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "The Bachelor portrays the lives of real people.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The Bachelor 1 portrays the lives of real people.",
+          "type": "real",
+          "entities": [{"id": "The Bachelor 1", "type": "concrete", "category": "event"},
+            {"id": "lives", "type": "generic", "category": "abstract"},
+            {"id": "people", "type": "generic", "category": "person"}
+          ],
+          "actions": [{
+              "root": "portray",
+              "mode": "habitual",
+              "roles": {"actor": "The Bachelor 1", "target": "lives"}
+            }
+          ],
+          "adjectives": [["real","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "All shows portraying the lives of real people are reality TV shows.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All shows that portray the lives of real people are reality TV shows.",
+          "type": "strict_rule",
+          "entities": [{"id": "shows", "type": "generic", "category": "event"},
+            {"id": "lives", "type": "generic", "category": "abstract"},
+            {"id": "people", "type": "generic", "category": "person"},
+            {
+              "id": "reality TV shows",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "event"
+            }
+          ],
+          "actions": [{"root": "portray", "mode": "habitual", "roles": {"actor": "shows", "target": "lives"}}],
+          "adjectives": [["real","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is a show.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Breaking Bad 1 is a show.",
+          "type": "real",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "event"},
+            {"id": "show", "type": "generic", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is not a reality TV show.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Breaking Bad 1 is not a reality TV show.",
+          "type": "real",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "event"},
+            {"id": "reality TV show", "type": "generic", "subtype": "compound", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is on Monday at 8 pm?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is Breaking Bad 1 on Monday at 8 pm?",
+          "type": "query",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "event"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","show","show 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","give"],
+              ["has actor","E","show 1"],
+              ["has target","E","roses"],
+              ["has location","E","TV","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","give"],
+                  ["has actor","E","X"],
+                  ["has target","E","roses"],
+                  ["has location","E","TV","in"]
+                ]
+              ],
+              ["isa","episode of The Bachelor 1","X"]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","event","The Bachelor 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","portray"],
+              ["has actor","E","The Bachelor 1"],
+              ["exists","Y",
+                ["and",
+                  ["isa","life","Y"],
+                  ["exists","Z",
+                    ["and",
+                      ["isa","person","Z"],
+                      ["has degree property","real","Z","none","person"]
+                    ]
+                  ],
+                  ["has target","E","Y"]
+                ]
+              ],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","show","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","portray"],
+                  ["has actor","E","X"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","life","Y"],
+                      ["exists","Z",
+                        ["and",
+                          ["isa","person","Z"],
+                          ["has degree property","real","Z","none","person"]
+                        ]
+                      ],
+                      ["has target","E","Y"]
+                    ]
+                  ],
+                  ["typical","E"]
+                ]
+              ]
+            ],
+            ["isa","reality TV show","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","show","Breaking Bad 1"]]],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","event","Breaking Bad 1"],
+          ["not", ["isa","reality TV show","Breaking Bad 1"]]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["question",
+        ["and",
+          ["isa","event","Breaking Bad 1"],
+          ["is rel2","in","Breaking Bad 1","Monday at 8 pm"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","show","#:show 1"],
+ "@nl": "Some show 1 is on Monday at 8 pm and gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": ["event", "give", "#:show 1", "roses", "sk0", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Some show 1 is on Monday at 8 pm and gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": ["has location", "sk0", "TV", "in", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Some show 1 is on Monday at 8 pm and gives out roses on TV."},
+{"@name": "sent_S2",
+ "@logic": [["-event", "give", "?:X", "roses", "?:E", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["-has location", "?:E", "TV", "in", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["isa","episode of the bachelor 1","?:X"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a show gives out roses on TV, the show is an episode of The Bachelor 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","event","#:The Bachelor 1"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["event", "portray", "#:The Bachelor 1", "life", "sk1", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["isa","life","sk2_life"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","sk3_person"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "real", "sk3_person", "none", "person", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["typical", "sk1", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","show","?:X"],
+            ["-event", "portray", "?:X", "life", "?:E", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","life","?:Y"],
+            ["-isa","person","?:Z"],
+            ["-has degree property", "real", "?:Z", "none", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","reality tv show","?:X"]
+           ],
+ "@nl": "All shows that portray the lives of real people are reality TV shows."},
+{"@name": "sent_S5",
+ "@logic": ["isa","show","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is a show."},
+{"@name": "sent_S6",
+ "@logic": ["isa","event","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is not a reality TV show."},
+{"@name": "sent_S6",
+ "@logic": ["-isa","reality tv show","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is not a reality TV show."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","event","#:Breaking Bad 1"]],
+ "@nl": "Is Breaking Bad 1 on Monday at 8 pm?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "#:Breaking Bad 1", "Monday at 8 pm", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Is Breaking Bad 1 on Monday at 8 pm?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","event","#:Breaking Bad 1"],
+            ["-is rel2", "in", "#:Breaking Bad 1", "Monday at 8 pm", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is Breaking Bad 1 on Monday at 8 pm?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is Breaking Bad 1 on Monday at 8 pm?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "#:Breaking Bad 1", "Monday at 8 pm", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "#:Breaking Bad 1", "Monday at 8 pm", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "#:Breaking Bad 1", "Monday at 8 pm", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is Breaking Bad 1 on Monday at 8 pm?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","show","$some_not_show"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","episode of The Bachelor 1","$some_episode_of_The_Bachelor_1"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","episode of The Bachelor 1","$some_not_episode_of_The_Bachelor_1"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","life","$some_life"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","life","$some_not_life"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","reality TV show","$some_reality_TV_show"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "real", "$some_real_person", "none", "person", ["$ctxt","?:Fv61","?:Fv58","?:Fv59","?:Fv60"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_real_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "real", "$some_not_real_person", "none", "person", ["$ctxt","?:Fv69","?:Fv66","?:Fv67","?:Fv68"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","episode of The Bachelor 1","?:X"], ["isa","1","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","episode of The Bachelor","?:X"],
+            ["-isa","1","?:X"],
+            ["isa","episode of The Bachelor 1","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","reality TV show","?:X"], ["isa","show","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","reality TV","?:X"], ["-isa","show","?:X"], ["isa","reality TV show","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv25"], ["has type","?:E","give","?:Fv25"]],
+ "@confidence": 0.91,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:33:46Z"
+}

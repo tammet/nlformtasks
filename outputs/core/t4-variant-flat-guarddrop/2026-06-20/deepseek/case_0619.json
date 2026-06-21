@@ -1,0 +1,141 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 619,
+  "input_text": "Either John or Bill went to the store. Did Mary go to the store?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Either John or Bill went to the store.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Either John 1 or Bill 2 went to the store 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Bill 2", "type": "concrete", "category": "person"},
+            {"id": "store 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "go", "mode": "event", "roles": {"destination": "store 3"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Mary go to the store?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Mary 4 go to the store 3?",
+          "type": "query",
+          "entities": [{"id": "Mary 4", "type": "concrete", "category": "person"},
+            {"id": "store 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "go", "mode": "event", "roles": {"destination": "store 3"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Bill 2"],
+          ["isa","store","store 3"],
+          ["xor",
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","go"],
+                ["has actor","E1","John 1"],
+                ["has destination","E1","store 3","at"],
+                ["has time","E1","past","in"]
+              ]
+            ],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","go"],
+                ["has actor","E2","Bill 2"],
+                ["has destination","E2","store 3","at"],
+                ["has time","E2","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","Mary 4"],
+          ["isa","store","store 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","go"],
+              ["has actor","E","Mary 4"],
+              ["has destination","E","store 3","at"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Either John 1 or Bill 2 went to the store 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Bill 2"],
+ "@nl": "Either John 1 or Bill 2 went to the store 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","store","#:store 3"],
+ "@nl": "Either John 1 or Bill 2 went to the store 3."},
+{"@name": "sent_S1",
+ "@logic": [["is rel2", "go", "#:John 1", ["eventprop","$destination","#:store 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+            ["is rel2", "go", "#:Bill 2", ["eventprop","$destination","#:store 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Either John 1 or Bill 2 went to the store 3."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "go", "#:John 1", ["eventprop","$destination","#:store 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+            ["-is rel2", "go", "#:Bill 2", ["eventprop","$destination","#:store 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Either John 1 or Bill 2 went to the store 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 4"]],
+ "@nl": "Did Mary 4 go to the store 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","store","#:store 3"]],
+ "@nl": "Did Mary 4 go to the store 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "go", "#:Mary 4", ["eventprop","$destination","#:store 3"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Mary 4 go to the store 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 4"],
+            ["-isa","store","#:store 3"],
+            ["-is rel2", "go", "#:Mary 4", ["eventprop","$destination","#:store 3"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 4 go to the store 3?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 4 go to the store 3?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv15"], ["has type","?:E","go","?:Fv15"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T10:42:27Z"
+}

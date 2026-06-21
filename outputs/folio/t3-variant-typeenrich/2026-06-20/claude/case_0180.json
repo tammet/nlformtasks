@@ -1,0 +1,302 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 180,
+  "input_text": "Susan flies to LGA airport. The departure and arrival can not be at the same airport. John flies from LGA airport. Susan flies from LGA airport?",
+  "expected_answer": "False.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Susan flies to LGA airport.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Susan 1 flies to LGA airport 2.",
+          "type": "situation",
+          "entities": [{"id": "Susan 1", "type": "concrete", "category": "person"},
+            {
+              "id": "LGA airport 2",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/LaGuardia_Airport"
+            }
+          ],
+          "actions": [{
+              "root": "fly",
+              "mode": "event",
+              "roles": {"actor": "Susan 1", "destination": "LGA airport 2"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1"
+        }
+      ]
+    },
+    {
+      "raw": "The departure and arrival cannot be at the same airport.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The departure airport and the arrival airport cannot be the same airport.",
+          "type": "strict_rule",
+          "entities": [{"id": "departure airport", "type": "generic", "category": "place"},
+            {"id": "arrival airport", "type": "generic", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John flies from LGA airport.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 3 flies from LGA airport 2.",
+          "type": "situation",
+          "entities": [{"id": "John 3", "type": "concrete", "category": "person"},
+            {
+              "id": "LGA airport 2",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/LaGuardia_Airport"
+            }
+          ],
+          "actions": [{
+              "root": "fly",
+              "mode": "event",
+              "roles": {"actor": "John 3", "source": "LGA airport 2"}
+            }
+          ],
+          "pre_state": "W1",
+          "next_state": "W2"
+        }
+      ]
+    },
+    {
+      "raw": "Does Susan fly from LGA airport?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does Susan 1 fly from LGA airport 2?",
+          "type": "query",
+          "entities": [{"id": "Susan 1", "type": "concrete", "category": "person"},
+            {
+              "id": "LGA airport 2",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/LaGuardia_Airport"
+            }
+          ],
+          "actions": [{
+              "root": "fly",
+              "mode": "event",
+              "roles": {"actor": "Susan 1", "source": "LGA airport 2"}
+            }
+          ],
+          "pre_state": "W2"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Susan 1"],
+            ["isa","airport","https://en.wikipedia.org/wiki/LaGuardia_Airport"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","fly"],
+                ["has actor","E","Susan 1"],
+                ["has destination","E","https://en.wikipedia.org/wiki/LaGuardia_Airport","at"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["implies",
+              ["and",
+                ["isa","airport","X"],
+                ["isa","airport","Y"],
+                ["is rel2","departure airport of","X","X"],
+                ["is rel2","arrival airport of","Y","Y"]
+              ],
+              ["not", ["=","X","Y"]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 3"],
+            ["isa","airport","https://en.wikipedia.org/wiki/LaGuardia_Airport"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","fly"],
+                ["has actor","E","John 3"],
+                ["has source","E","https://en.wikipedia.org/wiki/LaGuardia_Airport"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","fly"],
+            ["has actor","E","Susan 1"],
+            ["has source","E","https://en.wikipedia.org/wiki/LaGuardia_Airport"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:LGA airport 2"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","lga airport","#:LGA airport 2"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","man","#:John 3"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Susan 1"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","airport","https://en.wikipedia.org/wiki/LaGuardia_Airport"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","fly","?:Cu7"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:Susan 1","?:Cu8"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["has destination","sk0_activity","https://en.wikipedia.org/wiki/LaGuardia_Airport","at","?:Cu9"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Susan 1 flies to LGA airport 2."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","airport","?:X"],
+            ["-isa","airport","?:Y"],
+            ["-is rel2","departure airport of","?:X","?:X","?:Cu12"],
+            ["-is rel2","arrival airport of","?:Y","?:Y","?:Cu12"],
+            ["-=","?:X","?:Y"]
+           ],
+ "@nl": "The departure airport and the arrival airport cannot be the same airport."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 3"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","airport","https://en.wikipedia.org/wiki/LaGuardia_Airport"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["has type","sk1_activity","fly","?:Cu16"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["has actor","sk1_activity","#:John 3","?:Cu17"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["has source","sk1_activity","https://en.wikipedia.org/wiki/LaGuardia_Airport","?:Cu18"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["actuality","sk1_activity"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S3",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 3 flies from LGA airport 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk2_activity"]],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk2_activity","fly","?:Cu22"]],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk2_activity","#:Susan 1","?:Cu23"]],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has source","sk2_activity","https://en.wikipedia.org/wiki/LaGuardia_Airport","?:Cu24"]
+           ],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk2_activity"]],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu26"],
+            ["-has actor","?:E","#:Susan 1","?:Cu26"],
+            ["-has source","?:E","https://en.wikipedia.org/wiki/LaGuardia_Airport","?:Cu26"],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does Susan 1 fly from LGA airport 2?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","airport","$some_not_airport"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","lga airport","?:X"], ["isa","airport","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","lga","?:X"], ["-isa","airport","?:X"], ["isa","lga airport","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv28"], ["has type","?:E","go","?:Fv28"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T21:58:38Z"
+}

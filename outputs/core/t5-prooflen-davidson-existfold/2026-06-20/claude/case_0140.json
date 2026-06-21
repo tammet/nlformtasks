@@ -1,0 +1,232 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 140,
+  "input_text": "The aunts saw shoes. These were nice. What was nice?",
+  "expected_answer": "The shoes",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "The aunts saw shoes.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The aunts [set 1] saw shoes.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "aunt"},
+            {"id": "shoes", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "shoes"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "These were nice.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The shoes were nice.",
+          "type": "situation",
+          "entities": [{"id": "shoes", "type": "generic", "category": "artifact"}],
+          "adjectives": [["nice","none","artifact"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What was nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity was nice?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["nice","none","entity"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["forall","?:M",
+            ["implies",
+              ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","aunt","?:X"]]]],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","see"],
+                  ["has actor","E","?:M"],
+                  ["exists", "Y", ["and", ["isa","shoe","Y"], ["has target","E","Y"]]],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and", ["isa","shoe","X"], ["has degree property","nice","X","none","artifact"]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask", "X", ["@time", "past", ["has degree property","nice","X","none","entity"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+            ["event", "show", ["sk1","?:M"], "shoe", ["sk0","?:M"], ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The aunts [set 1] saw shoes."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+            ["has recipient", ["sk0","?:M"], "?:M", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The aunts [set 1] saw shoes."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+            ["isa", "shoe", ["sk2","?:M"]]
+           ],
+ "@nl": "The aunts [set 1] saw shoes."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+            ["has time", ["sk0","?:M"], "past", "in", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The aunts [set 1] saw shoes."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+            ["actuality", ["sk0","?:M"]]
+           ],
+ "@nl": "The aunts [set 1] saw shoes."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_aunt", ["$setof", "id", "#:set 1", ["$and", ["isa","aunt","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@logic": ["isa","shoe","sk3_shoe"],
+ "@nl": "The shoes were nice."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "good", "sk3_shoe", "none", "artifact", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The shoes were nice."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has degree property", "good", "?:X", "none", "?:Fv31", ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity was nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "good", "?:X", "none", "?:Fv32", ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity was nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "good", "?:Br1", "none", "?:Fv33", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree property", "good", "?:Br1", "none", "?:Fv34", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "good", "?:Br1", "none", "?:Fv35", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was nice?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","shoe","$some_shoe"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","shoe","$some_not_shoe"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "good", "$some_nice_artifact", "none", "artifact", ["$ctxt","?:Fv22","?:Fv19","?:Fv20","?:Fv21"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","artifact","$some_nice_artifact"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_artifact", "none", "artifact", ["$ctxt","?:Fv30","?:Fv27","?:Fv28","?:Fv29"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","sk3_shoe"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree property", "good", "sk3_shoe", "none", "artifact", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-has degree property", "good", "?:X", "none", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","sk3_shoe"]]],
+          [4, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","sk3_shoe"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_nice_artifact"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-has degree property", "good", "?:X", "none", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property", "good", "$some_nice_artifact", "none", "artifact", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","$some_nice_artifact"]]],
+          [4, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","$some_nice_artifact"]]]
+        ]
+      }
+    ]
+  },
+  "timestamp": "2026-06-20T12:39:38Z"
+}

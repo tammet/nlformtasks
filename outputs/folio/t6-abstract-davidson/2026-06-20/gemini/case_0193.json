@@ -1,0 +1,179 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 193,
+  "input_text": "Events are either happy or sad. At least one event is happy. All events are sad?",
+  "expected_answer": "False.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Events are either happy or sad.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Events are either happy or sad.",
+          "type": "strict_rule",
+          "entities": [{"id": "events", "type": "generic", "category": "event"}],
+          "adjectives": [["happy","none","event"], ["sad","none","event"]]
+        }
+      ]
+    },
+    {
+      "raw": "At least one event is happy.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Greater than or equal to 1 event is happy.",
+          "type": "situation",
+          "entities": [{"id": "1", "type": "concrete", "category": "number"},
+            {"id": "event", "type": "generic", "category": "event"}
+          ],
+          "adjectives": [["happy","none","event"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All events are sad?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are all events sad?",
+          "type": "query",
+          "entities": [{"id": "events", "type": "generic", "category": "event"}],
+          "adjectives": [["sad","none","event"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","event","X"],
+            ["xor",
+              ["has degree property","happy","X","none","event"],
+              ["has degree property","sad","X","none","event"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          [">=", ["$count", ["$setof", "?:X", ["and", ["isa","event","?:X"], ["has degree property","happy","?:X","none","event"]]]], 1]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies", ["isa","event","X"], ["has degree property","sad","X","none","event"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","number","1"],
+ "@nl": "Greater than or equal to 1 event is happy."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","event","?:X"],
+            ["has property","happy","?:X","?:Cu2"],
+            ["has property","sad","?:X","?:Cu2"]
+           ],
+ "@nl": "Events are either happy or sad."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","event","?:X"],
+            ["-has property","happy","?:X","?:Cu3"],
+            ["-has property","sad","?:X","?:Cu3"]
+           ],
+ "@nl": "Events are either happy or sad."},
+{"@name": "sent_S2",
+ "@logic": [">=", ["$count", ["$setof", "id", "set_483055a5", ["$and", ["isa","event","$arg1"], ["has property","happy","$arg1"]]]], 1],
+ "@confidence": 0.98,
+ "@nl": "Greater than or equal to 1 event is happy."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","event","?:X"], ["has property","sad","?:X","?:Cu5"]],
+ "@nl": "Are all events sad?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa","event","sk0_event"], ["$defq0"]],
+ "@nl": "Are all events sad?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property","sad","sk0_event","?:Cu7"], ["$defq0"]],
+ "@nl": "Are all events sad?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are all events sad?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:c","?:M"],
+            ["-has property","?:D","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:c","$arg1"], ["has property","?:D","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:c","$arg1"], ["has property","?:D","$arg1"]]]],
+            ["isa","?:c","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:c","$arg1"], ["has property","?:D","$arg1"]]]],
+            ["has property","?:D","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","event","$some_event"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","event","$some_not_event"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","happy","$some_happy","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","sad","$some_sad","?:Cu14"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T13:32:38Z"
+}

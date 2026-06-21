@@ -1,0 +1,149 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 636,
+  "input_text": "Tom, a friend of Mary, laughed. Tom is a friend of Mary?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Tom, a friend of Mary, laughed.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Tom 1 laughed.",
+          "type": "situation",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "laugh", "mode": "event", "roles": {"actor": "Tom 1"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Tom 1 is a friend of Mary 2.",
+          "type": "real",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom is a friend of Mary?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is Tom 1 a friend of Mary 2?",
+          "type": "query",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Tom 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","laugh"],
+              ["has actor","E","Tom 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Tom 1"],
+          ["isa","person","Mary 2"],
+          ["is rel2","friend of","Tom 1","Mary 2"]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["question", ["is rel2","friend of","Tom 1","Mary 2"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","woman","#:Mary 2"],
+ "@nl": "Tom 1 is a friend of Mary 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","laugh","?:Cu4"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:Tom 1","?:Cu5"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu6"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Tom 1 laughed."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "Tom 1 is a friend of Mary 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "Tom 1 is a friend of Mary 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2","friend of","#:Tom 1","#:Mary 2","?:Cu10"],
+ "@nl": "Tom 1 is a friend of Mary 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","friend of","#:Tom 1","#:Mary 2","?:Cu11"]],
+ "@nl": "Is Tom 1 a friend of Mary 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2","friend of","#:Tom 1","#:Mary 2","?:Cu12"], ["$defq0"]],
+ "@nl": "Is Tom 1 a friend of Mary 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is Tom 1 a friend of Mary 2?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2","friend of","#:Tom 1","#:Mary 2","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2","friend of","#:Tom 1","#:Mary 2","?:X"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Tom, a friend of Mary, laughed.",
+"  (2) Tom is a friend of Mary?",
+"Proof steps (by contradiction):",
+"  (1) If Tom is friend of Mary then answer holds  [sentence 2]",
+"  (2) Tom is friend of Mary  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T02:40:16Z"
+}

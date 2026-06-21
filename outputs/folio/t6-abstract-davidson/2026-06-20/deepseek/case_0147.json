@@ -1,0 +1,306 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 147,
+  "input_text": "Everyone who can register to vote in the United States can participate in the 2024 United States presidential election. If someone has United States citizenship, then they can register to vote in the United States. A person either has United States citizenship or Taiwanese citizenship. No Russian Federation officials hold Taiwanese citizenship. Vladimir neither holds Taiwanese citizenship nor is he a manager at Gazprom. Ekaterina she can register to vote in the United States, or she is a Russian federation official. Ekaterina can participate in the 2024 United States presidential election or is a manager at Gazprom?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Everyone who can register to vote in the United States can participate in the 2024 United States presidential election.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {
+              "id": "2024 United States presidential election 1",
+              "type": "concrete",
+              "category": "event",
+              "url": "https://en.wikipedia.org/wiki/2024_United_States_presidential_election"
+            },
+            {"id": "vote", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "register",
+              "mode": "capability",
+              "roles": {
+                "actor": "person",
+                "purpose": "vote",
+                "location": "United States 1",
+                "location_prep": "in"
+              }
+            },
+            {
+              "root": "participate",
+              "mode": "capability",
+              "roles": {"actor": "person", "target": "2024 United States presidential election 1"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If someone has United States citizenship, then they can register to vote in the United States.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person has United States citizenship, then the person can register to vote in the United States 1.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "United States citizenship", "type": "generic", "category": "abstract"},
+            {
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "vote", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "register",
+              "mode": "capability",
+              "roles": {
+                "actor": "person",
+                "purpose": "vote",
+                "location": "United States 1",
+                "location_prep": "in"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","register"],
+                  ["has actor","E1","X"],
+                  ["exists","V",
+                    ["and", ["isa","activity","V"], ["has type","V","vote"], ["has actor","V","X"]]
+                  ],
+                  ["has purpose","E1","V"],
+                  ["has location","E1","United States 1","in"],
+                  ["capability","E1"]
+                ]
+              ]
+            ],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","participate"],
+                ["has actor","E2","X"],
+                ["has target","E2","2024 United States presidential election 1"],
+                ["capability","E2"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["exists", "C", ["and", ["isa","United States citizenship","C"], ["have","X","C"]]]
+            ],
+            ["exists","E3",
+              ["and",
+                ["isa","activity","E3"],
+                ["has type","E3","register"],
+                ["has actor","E3","X"],
+                ["exists","V2",
+                  ["and", ["isa","activity","V2"], ["has type","V2","vote"], ["has actor","V2","X"]]
+                ],
+                ["has purpose","E3","V2"],
+                ["has location","E3","United States 1","in"],
+                ["capability","E3"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class, free_variable, free_variable, event_missing_role, event_missing_role"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:United States 1"],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "entity_S1",
+ "@logic": ["isa","united states","#:United States 1"],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "entity_S1",
+ "@logic": ["isa","event","2024 United States presidential election 1"],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "entity_S1",
+ "@logic": ["isa","2024 united states presidential election","2024 United States presidential election 1"],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","register","?:X","?:Davp1","?:E1","?:Cu5"],
+            ["-has purpose","?:E1","?:V"],
+            ["-has location","?:E1","#:United States 1","in","?:Cu5"],
+            ["-capability","?:E1"],
+            ["-event","vote","?:X","?:Davp2","?:V","?:Cu5"],
+            ["-actuality","?:V"],
+            ["event", "participate", "?:X", "2024 United States presidential election 1", ["sk0","?:X"], "?:Cu5"]
+           ],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","register","?:X","?:Davp1","?:E1","?:Cu6"],
+            ["-has purpose","?:E1","?:V"],
+            ["-has location","?:E1","#:United States 1","in","?:Cu6"],
+            ["-capability","?:E1"],
+            ["-event","vote","?:X","?:Davp2","?:V","?:Cu6"],
+            ["-actuality","?:V"],
+            ["capability", ["sk0","?:X"]]
+           ],
+ "@nl": "If a person can register to vote in the United States 1, then the person can participate in the 2024 United States presidential election 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu7"],
+            ["event", "register", "?:X", ["sk2","?:X"], ["sk1","?:X"], "?:Cu7"]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu8"],
+            ["has purpose", ["sk1","?:X"], ["sk3","?:X"]]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu9"],
+            ["has location", ["sk1","?:X"], "#:United States 1", "in", "?:Cu9"]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu10"],
+            ["capability", ["sk1","?:X"]]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu11"],
+            ["event", "vote", "?:X", ["sk4","?:X"], ["sk3","?:X"], "?:Cu11"]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","united states citizenship","?:C"],
+            ["-have","?:X","?:C","?:Cu12"],
+            ["actuality", ["sk3","?:X"]]
+           ],
+ "@nl": "If a person has United States citizenship, then the person can register to vote in the United States 1."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","united states citizenship","$some_United_States_citizenship"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","united states citizenship","$some_not_United_States_citizenship"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","2024 united states presidential election","?:X"], ["isa","election","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","2024 united states presidential","?:X"],
+            ["-isa","election","?:X"],
+            ["isa","2024 united states presidential election","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","united states citizenship","?:X"], ["isa","citizenship","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","united states","?:X"],
+            ["-isa","citizenship","?:X"],
+            ["isa","united states citizenship","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","united states","?:X"], ["isa","states","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","united","?:X"], ["-isa","states","?:X"], ["isa","united states","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","event","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","event","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-20T13:41:46Z"
+}

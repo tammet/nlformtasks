@@ -1,0 +1,291 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1111,
+  "input_text": "Bears eat berries in a deep forest. John is a bear. John eats berries in a shallow forest?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Bears eat berries in a deep forest.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat berries in a deep forest.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest", "type": "generic", "scope": "dependent", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "adjectives": [["deep","none","forest"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John eats berries in a shallow forest?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does John 1 eat berries in a shallow forest?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest", "type": "generic", "scope": "dependent", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "adjectives": [["shallow","none","forest"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["exists","Z",
+                      ["and",
+                        ["isa","forest","Z"],
+                        ["has degree property","deep","Z","none","forest"],
+                        ["has location","E","Z","in"]
+                      ]
+                    ],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id","S3",
+      ["question",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 1"],
+              ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+              ["exists","Z",
+                ["and",
+                  ["isa","forest","Z"],
+                  ["has degree property","shallow","Z","none","forest"],
+                  ["has location","E","Z","in"]
+                ]
+              ],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["has type", ["sk0","?:X"], "eat", "?:Cu3"]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu4"]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "berry", ["sk1","?:X"]]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["has target", ["sk0","?:X"], ["sk1","?:X"], "?:Cu6"]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "forest", ["sk2","?:X"]]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["has degree property", "deep", ["sk2","?:X"], "none", "forest", "?:Cu8"]
+           ],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["has location", ["sk0","?:X"], ["sk2","?:X"], "in", "?:Cu9"]],
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S1",
+ "@logic": ["-isa","bear","?:X"],
+ "@confidence": 0.98,
+ "@nl": "Bears eat berries in a deep forest."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk3_activity"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk3_activity","eat","?:Cu13"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk3_activity","#:John 1","?:Cu14"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","berry","sk4_berry"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has target","sk3_activity","sk4_berry","?:Cu16"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","forest","sk5_forest"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-has degree property","deep","sk5_forest","none","forest","?:Cu18"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has location","sk3_activity","sk5_forest","in","?:Cu19"]],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu21"],
+            ["-has actor","?:E","#:John 1","?:Cu21"],
+            ["-isa","berry","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu21"],
+            ["-isa","forest","?:Z"],
+            ["has degree property","deep","?:Z","none","forest","?:Cu21"],
+            ["-has location","?:E","?:Z","in","?:Cu21"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 eat berries in a shallow forest?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","forest","$some_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","forest","$some_not_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","deep","$some_deep_forest","none","forest","?:Cu29"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","forest","$some_deep_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","deep","$some_not_deep_forest","none","forest","?:Cu31"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","animal","?:X"], ["-isa","forest","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","animal","?:X"], ["-isa","forest","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","deep","?:X","none","?:Fv63","?:Cu34"],
+            ["has degree property","deep","?:X","none","?:Fv64","?:Cu34"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property","deep","?:X","none","?:Fv66","?:Cu36"],
+            ["-has degree property","deep","?:X","none","?:Fv67","?:Cu36"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S3","assumption",1], [["-$defq0"]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["simp",1,2,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John eats berries in a shallow forest?",
+"Proof steps (by contradiction):",
+"  (1) assume for contradiction: the answer is no  [sentence 1]",
+"  (2) Answer holds  [assumption]",
+"  (3) Contradiction  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T02:42:03Z"
+}

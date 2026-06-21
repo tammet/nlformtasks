@@ -1,0 +1,268 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 84,
+  "input_text": "An elephant was strong. The animal lifted a stone. Who lifted the stone?",
+  "expected_answer": "The elephant",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The strong elephant.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "An elephant was strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An elephant 1 was strong.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["strong","none","elephant"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The animal lifted a stone.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The elephant 1 lifted a stone 2.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"},
+            {"id": "stone 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"target": "stone 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who lifted the stone?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity lifted the stone 2?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "stone 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"target": "stone 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["has degree property","strong","elephant 1","none","elephant"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["isa","stone","stone 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lift"],
+                ["has actor","E","elephant 1"],
+                ["has target","E","stone 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","stone","stone 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","lift"],
+              ["has actor","E","X"],
+              ["has target","E","stone 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "An elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "strong", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An elephant 1 was strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","stone","#:stone 2"],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has type", "sk0_activity", "lift", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has actor", "sk0_activity", "#:elephant 1", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has target", "sk0_activity", "#:stone 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk0_activity", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The elephant 1 lifted a stone 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","stone","#:stone 2"]],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has type", ["sk1","?:X"], "lift", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has actor", ["sk1","?:X"], "?:X", ["$ctxt","past","?:Fv14","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has target", ["sk1","?:X"], "#:stone 2", ["$ctxt","past","?:Fv16","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has time", ["sk1","?:X"], "past", "in", ["$ctxt","past","?:Fv18","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["actuality", ["sk1","?:X"]]],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","stone","#:stone 2"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "lift", ["$ctxt","past","?:Fv24","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","past","?:Fv26","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E", "#:stone 2", ["$ctxt","past","?:Fv28","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "none", "?:Fv46", ["$ctxt","past","?:Fv32","?:Fv33","?:Fv34"]],
+            ["has degree property", "strong", "?:X", "none", "?:Fv47", ["$ctxt","present","?:Fv32","?:Fv33","?:Fv34"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "none", "?:Fv48", ["$ctxt","present","?:Fv32","?:Fv33","?:Fv34"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv35","?:Fv36","?:Fv37"]],
+            ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv35","?:Fv36","?:Fv37"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv35","?:Fv36","?:Fv37"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","stone","$some_stone"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:elephant 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","stone","#:stone 2"], ["-has type", "?:X", "lift", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has actor", "?:X", "?:V", ["$ctxt","past","?:W","?:Z","?:U"]], ["-has target", "?:X", "#:stone 2", ["$ctxt","past","?:2006","?:Z","?:U"]], ["-isa","activity","?:X"], ["-actuality","?:X"], ["$defq0","?:V"]]],
+          [2, ["in","sent_S2","assumption",1], [["has type", "sk0_activity", "lift", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","activity","sk0_activity"], ["-isa","stone","#:stone 2"], ["-actuality","sk0_activity"], ["-has target", "sk0_activity", "#:stone 2", ["$ctxt","past","?:V3","?:Z3","?:U3"]], ["-has actor", "sk0_activity", "?:X3", ["$ctxt","past","?:Y3","?:Z3","?:U3"]], ["$defq0","?:X3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","stone","#:stone 2"]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","activity","sk0_activity"]]],
+          [6, ["in","sent_S2","assumption",1], [["actuality","sk0_activity"]]],
+          [7, ["simp",3,4,5,6,"fromassumption",1], [["-has target", "sk0_activity", "#:stone 2", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-has actor", "sk0_activity", "?:U", ["$ctxt","past","?:V","?:Y","?:Z"]], ["$defq0","?:U"]]],
+          [8, ["in","sent_S2","assumption",1], [["has target", "sk0_activity", "#:stone 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [9, ["mp",7,8,"fromassumption",1], [["-has actor", "sk0_activity", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [10, ["in","sent_S2","assumption",1], [["has actor", "sk0_activity", "#:elephant 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [11, ["mp",9,10,"fromassumption",1], [["$defq0","#:elephant 1"]]],
+          [12, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [13, ["mp",11,12,"fromga",1], [["$ans","#:elephant 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The animal lifted a stone.",
+"  (2) Who lifted the stone?",
+"Proof steps:",
+"  (1) If X is a lift event and some V performs X and X targets the stone B and X is an activity then V is the answer  [sentence 2]",
+"  (2) The event act1 is a lift event  [sentence 1]",
+"  (3) If the event act1 is an activity and the act1 targets the stone B and some X3 performs the act1 then X3 is the answer  [from steps 1, 2]",
+"  (4) The stone B is a stone  [sentence 1]",
+"  (5) The event act1 is an activity  [sentence 1]",
+"  (6)   [sentence 1]",
+"  (7) If the event act1 targets the stone B and some U performs the act1 then U is the answer  [from steps 3, 4, 5, 6]",
+"  (8) The event act1 targets the stone B  [sentence 1]",
+"  (9) If some X performs the event act1 then X is the answer  [from steps 7, 8]",
+"  (10) The elephant A performs the event act1  [sentence 1]",
+"  (11) The elephant A is the answer  [from steps 9, 10]",
+"  (12) technical answer unwrap step  [from question]",
+"  (13) The strong elephant is an answer  [from steps 11, 12]"
+],
+  "timestamp": "2026-06-19T00:32:12Z"
+}

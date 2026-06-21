@@ -1,0 +1,467 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 90,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. A smarter person has gained knowledge?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Books contain knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "contain", "mode": "habitual", "roles": {"target": "knowledge"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, a person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "scope": "dependent", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, a person becomes smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person becomes smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            },
+            {"root": "become", "mode": "habitual", "roles": {"actor": "person"}}
+          ],
+          "adjectives": [["smart","high","person"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Harry read the book Walden by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 read the book Walden 2.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {
+              "id": "Walden 2",
+              "type": "concrete",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/Walden"
+            }
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "Walden 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S5",
+          "text": "Henry Thoreau 3 wrote the book Walden 2.",
+          "type": "real",
+          "entities": [{
+              "id": "Henry Thoreau 3",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Henry_David_Thoreau"
+            },
+            {
+              "id": "Walden 2",
+              "type": "concrete",
+              "category": "artifact",
+              "url": "https://en.wikipedia.org/wiki/Walden"
+            }
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "event",
+              "roles": {"actor": "Henry Thoreau 3", "target": "Walden 2"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A smarter person has gained knowledge?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Has a smarter person gained knowledge?",
+          "type": "query",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "adjectives": [["smart","high","person"]],
+          "time": "present"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies", ["isa","book","X"], ["normally", ["is rel2","in","knowledge","X"]]]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","book","Y"],
+                      ["exists","E1",
+                        ["and",
+                          ["isa","activity","E1"],
+                          ["has type","E1","read"],
+                          ["has actor","E1","X"],
+                          ["has target","E1","Y"],
+                          ["typical","E1"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","gain"],
+                    ["has actor","E2","X"],
+                    ["has target","E2","knowledge"],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","gain"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","knowledge"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ],
+                ["and",
+                  ["exists","E2",
+                    ["and",
+                      ["isa","activity","E2"],
+                      ["has type","E2","become"],
+                      ["has actor","E2","X"],
+                      ["typical","E2"]
+                    ]
+                  ],
+                  ["has degree property","smart","X","high","person"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Harry 1"],
+            ["isa","book","Walden 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","read"],
+                ["has actor","E","Harry 1"],
+                ["has target","E","Walden 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Henry Thoreau 3"],
+          ["isa","book","Walden 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","Henry Thoreau 3"],
+              ["has target","E","Walden 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","person","X"],
+            ["has degree property","smart","X","high","person"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","gain"],
+                ["has actor","E","X"],
+                ["has target","E","knowledge"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S4",
+ "@logic": ["isa","man","#:Harry 1"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "entity_S5",
+ "@logic": ["isa","man","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "entity_S5",
+ "@logic": ["isa","henry thoreau","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"], ["is rel2","in","knowledge","?:X","?:Cu4"]],
+ "@confidence": 0.98,
+ "@nl": "Books contain knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-event","read","?:X","?:Y","?:E1","?:Cu5"],
+            ["event", "gain", "?:X", "knowledge", ["sk0","?:X"], "?:Cu5"]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","gain","?:X","knowledge","?:E1","?:Cu7"],
+            ["event", "become", "?:X", ["sk2","?:X"], ["sk1","?:X"], "?:Cu7"]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","gain","?:X","knowledge","?:E1","?:Cu9"],
+            ["has property","smart","?:X","?:Cu9"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["event","read","#:Harry 1","#:Walden 2","sk3","?:Cu12"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["has time","sk3","past","in","?:Cu13"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S4",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Harry 1 read the book Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["event","write","#:Henry Thoreau 3","#:Walden 2","sk4","?:Cu17"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["has time","sk4","past","in","?:Cu18"],
+ "@nl": "Henry Thoreau 3 wrote the book Walden 2."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","sk5_person"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","smart","sk5_person","?:Cu20"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["event","gain","sk5_person","knowledge","sk6","?:Cu21"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","?:X"],
+            ["-has property","smart","?:X","?:Cu23"],
+            ["-event","gain","?:X","knowledge","?:E","?:Cu23"],
+            ["$defq0"]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property","smart","$some_smart","?:Cu27"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","smart","$some_not_smart","?:Cu28"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","henry thoreau","?:X"], ["isa","thoreau","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","henry","?:X"], ["-isa","thoreau","?:X"], ["isa","henry thoreau","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["event", "gain", "?:X", "knowledge", ["sk0","?:X"], "?:Y"], ["-event","read","?:X","?:Z","?:U","?:Y"], ["-isa","person","?:X"], ["-isa","book","?:Z"]]],
+          [2, ["in","sent_S4","assumption",1], [["event","read","#:Harry 1","#:Walden 2","sk3","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","person","#:Harry 1"], ["-isa","book","#:Walden 2"], ["event", "gain", "#:Harry 1", "knowledge", ["sk0","#:Harry 1"], "?:X3"]]],
+          [4, ["in","sent_S4","assumption",1], [["isa","person","#:Harry 1"]]],
+          [5, ["in","sent_S5","assumption",1], [["isa","book","#:Walden 2"]]],
+          [6, ["simp",3,4,5,"fromassumption",1], [["event", "gain", "#:Harry 1", "knowledge", ["sk0","#:Harry 1"], "?:X"]]],
+          [7, ["in","sent_S3","assumption",0.9], [["-event","gain","?:X","knowledge","?:Y","?:Z"], ["has property","smart","?:X","?:Z"], ["-isa","person","?:X"]]],
+          [8, ["in","sent_S6","assumption",1], [["$defq0"], ["-event","gain","?:X","knowledge","?:Y","?:Z"], ["-has property","smart","?:X","?:Z"], ["-isa","person","?:X"]]],
+          [9, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [10, ["mp", 6, [8,1], 9, "fromga", 1], [["-isa","person","#:Harry 1"], ["-has property","smart","#:Harry 1","?:X3"]]],
+          [11, ["simp",10,4,"fromga",1], [["-has property","smart","#:Harry 1","?:X3"]]],
+          [12, ["mp",6,7,11,"fromga",0.9], [["-isa","person","#:Harry 1"]]],
+          [13, ["simp",12,4,"fromga",0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) When a person reads a book, a person gains knowledge.",
+"  (2) If a person gains knowledge, a person becomes smarter.",
+"  (3) Harry read the book Walden by Henry Thoreau.",
+"  (4) A smarter person has gained knowledge?",
+"Proof steps (by contradiction):",
+"  (1) If some X reads some Z and X is a person and Z is a book then X gain the knowledge  [sentence 1]",
+"  (2) Harry reads Walden  [sentence 3]",
+"  (3) If Harry is a person and Walden is a book then Harry gain the knowledge  [from steps 1, 2]",
+"  (4) Harry is a person  [sentence 3]",
+"  (5) Walden is a book  [sentence 3]",
+"  (6) Harry gain the knowledge  [from steps 3, 4, 5]",
+"  (7) If some X gain the knowledge and X is a person then X is smart  [sentence 2, confidence 90%]",
+"  (8) If some X gain the knowledge and X is smart and X is a person then answer holds  [sentence 4]",
+"  (9) assume for contradiction: the answer is no  [from question]",
+"  (10) If Harry is a person then Harry is not smart  [from steps 6, 8, 9]",
+"  (11) Harry is not smart  [from steps 10, 4]",
+"  (12) Harry is not a person  [from steps 6, 7, 11, confidence 90%]",
+"  (13) Contradiction  [from steps 12, 4, confidence 90%]"
+],
+  "timestamp": "2026-06-20T13:26:57Z"
+}

@@ -1,0 +1,273 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1273,
+  "input_text": "Birds near Tallinn are nice. John is near Tallinn. Who is near Tallinn?",
+  "expected_answer": "John",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds near Tallinn are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds that are near Tallinn 1 are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"},
+            {
+              "id": "Tallinn 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            }
+          ],
+          "adjectives": [["nice","none","bird"], ["near Tallinn","none","bird"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is near Tallinn.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 2 is near Tallinn 1.",
+          "type": "situation",
+          "entities": [{"id": "John 2", "type": "concrete", "category": "person"},
+            {
+              "id": "Tallinn 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            }
+          ],
+          "adjectives": [["near Tallinn","none","person"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Who is near Tallinn?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is near Tallinn 1?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {
+              "id": "Tallinn 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tallinn"
+            }
+          ],
+          "adjectives": [["near Tallinn","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location, entity_used_as_location, entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bird","X"],
+                ["has degree rel2","near","X","https://en.wikipedia.org/wiki/Tallinn","none","bird"]
+              ],
+              ["normally", ["has degree property","nice","X","none","bird"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 2"],
+            ["isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+            ["has degree rel2","near","John 2","https://en.wikipedia.org/wiki/Tallinn","none","person"]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+          ["has degree rel2","near","X","https://en.wikipedia.org/wiki/Tallinn","none","entity"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Tallinn 1"],
+ "@nl": "Birds that are near Tallinn 1 are nice."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["-has degree rel2", "near", "?:X", "https://en.wikipedia.org/wiki/Tallinn", "none", "bird", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has degree property", "good", "?:X", "none", "bird", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bird",2], ["$not", ["has degree property", "good", "?:X", "none", "bird", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds that are near Tallinn 1 are nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 2"],
+ "@nl": "John 2 is near Tallinn 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+ "@nl": "John 2 is near Tallinn 1."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2", "near", "#:John 2", "https://en.wikipedia.org/wiki/Tallinn", "none", "person", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "John 2 is near Tallinn 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","place","https://en.wikipedia.org/wiki/Tallinn"]],
+ "@nl": "Which entity is near Tallinn 1?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has degree rel2", "near", "?:X", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Fv48", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity is near Tallinn 1?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","place","https://en.wikipedia.org/wiki/Tallinn"],
+            ["-has degree rel2", "near", "?:X", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Fv49", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity is near Tallinn 1?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity is near Tallinn 1?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2", "near", "?:Br1", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Fv45", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree rel2", "near", "?:Br1", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Fv46", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "near", "?:Br1", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Fv47", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity is near Tallinn 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "good", "$some_nice_bird", "none", "bird", ["$ctxt","?:Fv26","?:Fv23","?:Fv24","?:Fv25"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_nice_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_bird", "none", "bird", ["$ctxt","?:Fv34","?:Fv31","?:Fv32","?:Fv33"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird_near_Tallinn"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree rel2", "near", "$some_bird_near_Tallinn", "https://en.wikipedia.org/wiki/Tallinn", "none", "bird", ["$ctxt","?:Fv42","?:Fv39","?:Fv40","?:Fv41"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","bird","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","bird","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","place","$some_place"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree rel2", "near", "#:John 2", "https://en.wikipedia.org/wiki/Tallinn", "none", "person", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-isa","place","https://en.wikipedia.org/wiki/Tallinn"], ["-has degree rel2", "near", "?:X", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 1], [["-isa","place","https://en.wikipedia.org/wiki/Tallinn"], ["$defq0","#:John 2"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","place","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:John 2"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:John 2"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_bird_near_Tallinn"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","place","https://en.wikipedia.org/wiki/Tallinn"], ["-has degree rel2", "near", "?:X", "https://en.wikipedia.org/wiki/Tallinn", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["has degree rel2", "near", "$some_bird_near_Tallinn", "https://en.wikipedia.org/wiki/Tallinn", "none", "bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","place","https://en.wikipedia.org/wiki/Tallinn"], ["$defq0","$some_bird_near_Tallinn"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","place","https://en.wikipedia.org/wiki/Tallinn"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","$some_bird_near_Tallinn"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","$some_bird_near_Tallinn"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John is near Tallinn.",
+"  (2) Who is near Tallinn?",
+"Proof steps:",
+"  (1) John is near Tallinn  [sentence 1]",
+"  (2) If Tallinn is a place and some X is near Tallinn then X is the answer  [sentence 2]",
+"  (3) If Tallinn is a place then John is the answer  [from steps 1, 2]",
+"  (4) Tallinn is a place  [sentence 1]",
+"  (5) John is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) John is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T22:46:59Z"
+}

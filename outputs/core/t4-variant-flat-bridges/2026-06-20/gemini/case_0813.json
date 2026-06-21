@@ -1,0 +1,335 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 813,
+  "input_text": "Bears ate nice berries in a big forest which was bought by Mary. Bears ate berries in the forest which was bought by a man?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears ate nice berries in a big forest which was bought by Mary.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 4 bought the forest 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 4", "type": "concrete", "category": "person"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "Mary 4", "target": "forest 3"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The forest 3 was big.",
+          "type": "situation",
+          "entities": [{"id": "forest 3", "type": "concrete", "category": "place"}],
+          "adjectives": [["big","none","forest"]],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S3",
+          "text": "Bears 1 ate nice berries 2 in the forest 3.",
+          "type": "situation",
+          "entities": [{"id": "bears 1", "type": "concrete", "category": "animal"},
+            {"id": "berries 2", "type": "concrete", "category": "plant"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"actor": "bears 1", "target": "berries 2", "location": "forest 3"}
+            }
+          ],
+          "adjectives": [["nice","none","berry"]],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Bears ate berries in the forest which was bought by a man?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Did bears 1 eat berries in the forest 3 which was bought by a man?",
+          "type": "query",
+          "entities": [{"id": "bears 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "category": "plant"},
+            {"id": "forest 3", "type": "concrete", "category": "place"},
+            {"id": "man", "type": "generic", "category": "person"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"actor": "bears 1", "target": "berries", "location": "forest 3"}
+            }
+          ],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 4"],
+            ["isa","forest","forest 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","Mary 4"],
+                ["has target","E","forest 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","forest","forest 3"],
+            ["has degree property","big","forest 3","none","forest"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","bear","bears 1"],
+            ["isa","berry","berries 2"],
+            ["isa","forest","forest 3"],
+            ["has degree property","nice","berries 2","none","berry"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","bears 1"],
+                ["has target","E","berries 2"],
+                ["has location","E","forest 3","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","bear","bears 1"],
+          ["isa","forest","forest 3"],
+          ["exists","E_eat",
+            ["and",
+              ["isa","activity","E_eat"],
+              ["has type","E_eat","eat"],
+              ["has actor","E_eat","bears 1"],
+              ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E_eat","Y"]]],
+              ["has location","E_eat","forest 3","in"],
+              ["has time","E_eat","past","in"]
+            ]
+          ],
+          ["exists","E_buy",
+            ["and",
+              ["isa","activity","E_buy"],
+              ["has type","E_buy","buy"],
+              ["has target","E_buy","forest 3"],
+              ["exists", "Z", ["and", ["isa","man","Z"], ["has actor","E_buy","Z"]]],
+              ["has time","E_buy","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","bear","#:bears 1"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "entity_S3",
+ "@logic": ["isa","berries","#:berries 2"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 4"],
+ "@nl": "Mary 4 bought the forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "Mary 4 bought the forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "buy", "#:Mary 4", ["eventprop","$target","#:forest 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 4 bought the forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 4 bought the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "The forest 3 was big."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "big", "#:forest 3", "none", "forest", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The forest 3 was big."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:bears 1"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "good", "#:berries 2", "none", "berry", ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "eat", "#:bears 1", ["eventprop","$target","#:berries 2"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Bears 1 ate nice berries 2 in the forest 3."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","bear","#:bears 1"]],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","forest","#:forest 3"]],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "#:bears 1", ["eventprop","$target","berry"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "buy", "man", ["eventprop","$target","#:forest 3"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","bear","#:bears 1"],
+            ["-isa","forest","#:forest 3"],
+            ["-is rel2", "eat", "#:bears 1", ["eventprop","$target","berry"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+            ["-is rel2", "buy", "man", ["eventprop","$target","#:forest 3"], ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Did bears 1 eat berries in the forest 3 which was bought by a man?"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-next","?:Fv19","?:Fv20"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-next","?:Fv24","?:Fv25"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv25","?:Fv26","?:Fv27"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-next","?:Fv29","?:Fv30"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "none", "?:Fv39", ["$ctxt","past","?:Fv33","?:Fv34","?:Fv35"]],
+            ["has degree property", "big", "?:X", "none", "?:Fv40", ["$ctxt","present","?:Fv33","?:Fv34","?:Fv35"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Fv41", ["$ctxt","present","?:Fv33","?:Fv34","?:Fv35"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv36","?:Fv37","?:Fv38"]],
+            ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv36","?:Fv37","?:Fv38"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv36","?:Fv37","?:Fv38"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","berries","$some_berries"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","forest","$some_forest"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bear","$some_bears"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T12:46:45Z"
+}

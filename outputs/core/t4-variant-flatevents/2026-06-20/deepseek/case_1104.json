@@ -1,0 +1,183 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1104,
+  "input_text": "Bears do not eat red berries in a forest. Bears eat red berries in forest?",
+  "expected_answer": false,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears do not eat red berries in a forest.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears do not eat red berries in a forest.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "category": "plant"},
+            {"id": "forest", "type": "generic", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "Bears eat red berries in forest?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Do bears eat red berries in a forest?",
+          "type": "query",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "category": "plant"},
+            {"id": "forest", "type": "generic", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "location_prep": "in"}
+            }
+          ],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["not",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists","Y",
+                        ["and",
+                          ["isa","berry","Y"],
+                          ["has degree property","red","Y","none","none"],
+                          ["has target","E","Y"]
+                        ]
+                      ],
+                      ["exists", "Z", ["and", ["isa","forest","Z"], ["has location","E","Z","in"]]],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","bear","X"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","X"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","berry","Y"],
+                      ["has degree property","red","Y","none","none"],
+                      ["has target","E","Y"]
+                    ]
+                  ],
+                  ["exists", "Z", ["and", ["isa","forest","Z"], ["has location","E","Z","in"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-is rel2", "eat", "?:X", ["eventprop","$target","berry"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bear",1], ["is rel2", "eat", "?:X", ["eventprop","$target","berry"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]
+           ],
+ "@nl": "Bears do not eat red berries in a forest."},
+{"@name": "sent_S2",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","bear","skq_S2_bear"],
+ "@nl": "Do bears eat red berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Do bears eat red berries in a forest?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Do bears eat red berries in a forest?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Do bears eat red berries in a forest?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", ["$","bear",1], ["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]
+        ],
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","bear",1], ["is rel2", "eat", "?:X", ["eventprop","$target","berry"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]], ["-is rel2", "eat", "?:X", ["eventprop","$target","berry"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["-$defq0"], ["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["mp", [1,1], 4, "fromga", 1], [["-isa","bear","skq_S2_bear"], ["$block", ["$","bear",1], ["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","bear","skq_S2_bear"]]],
+          [7, ["mp",5,6,"fromga",1], [["$block", ["$","bear",1], ["is rel2", "eat", "skq_S2_bear", ["eventprop","$target","berry"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Bears do not eat red berries in a forest.",
+"  (2) Bears eat red berries in forest?",
+"Proof steps:",
+"  (1) X does not eat berry, except when X eats berry  [sentence 1]",
+"  (2) If answer holds then skq_S2_bear eats berry  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) Skq_S2_bear eats berry  [from steps 2, 3]",
+"  (5) Skq_S2_bear is not a bear, except when skq_S2_bear eats berry  [from steps 1, 4]",
+"  (6) Skq_S2_bear is a bear  [sentence 2]",
+"  (7) Outstanding exception: skq_S2_bear eats berry  [from steps 5, 6]",
+"Exceptions checked and not holding:",
+"  skq_S2_bear eats berry"
+],
+  "timestamp": "2026-06-18T17:36:50Z"
+}

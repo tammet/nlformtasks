@@ -1,0 +1,198 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 24,
+  "input_text": "Big or strong elephants are nice. John is a big elephant. John is nice?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Big or strong elephants are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants that are big or strong are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","elephant"], ["strong","none","elephant"], ["nice","none","elephant"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a big elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a big elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["big","none","elephant"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 nice?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","elephant","X"],
+                ["or",
+                  ["has degree property","big","X","none","elephant"],
+                  ["has degree property","strong","X","none","elephant"]
+                ]
+              ],
+              ["normally", ["has degree property","nice","X","none","elephant"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","John 1"],
+            ["has degree property","big","John 1","none","elephant"]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id", "S3", ["question", ["has degree property","nice","John 1","none","elephant"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a big elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has degree property","big","?:X","none","elephant","?:Cu2"],
+            ["has degree property","good","?:X","none","elephant","?:Cu2"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "Elephants that are big or strong are nice."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has degree property","strong","?:X","none","elephant","?:Cu3"],
+            ["has degree property","good","?:X","none","elephant","?:Cu3"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "Elephants that are big or strong are nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is a big elephant."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","big","#:John 1","none","elephant","?:Cu5"],
+ "@nl": "John 1 is a big elephant."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","#:John 1","none","elephant","?:Cu6"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","#:John 1","none","elephant","?:Cu7"], ["$defq0"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_elephant","none","elephant","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","strong","$some_strong_elephant","none","elephant","?:Cu11"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_strong_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","strong","$some_not_strong_elephant","none","elephant","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_elephant","none","elephant","?:Cu14"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_nice_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_elephant","none","elephant","?:Cu16"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv55","?:Cu17"],
+            ["has degree property","big","?:X","none","?:Fv56","?:Cu17"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","strong","?:X","none","?:Fv58","?:Cu19"],
+            ["has degree property","strong","?:X","none","?:Fv59","?:Cu19"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9487,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9487], [["-has degree property","big","?:X","none","elephant","?:Y"], ["has degree property","good","?:X","none","elephant","?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property","big","#:John 1","none","elephant","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.9487], [["-isa","elephant","#:John 1"], ["has degree property","good","#:John 1","none","elephant","?:X3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",0.9487], [["has degree property","good","#:John 1","none","elephant","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property","good","#:John 1","none","elephant","?:X"]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 0.9487], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) Big or strong elephants are nice.",
+"  (2) John is a big elephant.",
+"  (3) John is nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a big elephant and X is an elephant then X is a good elephant  [sentence 1, confidence 95%]",
+"  (2) John is a big elephant  [sentence 2]",
+"  (3) If John is an elephant then John is a good elephant  [from steps 1, 2, confidence 95%]",
+"  (4) John is an elephant  [sentence 2]",
+"  (5) John is a good elephant  [from steps 3, 4, confidence 95%]",
+"  (6) If John is a good elephant then answer holds  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7, confidence 95%]"
+],
+  "timestamp": "2026-06-19T02:53:07Z"
+}

@@ -1,0 +1,208 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 122,
+  "input_text": "The elephants saw a fox. They were nice. The elephants were nice?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The elephants saw a fox.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The elephants 1 saw a fox 2.",
+          "type": "situation",
+          "entities": [{"id": "elephants 1", "type": "concrete", "category": "animal"},
+            {"id": "fox 2", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "elephants 1", "target": "fox 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "They were nice.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The elephants 1 were nice.",
+          "type": "situation",
+          "entities": [{"id": "elephants 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"]],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The elephants were nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Were the elephants 1 nice?",
+          "type": "query",
+          "entities": [{"id": "elephants 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"]],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephants 1"],
+            ["isa","fox","fox 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","elephants 1"],
+                ["has target","E","fox 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","elephant","elephants 1"],
+            ["has degree property","nice","elephants 1","none","elephant"]
+          ]
+        ],
+        ["state time","W1","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","elephant","elephants 1"],
+          ["has degree property","nice","elephants 1","none","elephant"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","elephant","#:elephants 1"],
+ "@nl": "The elephants 1 saw a fox 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephants 1"],
+ "@nl": "The elephants 1 saw a fox 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","fox","#:fox 2"],
+ "@nl": "The elephants 1 saw a fox 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:elephants 1", ["eventprop","$target","#:fox 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The elephants 1 saw a fox 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The elephants 1 saw a fox 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephants 1"],
+ "@nl": "The elephants 1 were nice."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "The elephants 1 were nice."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:elephants 1"]],
+ "@nl": "Were the elephants 1 nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Were the elephants 1 nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","elephant","#:elephants 1"],
+            ["-has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Were the elephants 1 nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Were the elephants 1 nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Were the elephants 1 nice?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","elephant","#:elephants 1"], ["$defq0"], ["-has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property", "good", "#:elephants 1", "none", "elephant", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], 2, 3, "fromga", 1], [["-isa","elephant","#:elephants 1"]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","elephant","#:elephants 1"]]],
+          [6, ["simp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) They were nice.",
+"  (2) The elephants were nice?",
+"Proof steps (by contradiction):",
+"  (1) If the elephants A is an elephant and the elephants A is a good elephant then answer holds  [sentence 2]",
+"  (2) The elephants A is a good elephant  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) The elephants A is not an elephant  [from steps 1, 2, 3]",
+"  (5) The elephants A is an elephant  [sentence 1]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-19T12:07:22Z"
+}

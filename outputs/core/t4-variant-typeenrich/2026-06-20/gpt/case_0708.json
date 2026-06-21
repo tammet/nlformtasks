@@ -1,0 +1,209 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 708,
+  "input_text": "Big bears who are nice and who have a trunk have a tail. John is a big bear. John has a trunk. John has a tail?",
+  "expected_answer": null,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Big bears who are nice and who have a trunk have a tail.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Big nice bears that have a trunk have a tail.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["big","none","bear"], ["nice","none","bear"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a big bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a big bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["big","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John has a trunk.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a trunk.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "trunk", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a tail?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "tail", "type": "generic"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["has degree property","big","X","none","bear"],
+                ["has degree property","nice","X","none","bear"],
+                ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]
+              ],
+              ["normally", ["exists", "Z", ["and", ["isa","tail","Z"], ["has part","X","Z"]]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","bear","John 1"], ["has degree property","big","John 1","none","bear"]]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["exists", "X", ["and", ["isa","trunk","X"], ["have","John 1","X"]]]]
+    ],
+    ["@id", "S4", ["question", ["exists", "X", ["and", ["isa","tail","X"], ["have","John 1","X"]]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","big","?:X","none","bear","?:Cu3"],
+            ["-has degree property","good","?:X","none","bear","?:Cu3"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu3"],
+            ["isa", "tail", ["sk0","?:X"]]
+           ],
+ "@nl": "Big nice bears that have a trunk have a tail."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","big","?:X","none","bear","?:Cu4"],
+            ["-has degree property","good","?:X","none","bear","?:Cu4"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu4"],
+            ["has part", "?:X", ["sk0","?:X"], "?:Cu4"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Big nice bears that have a trunk have a tail."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","big","#:John 1","none","bear","?:Cu6"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","trunk","sk1_trunk"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:John 1","sk1_trunk","?:Cu8"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","tail","sk2_tail"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:John 1","sk2_tail","?:Cu10"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","tail","?:X"], ["-have","#:John 1","?:X","?:Cu11"], ["$defq0"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S3",
+ "@logic": ["has part","#:John 1","sk1_trunk","?:Cu12"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tail","$some_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_bear","none","bear","?:Cu20"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_bear","none","bear","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_nice_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_bear","none","bear","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_nice_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_bear","none","bear","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv69","?:Cu26"],
+            ["has degree property","big","?:X","none","?:Fv70","?:Cu26"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T02:47:16Z"
+}

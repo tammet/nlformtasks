@@ -1,0 +1,132 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 254,
+  "input_text": "John does not eat a carrot. John eats a carrot?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John does not eat a carrot.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 does not eat a carrot.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "carrot"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John eats a carrot?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Does John 1 eat a carrot?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "carrot"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["not",
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["exists", "X", ["and", ["isa","carrot","X"], ["has target","E","X"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 1"],
+              ["exists", "X", ["and", ["isa","carrot","X"], ["has target","E","X"]]],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","$generic",1], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]
+           ],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Does John 1 eat a carrot?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 eat a carrot?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 eat a carrot?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", ["$","$generic",1], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]
+        ],
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","$generic",1], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]], ["-is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S2","assumption",1], [["-$defq0"], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["mp", [1,1], 4, "fromga", 1], [["$block", ["$","$generic",1], ["is rel2", "eat", "#:John 1", ["eventprop","$target","carrot"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John does not eat a carrot.",
+"  (2) John eats a carrot?",
+"Proof steps:",
+"  (1) John does not eat the carrot, except when John eats the carrot  [sentence 1]",
+"  (2) If answer holds then John eats the carrot  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) John eats the carrot  [from steps 2, 3]",
+"  (5) Outstanding exception: John eats the carrot  [from steps 1, 4]",
+"Exceptions checked and not holding:",
+"  John eats the carrot"
+],
+  "timestamp": "2026-06-18T15:37:17Z"
+}

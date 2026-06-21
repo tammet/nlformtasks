@@ -1,0 +1,251 @@
+{
+  "test_name": "core_davidson_fix",
+  "case_id": 1587,
+  "input_text": "John made Mary cry. Did Mary cry?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John made Mary cry.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 made Mary 2 cry.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "make",
+              "mode": "event",
+              "roles": {
+                "actor": "John 1",
+                "content": {"root": "cry", "mode": "event", "roles": {"actor": "Mary 2"}}
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 2 cried.",
+          "type": "situation",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "cry", "mode": "event"}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Mary cry?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 2 cry?",
+          "type": "query",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "cry", "mode": "event"}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","Mary 2"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","make"],
+                ["has actor","E1","John 1"],
+                ["has time","E1","past","in"],
+                ["exists","E2",
+                  ["and",
+                    ["has content","E1","E2"],
+                    ["isa","activity","E2"],
+                    ["has type","E2","cry"],
+                    ["has actor","E2","Mary 2"],
+                    ["has time","E2","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W1",
+        ["and",
+          ["isa","person","Mary 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","cry"],
+              ["has actor","E","Mary 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","cry"],
+            ["has actor","E","Mary 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["event", "make", "#:John 1", "cry", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["event", "cry", "#:Mary 2", "sk2", "sk1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["has content","sk0","sk1"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk1", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk1"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 made Mary 2 cry."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "Mary 2 cried."},
+{"@name": "sent_S2",
+ "@logic": ["event", "cry", "#:Mary 2", "sk4", "sk3", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 2 cried."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk3", "past", "in", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 2 cried."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk3"],
+ "@nl": "Mary 2 cried."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "cry", "#:Mary 2", "sk6", "sk5", ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 2 cry?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk5", "past", "in", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 2 cry?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk5"]],
+ "@nl": "Did Mary 2 cry?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "cry", "#:Mary 2", "?:Davp3", "?:E", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 2 cry?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 2 cry?"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["event", "cry", "#:Mary 2", "sk2", "sk1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["$defq0"], ["-event", "cry", "#:Mary 2", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-actuality","?:Y"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["-actuality","sk1"]]],
+          [5, ["in","sent_S1","assumption",1], [["actuality","sk1"]]],
+          [6, ["simp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John made Mary cry.",
+"  (2) Did Mary cry?",
+"Proof steps (by contradiction):",
+"  (1) Mary cry sk2  [sentence 1]",
+"  (2) If Mary cry some X then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) (Empty)  [from steps 1, 2, 3]",
+"  (5)   [sentence 1]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-20T10:40:31Z"
+}

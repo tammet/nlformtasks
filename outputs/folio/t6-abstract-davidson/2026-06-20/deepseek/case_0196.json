@@ -1,0 +1,151 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 196,
+  "input_text": "Jane does not like any animals that bark. All dogs are animals that bark. Jane likes all animals that jump. If an animal has legs, then it jumps. If an animal is terricolous, then it has legs. KiKi is an animal. If KiKi neither jumps nor has legs, then KiKi is terricolous or has legs. KiKi is terricolous?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: no question given",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Jane does not like any animals that bark.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Jane 1 does not like any barking animals.",
+          "type": "real",
+          "entities": [{"id": "Jane 1", "type": "concrete", "category": "person"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["bark","none","animal"]]
+        }
+      ]
+    },
+    {
+      "raw": "All dogs are animals that bark.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All dogs are barking animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "dog", "type": "generic", "category": "animal"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["bark","none","animal"]]
+        }
+      ]
+    }
+  ],
+  "stage_1_fixes": ["json: stripped non-JSON wrapper text","json: added 1 closing bracket(s)"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Jane 1"],
+          ["not",
+            ["exists","X",
+              ["and",
+                ["isa","animal","X"],
+                ["isa","dog","X"],
+                ["has degree property","bark","X","none","animal"],
+                ["is rel2","like","Jane 1","X"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","dog","X"],
+            ["and", ["isa","animal","X"], ["has degree property","bark","X","none","animal"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "stage_2_retries": ["sanity #1: dropped_specific_noun"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","woman","#:Jane 1"],
+ "@nl": "Jane 1 does not like any barking animals."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Jane 1"],
+ "@nl": "Jane 1 does not like any barking animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","dog","?:X"],
+            ["-has property","bark","?:X","?:Cu3"],
+            ["-is rel2","like","#:Jane 1","?:X","?:Cu3"]
+           ],
+ "@nl": "Jane 1 does not like any barking animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","dog","?:X"], ["isa","animal","?:X"]],
+ "@nl": "All dogs are barking animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","dog","?:X"], ["has property","bark","?:X","?:Cu5"]],
+ "@nl": "All dogs are barking animals."},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","dog","$some_dog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","dog","$some_not_dog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","bark","$some_bark","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","bark","$some_not_bark","?:Cu11"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","dog","?:Xg"], ["isa","man","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"error": "no question given"},
+  "timestamp": "2026-06-20T13:41:55Z"
+}

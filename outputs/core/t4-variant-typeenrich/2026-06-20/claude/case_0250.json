@@ -1,0 +1,151 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 250,
+  "input_text": "The bicycle of Tom was new. Was the bicycle old?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The bicycle of Tom was new.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The bicycle 2 is the bicycle of Tom 1.",
+          "type": "situation",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "bicycle 2", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["bicycle of","bicycle 2","Tom 1"]],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The bicycle 2 was new.",
+          "type": "situation",
+          "entities": [{"id": "bicycle 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["new","none","artifact"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Was the bicycle old?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was the bicycle 2 old?",
+          "type": "query",
+          "entities": [{"id": "bicycle 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["old","none","artifact"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Tom 1"],
+            ["isa","bicycle","bicycle 2"],
+            ["have","Tom 1","bicycle 2"]
+          ]
+        ],
+        ["state time","W0","past"],
+        ["@definite","S1","W0","bicycle of","Tom 1","bicycle 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","bicycle","bicycle 2"],
+            ["has degree property","new","bicycle 2","none","artifact"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question", ["@time", "past", ["has degree property","old","bicycle 2","none","artifact"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","bicycle","#:bicycle 2"],
+ "@nl": "The bicycle 2 is the bicycle of Tom 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "The bicycle 2 is the bicycle of Tom 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "bicycle", ["$theof1","bicycle","#:Tom 1","?:Cu3"]],
+ "@nl": "The bicycle 2 is the bicycle of Tom 1."},
+{"@name": "sent_S1",
+ "@logic": ["have", "#:Tom 1", ["$theof1","bicycle","#:Tom 1","?:Cu4"], "?:Cu4"],
+ "@nl": "The bicycle 2 is the bicycle of Tom 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "bicycle", ["$theof1","bicycle","#:Tom 1","?:Cu5"]],
+ "@nl": "The bicycle 2 was new."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "new", ["$theof1","bicycle","#:Tom 1","?:Cu6"], "none", "artifact", "?:Cu6"],
+ "@nl": "The bicycle 2 was new."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree property", "new", ["$theof1","bicycle","#:Tom 1","?:Cu7"], "none", "artifact", "?:Cu7"]
+           ],
+ "@nl": "Was the bicycle 2 old?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["has degree property", "new", ["$theof1","bicycle","#:Tom 1","?:Cu8"], "none", "artifact", "?:Cu8"],
+            ["$defq0"]
+           ],
+ "@nl": "Was the bicycle 2 old?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was the bicycle 2 old?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Tom 1", ["$theof1","bicycle","#:Tom 1","?:Cu10"], "?:Cu10"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "bicycle of", ["$theof1","bicycle","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "bicycle", ["$theof1","bicycle","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property","new","?:X","none","?:Fv15","?:Cu13"],
+            ["-has degree property","new","?:X","none","?:Fv16","?:Cu13"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S3","assumption",1], [["-$defq0"], ["-has degree property", "new", ["$theof1","bicycle","#:Tom 1","?:X"], "none", "artifact", "?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property", "new", ["$theof1","bicycle","#:Tom 1","?:X"], "none", "artifact", "?:X"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The bicycle of Tom was new.",
+"  (2) Was the bicycle old?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds then Tom's bicycle is not a new artifact  [sentence 2]",
+"  (2) Tom's bicycle is a new artifact  [sentence 1]",
+"  (3) Answer holds  [assumption]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T02:39:04Z"
+}

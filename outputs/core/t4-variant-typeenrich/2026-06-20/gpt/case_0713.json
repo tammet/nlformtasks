@@ -1,0 +1,218 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 713,
+  "input_text": "Bears who have a trunk are nice. John is a bear. John has a trunk. John is nice?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears who have a trunk are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears that have a trunk are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "nice", "type": "generic"}
+          ],
+          "adjectives": [["nice","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a trunk.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a trunk.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is nice?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 nice?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "nice", "type": "generic"}
+          ],
+          "adjectives": [["nice","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]
+              ],
+              ["normally", ["has degree property","nice","X","none","entity"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id","S3",
+      ["holds", "W0", ["exists", "X", ["and", ["isa","trunk","X"], ["have","John 1","X"]]]]
+    ],
+    ["@id", "S4", ["question", ["has degree property","nice","John 1","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu3"],
+            ["has degree property","good","?:X","none","?:Fv37","?:Cu3"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Bears that have a trunk are nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","trunk","sk0_trunk"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:John 1","sk0_trunk","?:Cu6"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","#:John 1","none","?:Fv39","?:Cu7"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","good","#:John 1","none","?:Fv40","?:Cu8"], ["$defq0"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S3",
+ "@logic": ["has part","#:John 1","sk0_trunk","?:Cu9"],
+ "@nl": "John 1 has a trunk."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","good","#:John 1","none","?:Fv41","?:Cu11"],
+            ["has degree property","good","#:John 1","none","?:Fv42","?:Cu11"]
+           ],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_entity","none","?:Fv44","?:Cu15"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_entity","none","?:Fv45","?:Cu16"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.922091,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-has part","?:X","?:U","?:Z"], ["-isa","trunk","?:U"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","trunk","sk0_trunk"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-has part","?:X","sk0_trunk","?:Z"], ["-isa","bear","?:X"]]],
+          [4, ["in","sent_haspart_bridge","assumption",0.9], [["-have","?:X","?:Y","?:Z"], ["has part","?:X","?:Y","?:Z"], ["-isa","trunk","?:Y"]]],
+          [5, ["mp", [4,2], 2, "fromassumption", 0.9], [["-have","?:X","sk0_trunk","?:Y"], ["has part","?:X","sk0_trunk","?:Y"]]],
+          [6, ["in","sent_S3","assumption",1], [["have","#:John 1","sk0_trunk","?:X"]]],
+          [7, ["mp",5,6,"fromassumption",0.9], [["has part","#:John 1","sk0_trunk","?:X"]]],
+          [8, ["mp", [3,1], 7, "fromassumption", 0.81], [["-isa","bear","#:John 1"], ["has degree property","good","#:John 1","none","?:X3","?:Y3"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [10, ["simp",8,9,"fromassumption",0.81], [["has degree property","good","#:John 1","none","?:X","?:Y"]]],
+          [11, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","good","#:John 1","none","?:X","?:Y"]]],
+          [12, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [13, ["mp", 10, [11,1], 12, "fromga", 0.81], false],
+          [14, ["in","sent_S3","assumption",1], [["has part","#:John 1","sk0_trunk","?:X"]]],
+          [15, ["mp", [3,1], 14, "fromassumption", 0.9], [["-isa","bear","#:John 1"], ["has degree property","good","#:John 1","none","?:X3","?:Y3"]]],
+          [16, ["simp",15,9,"fromassumption",0.9], [["has degree property","good","#:John 1","none","?:X","?:Y"]]],
+          [17, ["mp", 16, [11,1], 12, "fromga", 0.9], false],
+          [18, ["cumul",13,17,"fromga",0.922091], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 92%.",
+"Sentences used:",
+"  (1) sent_haspart_bridge",
+"  (2) Bears who have a trunk are nice.",
+"  (3) John is a bear.",
+"  (4) John has a trunk.",
+"  (5) John is nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X has some U as a part and U is a trunk and X is a bear then X is good  [sentence 2, confidence 90%]",
+"  (2) Some trunk tru1 is a trunk  [sentence 4]",
+"  (3) If some X has tru1 as a part and X is a bear then X is good  [from steps 1, 2, confidence 90%]",
+"  (4) If some X has some Y and Y is a trunk then X has Y as a part  [sentence 1, confidence 90%]",
+"  (5) If some X has tru1 then X has tru1 as a part  [from steps 4, 2, confidence 90%]",
+"  (6) John has tru1  [sentence 4]",
+"  (7) John has tru1 as a part  [from steps 5, 6, confidence 90%]",
+"  (8) If John is a bear then John is good  [from steps 3, 7, confidence 81%]",
+"  (9) John is a bear  [sentence 3]",
+"  (10) John is good  [from steps 8, 9, confidence 81%]",
+"  (11) If John is good then answer holds  [sentence 5]",
+"  (12) assume for contradiction: the answer is no  [from question]",
+"  (13) Contradiction  [from steps 10, 11, 12, confidence 81%]",
+"  (14) John has tru1 as a part  [sentence 4]",
+"  (15) If John is a bear then John is good  [from steps 3, 14, confidence 90%]",
+"  (16) John is good  [from steps 15, 9, confidence 90%]",
+"  (17) Contradiction  [from steps 16, 11, 12, confidence 90%]",
+"  (18) Contradiction  [from steps 13, 17, confidence 92%]"
+],
+  "timestamp": "2026-06-19T02:47:17Z"
+}

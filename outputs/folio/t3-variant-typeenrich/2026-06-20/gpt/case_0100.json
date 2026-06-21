@@ -1,0 +1,402 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 100,
+  "input_text": "Animals are either invertebrates or vertebrates. All animals with backbones reproduce by male-and-female mating. All vertebrate animals have a backbone. All bees do not reproduce by male-and-female mating. All queen bees are bees. Harry is a bee. Harry is an invertebrate or a queen bee?",
+  "expected_answer": "True.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Animals are either invertebrates or vertebrates.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Animals are either invertebrates or vertebrates.",
+          "type": "strict_rule",
+          "entities": [{"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "invertebrates", "type": "generic", "category": "animal"},
+            {"id": "vertebrates", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All animals with backbones reproduce by male-and-female mating.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All animals with backbones reproduce by male-and-female mating.",
+          "type": "normal_rule",
+          "entities": [{"id": "animals", "type": "generic", "category": "animal"},
+            {"id": "backbones", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{"root": "reproduce", "mode": "habitual"}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All vertebrates have backbones.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All vertebrates have backbones.",
+          "type": "strict_rule",
+          "entities": [{"id": "vertebrates", "type": "generic", "category": "animal"},
+            {"id": "backbones", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All bees do not reproduce by male-and-female mating.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All bees do not reproduce by male-and-female mating.",
+          "type": "normal_rule",
+          "entities": [{"id": "bees", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "reproduce", "mode": "habitual"}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All queen bees are bees.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "All queen bees are bees.",
+          "type": "strict_rule",
+          "entities": [{"id": "queen bees", "type": "generic", "category": "animal"},
+            {"id": "bees", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Harry is a bee.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Harry 1 is a bee.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "animal"},
+            {"id": "bee", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Is Harry an invertebrate or a queen bee?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is Harry 1 an invertebrate or a queen bee?",
+          "type": "query",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "animal"},
+            {"id": "invertebrate", "type": "generic", "category": "animal"},
+            {"id": "queen bee", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","animal","X"],
+            ["xor", ["isa","invertebrate","X"], ["isa","vertebrate","X"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","animal","X"],
+                ["exists", "Y", ["and", ["isa","backbone","Y"], ["has part","X","Y"]]]
+              ],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","reproduce"],
+                    ["has actor","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","vertebrate","X"],
+            ["exists", "Y", ["and", ["isa","backbone","Y"], ["has part","X","Y"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bee","X"],
+              ["normally",
+                ["not",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","reproduce"],
+                      ["has actor","E","X"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.99]
+      ]
+    ],
+    ["@id","S5",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","queen bee","X"], ["isa","bee","X"]]]]
+    ],
+    ["@id", "S6", ["holds", "W0", ["and", ["isa","animal","Harry 1"], ["isa","bee","Harry 1"]]]],
+    ["@id","S7",
+      ["question", ["or", ["isa","invertebrate","Harry 1"], ["isa","queen bee","Harry 1"]]]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: either_or_not_xor"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"], ["isa","invertebrate","?:X"], ["isa","vertebrate","?:X"]],
+ "@nl": "Animals are either invertebrates or vertebrates."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"], ["-isa","invertebrate","?:X"], ["-isa","vertebrate","?:X"]],
+ "@nl": "Animals are either invertebrates or vertebrates."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","backbone","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu3"],
+            ["isa", "activity", ["sk0","?:X"]]
+           ],
+ "@nl": "All animals with backbones reproduce by male-and-female mating."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","backbone","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu4"],
+            ["has type", ["sk0","?:X"], "reproduce", "?:Cu4"]
+           ],
+ "@nl": "All animals with backbones reproduce by male-and-female mating."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","backbone","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu5"],
+            ["has actor", ["sk0","?:X"], "?:X", "?:Cu5"]
+           ],
+ "@nl": "All animals with backbones reproduce by male-and-female mating."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","animal","?:X"], ["-isa","backbone","?:Y"], ["-has part","?:X","?:Y","?:Cu6"]],
+ "@confidence": 0.98,
+ "@nl": "All animals with backbones reproduce by male-and-female mating."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","vertebrate","?:X"], ["isa", "backbone", ["sk1","?:X"]]],
+ "@nl": "All vertebrates have backbones."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","vertebrate","?:X"], ["has part", "?:X", ["sk1","?:X"], "?:Cu8"]],
+ "@nl": "All vertebrates have backbones."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","bee","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","reproduce","?:Cu9"],
+            ["-has actor","?:E","?:X","?:Cu9"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "All bees do not reproduce by male-and-female mating."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","queen bee","?:X"], ["isa","bee","?:X"]],
+ "@nl": "All queen bees are bees."},
+{"@name": "sent_S6",
+ "@logic": ["isa","animal","#:Harry 1"],
+ "@nl": "Harry 1 is a bee."},
+{"@name": "sent_S6",
+ "@logic": ["isa","bee","#:Harry 1"],
+ "@nl": "Harry 1 is a bee."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","invertebrate","#:Harry 1"], ["isa","queen bee","#:Harry 1"]],
+ "@nl": "Is Harry 1 an invertebrate or a queen bee?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","invertebrate","#:Harry 1"], ["$defq0"]],
+ "@nl": "Is Harry 1 an invertebrate or a queen bee?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","queen bee","#:Harry 1"], ["$defq0"]],
+ "@nl": "Is Harry 1 an invertebrate or a queen bee?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","backbone","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is Harry 1 an invertebrate or a queen bee?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","invertebrate","$some_invertebrate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","vertebrate","$some_vertebrate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","vertebrate","$some_not_vertebrate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","backbone","$some_backbone"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","backbone","$some_not_backbone"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bee","$some_not_bee"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","queen bee","$some_queen_bee"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","queen bee","$some_not_queen_bee"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","queen bee","?:X"], ["isa","bee","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","queen","?:X"], ["-isa","bee","?:X"], ["isa","queen bee","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","queen","?:Xg"], ["isa","woman","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98735,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-isa","animal","?:X"], ["isa","vertebrate","?:X"], ["isa","invertebrate","?:X"]]],
+          [2, ["in","sent_S6","assumption",1], [["isa","animal","#:Harry 1"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","invertebrate","#:Harry 1"], ["isa","vertebrate","#:Harry 1"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa", "backbone", ["sk1","?:X"]], ["-isa","vertebrate","?:X"]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 1], [["isa", "backbone", ["sk1","#:Harry 1"]], ["isa","invertebrate","#:Harry 1"]]],
+          [6, ["in","sent_S2","assumption",0.98], [["-has part","?:X","?:Y","?:Z"], ["-isa","backbone","?:Y"], ["-isa","animal","?:X"]]],
+          [7, ["mp", 5, [6,1], "fromassumption", 0.98], [["isa","invertebrate","#:Harry 1"], ["-has part", "?:X", ["sk1","#:Harry 1"], "?:Y"], ["-isa","animal","?:X"]]],
+          [8, ["in","sent_S3","assumption",1], [["has part", "?:X", ["sk1","?:X"], "?:Y"], ["-isa","vertebrate","?:X"]]],
+          [9, ["mp", [3,1], [8,1], "fromassumption", 1], [["isa","invertebrate","#:Harry 1"], ["has part", "#:Harry 1", ["sk1","#:Harry 1"], "?:X"]]],
+          [10, ["mp", [7,1], [9,1], "fromassumption", 0.98], [["-isa","animal","#:Harry 1"], ["isa","invertebrate","#:Harry 1"]]],
+          [11, ["simp",10,2,"fromassumption",0.98], [["isa","invertebrate","#:Harry 1"]]],
+          [12, ["in","sent_S7","assumption",1], [["-isa","invertebrate","#:Harry 1"], ["$defq0"]]],
+          [13, ["in","sent_S7","goal",1], [["-$defq0"]]],
+          [14, ["mp",11,12,13,"fromga",0.98], false],
+          [15, ["in","sent_S2","assumption",1], [["has type", ["sk0","?:X"], "reproduce", "?:Y"], ["-has part","?:X","?:Z","?:Y"], ["-isa","backbone","?:Z"], ["-isa","animal","?:X"]]],
+          [16, ["mp", 5, [15,2], "fromassumption", 1], [["isa","invertebrate","#:Harry 1"], ["has type", ["sk0","?:X"], "reproduce", "?:Y"], ["-has part", "?:X", ["sk1","#:Harry 1"], "?:Y"], ["-isa","animal","?:X"]]],
+          [17, ["mp", [16,2], [9,1], "fromassumption", 1], [["-isa","animal","#:Harry 1"], ["isa","invertebrate","#:Harry 1"], ["has type", ["sk0","#:Harry 1"], "reproduce", "?:X3"]]],
+          [18, ["simp",17,2,"fromassumption",1], [["isa","invertebrate","#:Harry 1"], ["has type", ["sk0","#:Harry 1"], "reproduce", "?:X"]]],
+          [19, ["in","sent_S4","assumption",0.98], [["-has type","?:X","reproduce","?:Y"], ["-has actor","?:X","?:Z","?:Y"], ["-isa","bee","?:Z"], ["-isa","activity","?:X"]]],
+          [20, ["mp", [18,1], 19, "fromassumption", 0.98], [["-isa", "activity", ["sk0","#:Harry 1"]], ["isa","invertebrate","#:Harry 1"], ["-has actor", ["sk0","#:Harry 1"], "?:X", "?:Y"], ["-isa","bee","?:X"]]],
+          [21, ["in","sent_S2","assumption",1], [["isa", "activity", ["sk0","?:X"]], ["-has part","?:X","?:Y","?:Z"], ["-isa","backbone","?:Y"], ["-isa","animal","?:X"]]],
+          [22, ["mp", 5, [21,2], "fromassumption", 1], [["isa","invertebrate","#:Harry 1"], ["-has part", "?:X", ["sk1","#:Harry 1"], "?:Y"], ["isa", "activity", ["sk0","?:X"]], ["-isa","animal","?:X"]]],
+          [23, ["mp", [22,1], [9,1], "fromassumption", 1], [["-isa","animal","#:Harry 1"], ["isa", "activity", ["sk0","#:Harry 1"]], ["isa","invertebrate","#:Harry 1"]]],
+          [24, ["simp",23,2,"fromassumption",1], [["isa", "activity", ["sk0","#:Harry 1"]], ["isa","invertebrate","#:Harry 1"]]],
+          [25, ["mp",20,24,"fromassumption",0.98], [["isa","invertebrate","#:Harry 1"], ["-has actor", ["sk0","#:Harry 1"], "?:X", "?:Y"], ["-isa","bee","?:X"]]],
+          [26, ["in","sent_S2","assumption",1], [["has actor", ["sk0","?:X"], "?:X", "?:Y"], ["-has part","?:X","?:Z","?:Y"], ["-isa","backbone","?:Z"], ["-isa","animal","?:X"]]],
+          [27, ["mp", 5, [26,2], "fromassumption", 1], [["isa","invertebrate","#:Harry 1"], ["has actor", ["sk0","?:X"], "?:X", "?:Y"], ["-has part", "?:X", ["sk1","#:Harry 1"], "?:Y"], ["-isa","animal","?:X"]]],
+          [28, ["mp", [27,2], [9,1], "fromassumption", 1], [["-isa","animal","#:Harry 1"], ["isa","invertebrate","#:Harry 1"], ["has actor", ["sk0","#:Harry 1"], "#:Harry 1", "?:X3"]]],
+          [29, ["simp",28,2,"fromassumption",1], [["isa","invertebrate","#:Harry 1"], ["has actor", ["sk0","#:Harry 1"], "#:Harry 1", "?:X"]]],
+          [30, ["mp", [25,1], [29,1], "fromassumption", 0.98], [["-isa","bee","#:Harry 1"], ["isa","invertebrate","#:Harry 1"]]],
+          [31, ["in","sent_S6","assumption",1], [["isa","bee","#:Harry 1"]]],
+          [32, ["simp",30,31,"fromassumption",0.98], [["isa","invertebrate","#:Harry 1"]]],
+          [33, ["mp",32,12,13,"fromga",0.98], false],
+          [34, ["cumul",14,33,"fromga",0.98735], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) Animals are either invertebrates or vertebrates.",
+"  (2) All animals with backbones reproduce by male-and-female mating.",
+"  (3) All vertebrates have backbones.",
+"  (4) All bees do not reproduce by male-and-female mating.",
+"  (5) Harry is a bee.",
+"  (6) Is Harry an invertebrate or a queen bee?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an animal then X is a vertebrate or X is an invertebrate  [sentence 1]",
+"  (2) Harry is an animal  [sentence 5]",
+"  (3) Harry is an invertebrate or Harry is a vertebrate  [from steps 1, 2]",
+"  (4) If some X is a vertebrate then the backbone sk1 of X is a backbone  [sentence 3]",
+"  (5) The backbone sk1 of Harry 1 is a backbone or Harry is an invertebrate  [from steps 3, 4]",
+"  (6) X does not have Y as a part  [sentence 2, confidence 98%]",
+"  (7) If some X has the backbone sk1 of Harry 1 as a part and X is an animal then Harry is an invertebrate  [from steps 5, 6, confidence 98%]",
+"  (8) If some X is a vertebrate then X has the backbone sk1 of X as a part  [sentence 3]",
+"  (9) Harry is an invertebrate or Harry has the backbone sk1 of Harry 1 as a part  [from steps 3, 8]",
+"  (10) If Harry is an animal then Harry is an invertebrate  [from steps 7, 9, confidence 98%]",
+"  (11) Harry is an invertebrate  [from steps 10, 2, confidence 98%]",
+"  (12) If Harry is an invertebrate then answer holds  [sentence 6]",
+"  (13) assume for contradiction: the answer is no  [from question]",
+"  (14) Contradiction  [from steps 11, 12, 13, confidence 98%]",
+"  (15) If some X has some Z as a part and Z is a backbone and X is an animal then sk0 of X is a reproduce event  [sentence 2]",
+"  (16) If some X has the backbone sk1 of Harry 1 as a part and X is an animal then Harry is an invertebrate or sk0 of X is a reproduce event  [from steps 5, 15]",
+"  (17) If Harry is an animal then Harry is an invertebrate or sk0 of Harry 1 is a reproduce event  [from steps 16, 9]",
+"  (18) Harry is an invertebrate or sk0 of Harry 1 is a reproduce event  [from steps 17, 2]",
+"  (19) If X is a reproduce event and some bee Z performs X then X is not an activity  [sentence 4, confidence 98%]",
+"  (20) If the reproducing event sk0 of Harry 1 is an activity and some X performs sk0 of Harry 1 and X is a bee then Harry is an invertebrate  [from steps 18, 19, confidence 98%]",
+"  (21) If some X has some Y as a part and Y is a backbone and X is an animal then the reproducing event sk0 of X is an activity  [sentence 2]",
+"  (22) If some X has the backbone sk1 of Harry 1 as a part and X is an animal then Harry is an invertebrate or the reproducing event sk0 of X is an activity  [from steps 5, 21]",
+"  (23) If Harry is an animal then the reproducing event sk0 of Harry 1 is an activity or Harry is an invertebrate  [from steps 22, 9]",
+"  (24) The reproducing event sk0 of Harry 1 is an activity or Harry is an invertebrate  [from steps 23, 2]",
+"  (25) If some X performs the reproducing event sk0 of Harry 1 and X is a bee then Harry is an invertebrate  [from steps 20, 24, confidence 98%]",
+"  (26) If some X has some Z as a part and Z is a backbone and X is an animal then X performs the reproducing event sk0 of X  [sentence 2]",
+"  (27) If some X has the backbone sk1 of Harry 1 as a part and X is an animal then Harry is an invertebrate or X performs the reproducing event sk0 of X  [from steps 5, 26]",
+"  (28) If Harry is an animal then Harry is an invertebrate or Harry performs the reproducing event sk0 of Harry 1  [from steps 27, 9]",
+"  (29) Harry is an invertebrate or Harry performs the reproducing event sk0 of Harry 1  [from steps 28, 2]",
+"  (30) If Harry is a bee then Harry is an invertebrate  [from steps 25, 29, confidence 98%]",
+"  (31) Harry is a bee  [sentence 5]",
+"  (32) Harry is an invertebrate  [from steps 30, 31, confidence 98%]",
+"  (33) Contradiction  [from steps 32, 12, 13, confidence 98%]",
+"  (34) Contradiction  [from steps 14, 33, confidence 99%]"
+],
+  "timestamp": "2026-06-18T21:59:06Z"
+}

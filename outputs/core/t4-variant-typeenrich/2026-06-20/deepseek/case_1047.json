@@ -1,0 +1,153 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1047,
+  "input_text": "The room was cleaned. Who cleaned the room?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The room was cleaned.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The room 1 was cleaned.",
+          "type": "situation",
+          "entities": [{"id": "room 1", "type": "concrete", "category": "place"}],
+          "actions": [{"root": "clean", "mode": "event", "roles": {"target": "room 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who cleaned the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity cleaned the room 1?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "room 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "clean", "mode": "event", "roles": {"target": "room 1"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","room","room 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","clean"],
+                ["has target","E","room 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","clean"],
+            ["has actor","E","X"],
+            ["has target","E","room 1"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 1"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","clean","?:Cu3"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["has target","sk0_activity","#:room 1","?:Cu4"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["has time","sk0_activity","past","in","?:Cu5"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The room 1 was cleaned."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has type", ["sk1","?:X"], "clean", "?:Cu9"]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has actor", ["sk1","?:X"], "?:X", "?:Cu10"]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has target", ["sk1","?:X"], "#:room 1", "?:Cu11"]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has time", ["sk1","?:X"], "past", "in", "?:Cu12"]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["actuality", ["sk1","?:X"]]],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","clean","?:Cu14"],
+            ["-has actor","?:E","?:X","?:Cu14"],
+            ["-has target","?:E","#:room 1","?:Cu14"],
+            ["-actuality","?:E"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity cleaned the room 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","room","$some_room"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-19T04:39:42Z"
+}

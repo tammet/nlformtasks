@@ -1,0 +1,142 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 139,
+  "input_text": "She was in a room. Who was in the room?",
+  "expected_answer": "She",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The she.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "She was in a room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "She 1 was in a room 2.",
+          "type": "situation",
+          "entities": [{"id": "she 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who was in the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity was in the room 2?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","she 1"],
+            ["isa","room","room 2"],
+            ["is rel2","in","she 1","room 2"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["and", ["isa","room","room 2"], ["@time", "past", ["is rel2","in","X","room 2"]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","she","#:she 1"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:she 1"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "She 1 was in a room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","room","#:room 2"]],
+ "@nl": "Which entity was in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "in", "?:X", "#:room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity was in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","room","#:room 2"],
+            ["-is rel2", "in", "?:X", "#:room 2", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was in the room 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity was in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was in the room 2?"},
+{"@name": "pop_what",
+ "@logic": ["isa","room","$some_room"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","she","$some_she"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:she 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "in", "#:she 1", "#:room 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["-isa","room","#:room 2"], ["-is rel2", "in", "?:X", "#:room 2", ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 1], [["-isa","room","#:room 2"], ["$defq0","#:she 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","room","#:room 2"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:she 1"]]],
+          [6, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:she 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) She was in a room.",
+"  (2) Who was in the room?",
+"Proof steps:",
+"  (1) The she A is in the room B  [sentence 1]",
+"  (2) If some X is in the room B then X is the answer  [sentence 2]",
+"  (3) The she A is the answer  [from steps 1, 2]",
+"  (4) The room B is a room  [sentence 1]",
+"  (5) The she A is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The she is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-18T15:58:17Z"
+}

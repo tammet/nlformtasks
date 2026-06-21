@@ -1,0 +1,181 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1093,
+  "input_text": "John saw the doctor and Mary did too. Did Mary see the dentist?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw the doctor and Mary did too.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw the doctor 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "doctor 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "doctor 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 3 saw the doctor 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 3", "type": "concrete", "category": "person"},
+            {"id": "doctor 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "doctor 2"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Mary see the dentist?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 3 see the dentist 4?",
+          "type": "query",
+          "entities": [{"id": "Mary 3", "type": "concrete", "category": "person"},
+            {"id": "dentist 4", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "dentist 4"}}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","person","doctor 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","doctor 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Mary 3"],
+            ["isa","person","doctor 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","Mary 3"],
+                ["has target","E","doctor 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","Mary 3"],
+          ["isa","person","dentist 4"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","see"],
+              ["has actor","E","Mary 3"],
+              ["has target","E","dentist 4"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","doctor","#:doctor 2"],
+ "@nl": "John 1 saw the doctor 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","dentist","#:dentist 4"],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw the doctor 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:doctor 2"],
+ "@nl": "John 1 saw the doctor 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop","$target","#:doctor 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw the doctor 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 saw the doctor 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 3"],
+ "@nl": "Mary 3 saw the doctor 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:doctor 2"],
+ "@nl": "Mary 3 saw the doctor 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "show", "#:Mary 3", ["eventprop","$target","#:doctor 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 3 saw the doctor 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Mary 3 saw the doctor 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 3"]],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:dentist 4"]],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:Mary 3", ["eventprop","$target","#:dentist 4"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 3"],
+            ["-isa","person","#:dentist 4"],
+            ["-is rel2", "show", "#:Mary 3", ["eventprop","$target","#:dentist 4"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 3 see the dentist 4?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T09:07:17Z"
+}

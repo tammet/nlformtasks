@@ -1,0 +1,253 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1346,
+  "input_text": "If cars have roofs, elephants are nice. Cars have roofs. Elephants are nice?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If cars have roofs, elephants are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If cars have roofs, elephants are nice.",
+          "type": "strict_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "roofs", "type": "generic", "scope": "dependent"},
+            {"id": "elephants", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice","none","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "Cars have roofs.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars have roofs.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "roofs", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Elephants are nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are elephants nice?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","car","X"],
+              ["exists", "Y", ["and", ["isa","roof","Y"], ["has part","X","Y"]]]
+            ],
+            ["forall","Z",
+              ["implies",
+                ["isa","elephant","Z"],
+                ["has degree property","nice","Z","none","elephant"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","roof","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["normally", ["has degree property","nice","X","none","elephant"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["-isa","roof","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","elephant","?:Z"],
+            ["has degree property", "good", "?:Z", "none", "elephant", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If cars have roofs, elephants are nice."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["isa", "roof", ["sk0","?:X"]]],
+ "@nl": "Cars have roofs."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","car",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Cars have roofs."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","elephant","skq_S3_elephant"],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "good", "skq_S3_elephant", "none", "elephant", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "good", "skq_S3_elephant", "none", "elephant", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","roof","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are elephants nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","roof","$some_roof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","roof","$some_not_roof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "good", "$some_nice_elephant", "none", "elephant", ["$ctxt","?:Fv40","?:Fv37","?:Fv38","?:Fv39"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_nice_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_elephant", "none", "elephant", ["$ctxt","?:Fv48","?:Fv45","?:Fv46","?:Fv47"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["isa","car","$some_car"]]],
+          [2, ["in","sent_S2","assumption",0.98], [["$block", ["$","car",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.98], [["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S1","assumption",1], [["has degree property", "good", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has part", "?:W", "?:2006", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","roof","?:2006"], ["-isa","elephant","?:X"], ["-isa","car","?:W"]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.98], [["-isa", "roof", ["sk0","$some_car"]], ["-isa","car","$some_car"], ["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["has degree property", "good", "?:V3", "none", "elephant", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]], ["-isa","elephant","?:V3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa", "roof", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 1], [["isa", "roof", ["sk0","$some_car"]]]],
+          [8, ["simp",5,7,1,"fromassumption",0.98], [["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "good", "?:V", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","elephant","?:V"]]],
+          [9, ["in","sent_S3","assumption",1], [["isa","elephant","skq_S3_elephant"]]],
+          [10, ["mp", [8,2], 9, "fromassumption", 0.98], [["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "good", "skq_S3_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property", "good", "skq_S3_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [12, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [13, ["mp", [10,1], [11,1], 12, "fromga", 0.98], [["$block", ["$","car",1], ["$not", ["has part", "$some_car", ["sk0","$some_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) If cars have roofs, elephants are nice.",
+"  (2) Cars have roofs.",
+"  (3) Elephants are nice?",
+"Proof steps:",
+"  (1) A car is a car  [sentence 1]",
+"  (2) If some X is a car then normally X has the roof sk0 of X as a part  [sentence 2, confidence 98%]",
+"  (3) Normally a car has the roof sk0 of $some_car as a part  [from steps 1, 2, confidence 98%]",
+"  (4) If some W has some E1 as a part and E1 is a roof and some X is an elephant and W is a car then X is a good elephant  [sentence 1]",
+"  (5) If the roof sk0 of $some_car is a roof and a car is a car and some V3 is an elephant then V3 is a good elephant, except when a car does not have sk0 of $some_car as a part  [from steps 3, 4, confidence 98%]",
+"  (6) If some X is a car then the roof sk0 of X is a roof  [sentence 2]",
+"  (7) The roof sk0 of $some_car is a roof  [from steps 1, 6]",
+"  (8) If some V is an elephant then V is a good elephant, except when a car does not have the roof sk0 of $some_car as a part  [from steps 5, 7, 1, confidence 98%]",
+"  (9) Skq_S3_elephant is an elephant  [sentence 3]",
+"  (10) Skq_S3_elephant is a good elephant, except when a car does not have the roof sk0 of $some_car as a part  [from steps 8, 9, confidence 98%]",
+"  (11) If skq_S3_elephant is a good elephant then answer holds  [sentence 3]",
+"  (12) assume for contradiction: the answer is no  [from question]",
+"  (13) Outstanding exception: a car does not have the roof sk0 of $some_car as a part  [from steps 10, 11, 12, confidence 98%]",
+"Exceptions checked and not holding:",
+"  a car does not have the roof sk0 of $some_car as a part"
+],
+  "timestamp": "2026-06-19T11:02:00Z"
+}

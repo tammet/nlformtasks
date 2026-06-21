@@ -1,0 +1,214 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 127,
+  "input_text": "The fox saw the elephants. They were nice. The elephants were nice?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The fox saw the elephants.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The fox 1 saw the elephants [set 1].",
+          "type": "situation",
+          "entities": [{"id": "fox 1", "type": "concrete", "category": "animal"},
+            {"id": "set 1", "type": "set", "category": "elephant"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "fox 1", "target": "set 1"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "They were nice.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The elephants [set 1] were nice.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "elephant"}],
+          "adjectives": [["nice","none","elephant"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The elephants were nice?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Were the elephants [set 1] nice?",
+          "type": "query",
+          "entities": [{"id": "set 1", "type": "set", "category": "elephant"}],
+          "adjectives": [["nice","none","elephant"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","fox 1"],
+          ["forall","?:M",
+            ["implies",
+              ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","elephant","?:X"]]]],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","see"],
+                  ["has actor","E","fox 1"],
+                  ["has target","E","?:M"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","?:M",
+            ["implies",
+              ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","elephant","?:X"]]]],
+              ["has degree property","nice","?:M","none","elephant"]
+            ]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","?:M",
+          ["implies",
+            ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","elephant","?:X"]]]],
+            ["has degree property","nice","?:M","none","elephant"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: state_time_in_body"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","fox","#:fox 1"],
+ "@nl": "The fox 1 saw the elephants [set 1]."},
+{"@name": "sent_S1",
+ "@logic": ["isa","animal","#:fox 1"],
+ "@nl": "The fox 1 saw the elephants [set 1]."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]],
+            ["is rel2", "show", "#:fox 1", ["eventprop","$target","?:M"], ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The fox 1 saw the elephants [set 1]."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_elephant", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]],
+            ["has degree property", "good", "?:M", "none", "elephant", ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "The elephants [set 1] were nice."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]],
+            ["has degree property", "good", "?:M", "none", "elephant", ["$ctxt","past","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Were the elephants [set 1] nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["member", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]],
+            ["$defq0"]
+           ],
+ "@nl": "Were the elephants [set 1] nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "good", "sk0", "none", "elephant", ["$ctxt","past","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Were the elephants [set 1] nice?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Were the elephants [set 1] nice?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "good", "sk0", "none", "elephant", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree property", "good", "sk0", "none", "elephant", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "good", "sk0", "none", "elephant", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Were the elephants [set 1] nice?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "good", "$some_nice_elephant", "none", "elephant", ["$ctxt","?:Fv16","?:Fv13","?:Fv14","?:Fv15"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_nice_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_elephant", "none", "elephant", ["$ctxt","?:Fv24","?:Fv21","?:Fv22","?:Fv23"]],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree property", "good", "?:X", "none", "elephant", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]]]],
+          [2, ["in","frm_set","assumption",1], [["member", "?:X", ["$setof", "id", "?:Y", ["$and", ["isa","?:Z","$arg1"]]]], ["-isa","?:Z","?:X"]]],
+          [3, ["in","frm_set","assumption",1], [["-member", "?:X", ["$setof", "id", "?:Y", ["$and", ["isa","?:Z","$arg1"]]]], ["isa","?:Z","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["member", "sk0", ["$setof", "id", "#:set 1", ["$and", ["isa","elephant","$arg1"]]]], ["$defq0"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp",3,4,5,"fromga",1], [["isa","elephant","sk0"]]],
+          [7, ["mp", [2,1], 6, "fromga", 1], [["member", "sk0", ["$setof", "id", "?:X", ["$and", ["isa","elephant","$arg1"]]]]]],
+          [8, ["mp", [1,1], 7, "fromga", 1], [["has degree property", "good", "sk0", "none", "elephant", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [9, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property", "good", "sk0", "none", "elephant", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [10, ["mp", 8, [9,1], 5, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) They were nice.",
+"  (2) The elephants were nice?",
+"Knowledge used:",
+"  If some X is a ?:Z then X is among ?:Zs in ?:Y. Why: assumed basic knowledge.",
+"  If some X is among ?:Zs in ?:Y then X is a ?:Z. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is among elephants in set 1 then X is a good elephant  [sentence 1]",
+"  (2) If some X is a ?:Z then X is among ?:Zs in ?:Y  [background knowledge]",
+"  (3) If some X is among ?:Zs in ?:Y then X is a ?:Z  [background knowledge]",
+"  (4) Some elephant ele1 is among elephants in set 1 or answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Ele1 is an elephant  [from steps 3, 4, 5]",
+"  (7) Ele1 is among elephants in ?:X  [from steps 2, 6]",
+"  (8) Ele1 is a good elephant  [from steps 1, 7]",
+"  (9) If ele1 is a good elephant then answer holds  [sentence 2]",
+"  (10) Contradiction  [from steps 8, 9, 5]"
+],
+  "timestamp": "2026-06-18T15:24:53Z"
+}

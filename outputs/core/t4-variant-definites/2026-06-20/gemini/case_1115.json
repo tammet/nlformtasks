@@ -1,0 +1,296 @@
+{
+  "test_name": "core_definites",
+  "case_id": 1115,
+  "input_text": "If a bear quickly eats berries in a deep forest, it is hungry. John is a fox.\n     John quickly eats berries in a deep forest. John is hungry?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear quickly eats berries in a deep forest, it is hungry.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear quickly eats berries in a deep forest, the bear is hungry.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"},
+            {"id": "forest", "type": "generic", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "habitual",
+              "roles": {"target": "berries", "location": "forest", "manner": "quickly"}
+            }
+          ],
+          "adjectives": [["deep","none","forest"], ["hungry","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a fox.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a fox.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "John quickly eats berries in a deep forest.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 quickly eats berries 1 in a deep forest 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "berries 1", "type": "concrete", "category": "plant"},
+            {"id": "forest 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries 1", "location": "forest 2", "manner": "quickly"}
+            }
+          ],
+          "adjectives": [["deep","none","forest"]],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is hungry?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 hungry?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["hungry","none","fox"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["exists","Z",
+                      ["and",
+                        ["isa","forest","Z"],
+                        ["has degree property","deep","Z","none","forest"],
+                        ["has location","E","Z","in"]
+                      ]
+                    ],
+                    ["has manner","E","quickly"],
+                    ["typical","E"]
+                  ]
+                ]
+              ],
+              ["normally", ["has degree property","hungry","X","none","bear"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["and", ["isa","person","John 1"], ["isa","fox","John 1"]]]],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","berry","berries 1"],
+            ["isa","forest","forest 2"],
+            ["has degree property","deep","forest 2","none","forest"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","berries 1"],
+                ["has location","E","forest 2","in"],
+                ["has manner","E","quickly"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["question",
+          ["and", ["isa","person","John 1"], ["has degree property","hungry","John 1","none","fox"]]
+        ],
+        ["state time","W1","present"]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","berries","#:berries 1"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "eat", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","berry","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","forest","?:Z"],
+            ["-has degree property", "deep", "?:Z", "none", "forest", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has location", "?:E", "?:Z", "in", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has manner", "?:E", "quickly", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","forest",7], ["$not", ["has degree property", "hungry", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear quickly eats berries in a deep forest, the bear is hungry."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a fox."},
+{"@name": "sent_S2",
+ "@logic": ["isa","fox","#:John 1"],
+ "@nl": "John 1 is a fox."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","berry","#:berries 1"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","forest","#:forest 2"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "deep", "#:forest 2", "none", "forest", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has type", "sk0_activity", "eat", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has actor", "sk0_activity", "#:John 1", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has target", "sk0_activity", "#:berries 1", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has location", "sk0_activity", "#:forest 2", "in", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has manner", "sk0_activity", "quickly", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["has time", "sk0_activity", "present", "in", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 quickly eats berries 1 in a deep forest 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "hungry", "#:John 1", "none", "?:Fv65", ["$ctxt","present","W1","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-has degree property", "hungry", "#:John 1", "none", "?:Fv66", ["$ctxt","present","W1","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "hungry", "#:John 1", "none", "fox", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "hungry", "#:John 1", "none", "fox", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "hungry", "#:John 1", "none", "fox", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 hungry?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","forest","$some_not_forest"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "deep", "$some_not_deep_forest", "none", "forest", ["$ctxt","?:Fv49","?:Fv46","?:Fv47","?:Fv48"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "hungry", "$some_hungry_bear", "none", "bear", ["$ctxt","?:Fv53","?:Fv50","?:Fv51","?:Fv52"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_hungry_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "hungry", "$some_not_hungry_bear", "none", "bear", ["$ctxt","?:Fv61","?:Fv58","?:Fv59","?:Fv60"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "none", "?:Fv62", ["$ctxt","past","?:Fv16","?:Fv17","?:Fv18"]],
+            ["has degree property", "deep", "?:X", "none", "?:Fv63", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "none", "?:Fv64", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv19","?:Fv20","?:Fv21"]],
+            ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv19","?:Fv20","?:Fv21"]],
+            ["$block", 0, ["$not", ["has degree property", "deep", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv19","?:Fv20","?:Fv21"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T07:10:03Z"
+}

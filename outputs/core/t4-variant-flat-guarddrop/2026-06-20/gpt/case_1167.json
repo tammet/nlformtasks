@@ -1,0 +1,140 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1167,
+  "input_text": "A man did have a car. A man had a car?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A man did have a car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A man 1 had a car 2.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A man had a car?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did a man have a car?",
+          "type": "query",
+          "entities": [{"id": "man", "type": "generic", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","man","man 1"],
+            ["isa","car","car 2"],
+            ["@time", "past", ["have","man 1","car 2"]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["@time","past",
+          ["exists","X",
+            ["and",
+              ["isa","man","X"],
+              ["exists", "Y", ["and", ["isa","car","Y"], ["have","X","Y"]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "A man 1 had a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "A man 1 had a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["have", "#:man 1", "#:car 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A man 1 had a car 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","man","sk0_man"]],
+ "@nl": "Did a man have a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","sk1_car"]],
+ "@nl": "Did a man have a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have", "sk0_man", "sk1_car", ["$ctxt","past","?:Fv11","?:Fv3","?:Fv4"]]],
+ "@nl": "Did a man have a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","man","?:X"],
+            ["-isa","car","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","past","?:Fv16","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did a man have a car?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did a man have a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did a man have a car?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["$defq0"], ["-have", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-isa","man","?:X"], ["-isa","car","?:Y"]]],
+          [2, ["in","sent_S1","assumption",1], [["have", "#:man 1", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-isa","man","#:man 1"], ["-isa","car","#:car 2"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","man","#:man 1"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","car","#:car 2"]]],
+          [7, ["in","sent_S1","assumption",1], [["isa","car","#:car 2"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) A man did have a car.",
+"  (2) A man had a car?",
+"Proof steps (by contradiction):",
+"  (1) If some X has some Y and X is a man and Y is a car then answer holds  [sentence 2]",
+"  (2) The man A has the car B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) (Empty)  [from steps 1, 2, 3]",
+"  (5) The man A is a man  [sentence 1]",
+"  (6) The car B is not a car  [from steps 4, 5]",
+"  (7) The car B is a car  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-19T08:04:25Z"
+}

@@ -1,0 +1,281 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 68,
+  "input_text": "Elephants have long trunks and no wings. John is an elephant. John has a long trunk and no wing?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants have long trunks and no wings.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants have long trunks.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["long","none","trunk"]],
+          "confidence": 0.99
+        },
+        {
+          "unit_id": "S2",
+          "text": "Elephants have no wings.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is an elephant.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John has a long trunk and no wing?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a long trunk and no wing?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "wing", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["long","none","trunk"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["exists","Y",
+                  ["and",
+                    ["isa","trunk","Y"],
+                    ["has part","X","Y"],
+                    ["has degree property","long","Y","none","trunk"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["not", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["exists","Y",
+            ["and",
+              ["isa","trunk","Y"],
+              ["has part","John 1","Y"],
+              ["has degree property","long","Y","none","trunk"]
+            ]
+          ],
+          ["not", ["exists", "Z", ["and", ["isa","wing","Z"], ["has part","John 1","Z"]]]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@nl": "Elephants have long trunks."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["has part", "?:X", ["sk0","?:X"], "?:Cu3"]],
+ "@nl": "Elephants have long trunks."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has degree property", "long", ["sk0","?:X"], "none", "trunk", "?:Cu4"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Elephants have long trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["-isa","wing","?:Y"], ["-has part","?:X","?:Y","?:Cu5"]],
+ "@confidence": 0.98,
+ "@nl": "Elephants have no wings."},
+{"@name": "sent_S3",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","trunk","sk1_trunk"]],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:John 1","sk1_trunk","?:Cu8"]],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","long","sk1_trunk","none","trunk","?:Cu9"]],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","wing","?:Z"], ["-has part","#:John 1","?:Z","?:Cu10"]],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-has part","#:John 1","?:Y","?:Cu11"],
+            ["-has degree property","long","?:Y","none","trunk","?:Cu11"],
+            ["isa","wing","sk2_wing"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-has part","#:John 1","?:Y","?:Cu12"],
+            ["-has degree property","long","?:Y","none","trunk","?:Cu12"],
+            ["has part","#:John 1","sk2_wing","?:Cu12"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","wing","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a long trunk and no wing?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wing","$some_wing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","wing","$some_not_wing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","long","$some_long_trunk","none","trunk","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_long_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","long","$some_not_long_trunk","none","trunk","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","long","?:X","none","?:Fv74","?:Cu24"],
+            ["has degree property","long","?:X","none","?:Fv75","?:Cu24"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.941192,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has degree property", "long", ["sk0","?:X"], "none", "trunk", "?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has degree property", "long", ["sk0","#:John 1"], "none", "trunk", "?:X"]]],
+          [4, ["in","sent_S4","assumption",1], [["isa","wing","sk2_wing"], ["$defq0"], ["-has degree property","long","?:X","none","trunk","?:Y"], ["-has part","#:John 1","?:X","?:Y"], ["-isa","trunk","?:X"]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,2], 5, "fromga", 0.98], [["-isa", "trunk", ["sk0","#:John 1"]], ["isa","wing","sk2_wing"], ["-has part", "#:John 1", ["sk0","#:John 1"], "?:X3"]]],
+          [7, ["in","sent_S1","assumption",1], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [8, ["mp", [7,1], 2, "fromassumption", 1], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X3"]]],
+          [9, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [10, ["mp", [9,1], 2, "fromassumption", 1], [["isa", "trunk", ["sk0","#:John 1"]]]],
+          [11, ["simp",6,8,10,"fromga",0.98], [["isa","wing","sk2_wing"]]],
+          [12, ["in","sent_S2","assumption",0.98], [["-has part","?:X","?:Y","?:Z"], ["-isa","wing","?:Y"], ["-isa","elephant","?:X"]]],
+          [13, ["mp", 11, [12,1], "fromga", 0.9604], [["-has part","?:X","sk2_wing","?:Y"], ["-isa","elephant","?:X"]]],
+          [14, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","long","?:X","none","trunk","?:Y"], ["has part","#:John 1","sk2_wing","?:Y"], ["-has part","#:John 1","?:X","?:Y"], ["-isa","trunk","?:X"]]],
+          [15, ["mp", 3, [14,1], 5, "fromga", 0.98], [["-isa", "trunk", ["sk0","#:John 1"]], ["-has part", "#:John 1", ["sk0","#:John 1"], "?:X3"], ["has part","#:John 1","sk2_wing","?:X3"]]],
+          [16, ["simp",15,8,10,"fromga",0.98], [["has part","#:John 1","sk2_wing","?:X"]]],
+          [17, ["mp",13,16,"fromga",0.941192], [["-isa","elephant","#:John 1"]]],
+          [18, ["simp",17,2,"fromga",0.941192], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 94%.",
+"Sentences used:",
+"  (1) Elephants have long trunks and no wings.",
+"  (2) John is an elephant.",
+"  (3) John has a long trunk and no wing?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then the trunk sk0 of X is a long trunk  [sentence 1, confidence 98%]",
+"  (2) John is an elephant  [sentence 2]",
+"  (3) The trunk sk0 of John 1 is a long trunk  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is a long trunk and John has X as a part and X is a trunk then some wing win1 is a wing or answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If the trunk sk0 of John 1 is a trunk and John has sk0 of John 1 as a part then win1 is a wing  [from steps 3, 4, 5, confidence 98%]",
+"  (7) If some X is an elephant then X has the trunk sk0 of X as a part  [sentence 1]",
+"  (8) John has the trunk sk0 of John 1 as a part  [from steps 7, 2]",
+"  (9) If some X is an elephant then the trunk sk0 of X is a trunk  [sentence 1]",
+"  (10) The trunk sk0 of John 1 is a trunk  [from steps 9, 2]",
+"  (11) Win1 is a wing  [from steps 6, 8, 10, confidence 98%]",
+"  (12) X does not have Y as a part  [sentence 1, confidence 98%]",
+"  (13) X does not have win1 as a part  [from steps 11, 12, confidence 96%]",
+"  (14) If some X is a long trunk and John has X as a part and X is a trunk then answer holds or John has win1 as a part  [sentence 3]",
+"  (15) If the trunk sk0 of John 1 is a trunk and John has sk0 of John 1 as a part then John has win1 as a part  [from steps 3, 14, 5, confidence 98%]",
+"  (16) John has win1 as a part  [from steps 15, 8, 10, confidence 98%]",
+"  (17) John is not an elephant  [from steps 13, 16, confidence 94%]",
+"  (18) Contradiction  [from steps 17, 2, confidence 94%]"
+],
+  "timestamp": "2026-06-19T04:36:37Z"
+}

@@ -1,0 +1,218 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1298,
+  "input_text": "On Monday, John jumped in a house. Where did John jump?",
+  "expected_answer": "In a house",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "The house.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "On Monday, John jumped in a house.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 jumped in a house 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "house 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "house 2", "location_prep": "in"}
+            }
+          ],
+          "time": "Monday",
+          "time_prep": "on",
+          "state_tense": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did John jump?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Where did John 1 jump?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "jump", "mode": "event", "roles": {"actor": "John 1", "location": "entity"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","house","house 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","jump"],
+              ["has actor","E","John 1"],
+              ["has location","E","house 2","in"],
+              ["has time","E","Monday","on"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","jump"],
+            ["has actor","E","John 1"],
+            ["has location","E","X","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","house","#:house 2"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv3"], ["$datetime","Monday"]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is_past_world","W0"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Fv6","?:Fv4","?:Fv5"]]
+           ],
+ "@nl": "Where did John 1 jump?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Fv6","?:Fv4","?:Fv5"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Where did John 1 jump?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "Where did John 1 jump?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:house 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromga", 1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$ans","?:X"]]],
+          [4, ["in","frm_event_rel2","assumption",1], [["is rel2","?:X","?:Y","?:Z","?:U"], ["-has type","?:V","?:X","?:U"], ["-has actor","?:V","?:Y","?:U"], ["-has target","?:V","?:Z","?:U"], ["-isa","activity","?:V"]]],
+          [5, ["mp",3,4,"fromga",1], [["-has target", "?:X", ["eventprop","$location","?:Y"], ["$ctxt","past","?:Z","?:U","?:V"]], ["-has type", "?:X", "jump", ["$ctxt","past","?:Z","?:U","?:V"]], ["-has actor", "?:X", "#:John 1", ["$ctxt","past","?:Z","?:U","?:V"]], ["-isa","activity","?:X"], ["$ans","?:Y"]]],
+          [6, ["in","frm_rel2_event","assumption",1], [["has target", ["$ev_of","?:X","?:Y","?:Z"], "?:Z", "?:U"], ["-is rel2","?:X","?:Y","?:Z","?:U"]]],
+          [7, ["in","sent_S1","assumption",1], [["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [8, ["mp", [6,1], 7, "fromassumption", 1], [["has target", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], ["eventprop","$location","#:house 2"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [9, ["in","frm_109","axiom",1], [["-has target", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["has target", "?:X", "?:Y", ["$ctxt","past","?:U","?:V","?:W"]], ["-is_past_world","?:U"]]],
+          [10, ["in","sent_S1","assumption",1], [["is_past_world","W0"]]],
+          [11, ["mp", [9,2], 10, "fromassumption", 1], [["-has target", "?:X", "?:Y", ["$ctxt","?:Z","W0","?:U","?:V"]], ["has target", "?:X", "?:Y", ["$ctxt","past","W0","?:U","?:V"]]]],
+          [12, ["mp",8,11,"fromassumption",1], [["has target", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], ["eventprop","$location","#:house 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [13, ["mp",5,12,"fromga",1], [["-isa", "activity", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]]], ["$ans","#:house 2"], ["-has type", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "jump", ["$ctxt","past","W0","?:X3","?:Y3"]], ["-has actor", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "#:John 1", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [14, ["in","frm_rel2_event","assumption",1], [["has type", ["$ev_of","?:X","?:Y","?:Z"], "?:X", "?:U"], ["-is rel2","?:X","?:Y","?:Z","?:U"]]],
+          [15, ["mp", [14,1], 7, "fromassumption", 1], [["has type", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "jump", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [16, ["in","frm_108","axiom",1], [["-has type", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["has type", "?:X", "?:Y", ["$ctxt","past","?:U","?:V","?:W"]], ["-is_past_world","?:U"]]],
+          [17, ["mp",15,16,"fromassumption",1], [["-is_past_world","W0"], ["has type", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "jump", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [18, ["simp",17,10,"fromassumption",1], [["has type", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "jump", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [19, ["in","frm_rel2_event","assumption",1], [["has actor", ["$ev_of","?:X","?:Y","?:Z"], "?:Y", "?:U"], ["-is rel2","?:X","?:Y","?:Z","?:U"]]],
+          [20, ["mp", [19,1], 7, "fromassumption", 1], [["has actor", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [21, ["in","frm_107","axiom",1], [["-has actor", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["has actor", "?:X", "?:Y", ["$ctxt","past","?:U","?:V","?:W"]], ["-is_past_world","?:U"]]],
+          [22, ["mp",20,21,"fromassumption",1], [["-is_past_world","W0"], ["has actor", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "#:John 1", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [23, ["simp",22,10,"fromassumption",1], [["has actor", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]], "#:John 1", ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [24, ["in","frm_rel2_event","assumption",1], [["isa", "activity", ["$ev_of","?:X","?:Y","?:Z"]], ["-is rel2","?:X","?:Y","?:Z","?:U"]]],
+          [25, ["mp", [24,1], 7, "fromassumption", 1], [["isa", "activity", ["$ev_of", "jump", "#:John 1", ["eventprop","$location","#:house 2"]]]]],
+          [26, ["simp",13,18,23,25,"fromga",1], [["$ans","#:house 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) On Monday, John jumped in a house.",
+"  (2) Where did John jump?",
+"Knowledge used:",
+"  If V has type X and some Y performs V and V targets some Z and V is an activity then Y is in relation X to Z. Why: assumed basic knowledge.",
+"  If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] targets Z. Why: assumed basic knowledge.",
+"  If an event X targets some Y and a situation U is in the past then X targets Y. Why: assumed basic knowledge.",
+"  If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] has type X. Why: assumed basic knowledge.",
+"  If X has type Y and a situation U is in the past then X has type Y. Why: assumed basic knowledge.",
+"  If some Y is in relation X to some Z then Y performs ['$ev_of', '?:X', '?:Y', '?:Z']. Why: assumed basic knowledge.",
+"  If some Y performs an event X and a situation U is in the past then Y performs X. Why: assumed basic knowledge.",
+"  If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] is an activity. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If John is jump of X then some X is the answer  [sentence 2]",
+"  (2) technical answer unwrap step  [from question]",
+"  (3) If John is jump of X then X is an answer  [from steps 1, 2]",
+"  (4) If V has type X and some Y performs V and V targets some Z and V is an activity then Y is in relation X to Z  [background knowledge]",
+"  (5) If X targets Y and X is a jump event and John performs X and X is an activity then Y is an answer  [from steps 3, 4]",
+"  (6) If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] targets Z  [background knowledge]",
+"  (7) John is jump of house B  [sentence 1]",
+"  (8) ['$Ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] targets house B  [from steps 6, 7]",
+"  (9) If an event X targets some Y and a situation U is in the past then X targets Y  [background knowledge]",
+"  (10) The situation W0 is in the past  [sentence 1]",
+"  (11) If an event X targets some Y then X targets Y  [from steps 9, 10]",
+"  (12) ['$Ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] targets house B  [from steps 8, 11]",
+"  (13) If ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is an activity and ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is a jump event and John performs ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] then the house is an answer  [from steps 5, 12]",
+"  (14) If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] has type X  [background knowledge]",
+"  (15) ['$Ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is a jump event  [from steps 14, 7]",
+"  (16) If X has type Y and a situation U is in the past then X has type Y  [background knowledge]",
+"  (17) If the situation W0 is in the past then ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is a jump event  [from steps 15, 16]",
+"  (18) ['$Ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is a jump event  [from steps 17, 10]",
+"  (19) If some Y is in relation X to some Z then Y performs ['$ev_of', '?:X', '?:Y', '?:Z']  [background knowledge]",
+"  (20) John performs ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']]  [from steps 19, 7]",
+"  (21) If some Y performs an event X and a situation U is in the past then Y performs X  [background knowledge]",
+"  (22) If the situation W0 is in the past then John performs ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']]  [from steps 20, 21]",
+"  (23) John performs ['$ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']]  [from steps 22, 10]",
+"  (24) If some Y is in relation X to some Z then ['$ev_of', '?:X', '?:Y', '?:Z'] is an activity  [background knowledge]",
+"  (25) ['$Ev_of', 'jump', 'John 1', ['eventprop', '$location', 'house 2']] is an activity  [from steps 24, 7]",
+"  (26) The house is an answer  [from steps 13, 18, 23, 25]"
+],
+  "timestamp": "2026-06-19T11:11:37Z"
+}

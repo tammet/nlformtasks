@@ -1,0 +1,501 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 97,
+  "input_text": "All business organizations are legal entities. All companies are business organizations. All private companies are companies. All legal entities are created under law. All legal entities have legal obligations. If the Harvard Weekly Book Club is created under law, then it is not a private company. The Harvard Weekly Book club has legal obligations and is a private company?",
+  "expected_answer": "False.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All business organizations are legal entities.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All business organizations are legal entities.",
+          "type": "strict_rule",
+          "entities": [{"id": "business organizations", "type": "generic", "category": "organization"},
+            {"id": "legal entities", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All companies are business organizations.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All companies are business organizations.",
+          "type": "strict_rule",
+          "entities": [{"id": "companies", "type": "generic", "category": "organization"},
+            {"id": "business organizations", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All private companies are companies.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All private companies are companies.",
+          "type": "strict_rule",
+          "entities": [{"id": "private companies", "type": "generic", "category": "organization"},
+            {"id": "companies", "type": "generic", "category": "organization"}
+          ],
+          "adjectives": [["private","none","company"]]
+        }
+      ]
+    },
+    {
+      "raw": "All legal entities are created under law.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All legal entities are created under law.",
+          "type": "strict_rule",
+          "entities": [{"id": "legal entities", "type": "generic", "category": "organization"},
+            {"id": "law", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All legal entities have legal obligations.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "All legal entities have legal obligations.",
+          "type": "strict_rule",
+          "entities": [{"id": "legal entities", "type": "generic", "category": "organization"},
+            {
+              "id": "legal obligations",
+              "type": "generic",
+              "scope": "dependent",
+              "category": "abstract"
+            }
+          ],
+          "adjectives": [["legal","none","obligation"]]
+        }
+      ]
+    },
+    {
+      "raw": "If the Harvard Weekly Book Club is created under law, then it is not a private company.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If the Harvard Weekly Book Club 1 is created under law, then the Harvard Weekly Book Club 1 is not a private company.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "Harvard Weekly Book Club 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/Harvard_Book_Store"
+            },
+            {"id": "law", "type": "generic", "category": "abstract"},
+            {"id": "private companies", "type": "generic", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The Harvard Weekly Book club has legal obligations and is a private company?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?",
+          "type": "query",
+          "entities": [{
+              "id": "Harvard Weekly Book Club 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/Harvard_Book_Store"
+            },
+            {"id": "legal obligations", "type": "generic", "category": "abstract"},
+            {"id": "private companies", "type": "generic", "category": "organization"}
+          ],
+          "adjectives": [["legal","none","obligation"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","business organization","X"], ["isa","legal entity","X"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","company","X"], ["isa","business organization","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","private company","X"],
+              ["has degree property","private","X","none","company"]
+            ],
+            ["isa","company","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","legal entity","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","create"],
+                ["has target","E","X"],
+                ["exists", "Y", ["and", ["isa","law","Y"], ["has location","E","Y","under"]]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","legal entity","X"],
+            ["exists","Y",
+              ["and",
+                ["isa","obligation","Y"],
+                ["has degree property","legal","Y","none","obligation"],
+                ["have","X","Y"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["implies",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","create"],
+              ["has target","E","https://en.wikipedia.org/wiki/Harvard_Book_Store"],
+              ["exists", "Y", ["and", ["isa","law","Y"], ["has location","E","Y","under"]]]
+            ]
+          ],
+          ["not", ["isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["question",
+        ["and",
+          ["exists","Y",
+            ["and",
+              ["isa","obligation","Y"],
+              ["has degree property","legal","Y","none","obligation"],
+              ["have","https://en.wikipedia.org/wiki/Harvard_Book_Store","Y"]
+            ]
+          ],
+          ["isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: multiword_property"],
+  "clauses": [
+{"@name": "entity_S6",
+ "@logic": ["isa","organization","#:Harvard Weekly Book Club 1"],
+ "@nl": "If the Harvard Weekly Book Club 1 is created under law, then the Harvard Weekly Book Club 1 is not a private company."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","business organization","?:X"], ["isa","legal entity","?:X"]],
+ "@nl": "All business organizations are legal entities."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","company","?:X"], ["isa","business organization","?:X"]],
+ "@nl": "All companies are business organizations."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","private company","?:X"],
+            ["has property", "public", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","company","?:X"]
+           ],
+ "@nl": "All private companies are companies."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","legal entity","?:X"],
+            ["event", "create", ["sk1","?:X"], "?:X", ["sk0","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All legal entities are created under law."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","legal entity","?:X"], ["isa", "law", ["sk2","?:X"]]],
+ "@nl": "All legal entities are created under law."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","legal entity","?:X"],
+            ["has location", ["sk0","?:X"], ["sk2","?:X"], "under", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All legal entities are created under law."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","legal entity","?:X"], ["actuality", ["sk0","?:X"]]],
+ "@nl": "All legal entities are created under law."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","legal entity","?:X"], ["isa", "obligation", ["sk3","?:X"]]],
+ "@nl": "All legal entities have legal obligations."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","legal entity","?:X"],
+            ["has property", "legal", ["sk3","?:X"], ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "All legal entities have legal obligations."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","legal entity","?:X"],
+            ["have", "?:X", ["sk3","?:X"], ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "All legal entities have legal obligations."},
+{"@name": "sent_S6",
+ "@logic": [["-event", "create", "?:Dava2", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:E", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","law","?:Y"],
+            ["-has location", "?:E", "?:Y", "under", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["-isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]
+           ],
+ "@nl": "If the Harvard Weekly Book Club 1 is created under law, then the Harvard Weekly Book Club 1 is not a private company."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","obligation","sk4_obligation"]],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "legal", "sk4_obligation", ["$ctxt","?:Fv30","?:Fv29","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["have", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "sk4_obligation", ["$ctxt","present","?:Fv31","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]
+           ],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","obligation","?:Y"],
+            ["-has property", "legal", "?:Y", ["$ctxt","?:Fv37","?:Fv36","?:Fv23","?:Fv24"]],
+            ["-have", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:Y", ["$ctxt","present","?:Fv38","?:Fv23","?:Fv24"]],
+            ["-isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"],
+            ["$defq0"]
+           ],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["have", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does the Harvard Weekly Book Club 1 have legal obligations and is the Harvard Weekly Book Club 1 a private company?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","business organization","$some_business_organization"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","business organization","$some_not_business_organization"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","legal entity","$some_legal_entity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","legal entity","$some_not_legal_entity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","company","$some_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","company","$some_not_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","private company","$some_private_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","law","$some_law"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","law","$some_not_law"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","obligation","$some_obligation"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","obligation","$some_not_obligation"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "public", "$some_private_company", ["$ctxt","?:Fv90","?:Fv87","?:Fv88","?:Fv89"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","company","$some_private_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "public", "$some_not_private_company", ["$ctxt","?:Fv98","?:Fv95","?:Fv96","?:Fv97"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "legal", "$some_legal_obligation", ["$ctxt","?:Fv102","?:Fv99","?:Fv100","?:Fv101"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","obligation","$some_legal_obligation"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "legal", "$some_not_legal_obligation", ["$ctxt","?:Fv110","?:Fv107","?:Fv108","?:Fv109"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","private company","$some_private_private_company"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "public", "$some_private_private_company", ["$ctxt","?:Fv118","?:Fv115","?:Fv116","?:Fv117"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","business organization","?:X"], ["isa","organization","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","business","?:X"],
+            ["-isa","organization","?:X"],
+            ["isa","business organization","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","legal","?:X"], ["isa","legal entity","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","private company","?:X"], ["isa","company","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["isa","public","?:X"], ["-isa","company","?:X"], ["isa","private company","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","organization","?:X"], ["isa","company","?:X"]],
+ "@confidence": 0.79,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","company","?:X"], ["isa","organization","?:X"]],
+ "@confidence": 0.79,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S6","assumption",1], [["-isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"], ["-event", "create", "?:X", "https://en.wikipedia.org/wiki/Harvard_Book_Store", "?:Y", ["$ctxt","present","W0","?:Z","?:U"]], ["-has location", "?:Y", "?:V", "under", ["$ctxt","present","W0","?:Z","?:U"]], ["-isa","law","?:V"], ["-actuality","?:Y"]]],
+          [2, ["in","sent_S4","assumption",1], [["event", "create", ["sk1","?:X"], "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","legal entity","?:X"]]],
+          [3, ["in","sent_S2","assumption",1], [["-isa","company","?:X"], ["isa","business organization","?:X"]]],
+          [4, ["in","compound_sub","assumption",1], [["-isa","private company","?:X"], ["isa","company","?:X"]]],
+          [5, ["in","sent_S7","assumption",1], [["-$defq0"], ["isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]],
+          [6, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [7, ["mp",5,6,"fromga",1], [["isa","private company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]],
+          [8, ["mp",4,7,"fromga",1], [["isa","company","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]],
+          [9, ["mp",3,8,"fromga",1], [["isa","business organization","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]],
+          [10, ["in","sent_S1","assumption",1], [["-isa","business organization","?:X"], ["isa","legal entity","?:X"]]],
+          [11, ["mp",9,10,"fromga",1], [["isa","legal entity","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]],
+          [12, ["mp", [2,1], 11, "fromga", 1], [["event", "create", ["sk1","https://en.wikipedia.org/wiki/Harvard_Book_Store"], "https://en.wikipedia.org/wiki/Harvard_Book_Store", ["sk0","https://en.wikipedia.org/wiki/Harvard_Book_Store"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [13, ["in","sent_S4","assumption",1], [["actuality", ["sk0","?:X"]], ["-isa","legal entity","?:X"]]],
+          [14, ["mp", [13,1], 11, "fromga", 1], [["actuality", ["sk0","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]]],
+          [15, ["mp", [1,1], 12, 7, 14, "fromga", 1], [["-has location", ["sk0","https://en.wikipedia.org/wiki/Harvard_Book_Store"], "?:X", "under", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","law","?:X"]]],
+          [16, ["in","sent_S4","assumption",1], [["has location", ["sk0","?:X"], ["sk2","?:X"], "under", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","legal entity","?:X"]]],
+          [17, ["mp", [16,1], 11, "fromga", 1], [["has location", ["sk0","https://en.wikipedia.org/wiki/Harvard_Book_Store"], ["sk2","https://en.wikipedia.org/wiki/Harvard_Book_Store"], "under", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [18, ["in","sent_S4","assumption",1], [["isa", "law", ["sk2","?:X"]], ["-isa","legal entity","?:X"]]],
+          [19, ["mp", [18,1], 11, "fromga", 1], [["isa", "law", ["sk2","https://en.wikipedia.org/wiki/Harvard_Book_Store"]]]],
+          [20, ["mp",15,17,19,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All business organizations are legal entities.",
+"  (2) All companies are business organizations.",
+"  (3) All legal entities are created under law.",
+"  (4) If the Harvard Weekly Book Club is created under law, then it is not a private company.",
+"  (5) The Harvard Weekly Book club has legal obligations and is a private company?",
+"Knowledge used:",
+"  If some X is a private company then X is a company. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If Harvard Weekly Book Club is a private company and some X create Harvard Weekly Book Club then Y does not take place under V  [sentence 4]",
+"  (2) If some X is a legal entity then the event sk1 of X create X  [sentence 3]",
+"  (3) If some X is a company then X is a business organization  [sentence 2]",
+"  (4) If some X is a private company then X is a company  [background knowledge]",
+"  (5) If answer holds then Harvard Weekly Book Club is a private company  [sentence 5]",
+"  (6) Answer holds  [assumption]",
+"  (7) Harvard Weekly Book Club is a private company  [from steps 5, 6]",
+"  (8) Harvard Weekly Book Club is a company  [from steps 4, 7]",
+"  (9) Harvard Weekly Book Club is a business organization  [from steps 3, 8]",
+"  (10) If some X is a business organization then X is a legal entity  [sentence 1]",
+"  (11) Harvard Weekly Book Club is a legal entity  [from steps 9, 10]",
+"  (12) The event sk1 of https://en.wikipedia.org/wiki/Harvard_Book_Store create Harvard Weekly Book Club  [from steps 2, 11]",
+"  (13) X is not a legal entity  [sentence 3]",
+"  (14)   [from steps 13, 11]",
+"  (15) sk0 of https://en.wikipedia.org/wiki/Harvard_Book_Store does not take place under X  [from steps 1, 12, 7, 14]",
+"  (16) If some X is a legal entity then the event sk0 of X takes place under the law sk2 of X  [sentence 3]",
+"  (17) The event sk0 of https://en.wikipedia.org/wiki/Harvard_Book_Store takes place under the law sk2 of https://en.wikipedia.org/wiki/Harvard_Book_Store  [from steps 16, 11]",
+"  (18) If some X is a legal entity then the law sk2 of X is a law  [sentence 3]",
+"  (19) The law sk2 of https://en.wikipedia.org/wiki/Harvard_Book_Store is a law  [from steps 18, 11]",
+"  (20) Contradiction  [from steps 15, 17, 19]"
+],
+  "timestamp": "2026-06-20T10:41:51Z"
+}

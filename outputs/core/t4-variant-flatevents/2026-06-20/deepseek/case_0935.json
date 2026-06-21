@@ -1,0 +1,267 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 935,
+  "input_text": "A man drove a car which a woman bought. A man drove the car?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A man drove a car which a woman bought.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A woman 2 bought the car 3.",
+          "type": "situation",
+          "entities": [{"id": "woman 2", "type": "concrete", "category": "person"},
+            {"id": "car 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "woman 2", "target": "car 3"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "A man 1 drove the car 3.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "car 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "man 1", "target": "car 3"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A man drove the car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did a man drive the car 3?",
+          "type": "query",
+          "entities": [{"id": "man", "type": "generic", "category": "person"},
+            {"id": "car 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "man", "target": "car 3"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","woman 2"],
+            ["isa","car","car 3"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","buy"],
+                ["has actor","E1","woman 2"],
+                ["has target","E1","car 3"],
+                ["has time","E1","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","man 1"],
+            ["isa","car","car 3"],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","drive"],
+                ["has actor","E2","man 1"],
+                ["has target","E2","car 3"],
+                ["has time","E2","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","man","X"],
+            ["exists","E3",
+              ["and",
+                ["isa","activity","E3"],
+                ["has type","E3","drive"],
+                ["has actor","E3","X"],
+                ["has target","E3","car 3"],
+                ["has time","E3","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: dropped_specific_noun"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","woman","#:woman 2"],
+ "@nl": "A woman 2 bought the car 3."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "A man 1 drove the car 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:woman 2"],
+ "@nl": "A woman 2 bought the car 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 3"],
+ "@nl": "A woman 2 bought the car 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "buy", "#:woman 2", ["eventprop","$target","#:car 3"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A woman 2 bought the car 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "A woman 2 bought the car 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:man 1"],
+ "@nl": "A man 1 drove the car 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 3"],
+ "@nl": "A man 1 drove the car 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "drive", "#:man 1", ["eventprop","$target","#:car 3"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "A man 1 drove the car 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "A man 1 drove the car 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","man","sk0_man"]],
+ "@nl": "Did a man drive the car 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "drive", "sk0_man", ["eventprop","$target","#:car 3"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did a man drive the car 3?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","man","?:X"],
+            ["-is rel2", "drive", "?:X", ["eventprop","$target","#:car 3"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did a man drive the car 3?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did a man drive the car 3?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv12"], ["has type","?:E","go","?:Fv12"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","man","?:X","?:Fv13"], ["-has property","woman","?:X","?:Fv13"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-next","?:Fv15","?:Fv16"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-next","?:Fv20","?:Fv21"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-next","?:Fv25","?:Fv26"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:man 1","W1"]]],
+        "confidence": 0.99198,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "drive", "#:man 1", ["eventprop","$target","#:car 3"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:man 1","W1"]], ["is rel2", "drive", "#:man 1", ["eventprop","$target","#:car 3"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W1","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:man 1","W1"]], ["is rel2", "drive", "#:man 1", ["eventprop","$target","#:car 3"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [6, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "drive", "?:X", ["eventprop","$target","#:car 3"], ["$ctxt","past","W2","?:Y","?:Z"]], ["-isa","man","?:X"]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,1], 7, "fromga", 0.99], [["-isa","man","#:man 1"], ["$block", 0, ["moved","#:man 1","W1"]]]],
+          [9, ["in","entity_S2","assumption",1], [["isa","man","#:man 1"]]],
+          [10, ["mp",8,9,"fromga",0.99], [["$block", 0, ["moved","#:man 1","W1"]]]],
+          [11, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [12, ["mp", [3,2], 11, "fromassumption", 0.99], [["$block", 0, ["moved","#:man 1","W1"]], ["is rel2", "drive", "#:man 1", ["eventprop","$target","#:car 3"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [13, ["mp", [12,1], [6,1], 7, "fromga", 0.99], [["-isa","man","#:man 1"], ["$block", 0, ["moved","#:man 1","W1"]]]],
+          [14, ["mp",13,9,"fromga",0.99], [["$block", 0, ["moved","#:man 1","W1"]]]],
+          [15, ["cumul",10,14,"fromga",0.99198], [["$block", 0, ["moved","#:man 1","W1"]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) A man drove a car which a woman bought.",
+"  (2) A man drove the car?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"  The man A is a man. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) The man A drives car C  [sentence 1]",
+"  (3) If the situation W1 is followed by a situation X then the man A drives car C, except when the man A moved in the situation W1  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (5) The man A drives car C, except when the man A moved in the situation W1  [from steps 3, 4, confidence 99%]",
+"  (6) If some X drives car C and X is a man then answer holds  [sentence 2]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Outstanding exception: the man A moved in the situation W1  [from steps 5, 6, 7, confidence 99%]",
+"  (9) The man A is a man  [background knowledge]",
+"  (10) Outstanding exception: the man A moved in the situation W1  [from steps 8, 9, confidence 99%]",
+"  (11) The situation W1 is followed by the situation W2  [sentence 1]",
+"  (12) The man A drives car C, except when the man A moved in the situation W1  [from steps 3, 11, confidence 99%]",
+"  (13) Outstanding exception: the man A moved in the situation W1  [from steps 12, 6, 7, confidence 99%]",
+"  (14) Outstanding exception: the man A moved in the situation W1  [from steps 13, 9, confidence 99%]",
+"  (15) Outstanding exception: the man A moved in the situation W1  [from steps 10, 14, confidence 99%]",
+"Exceptions checked and not holding:",
+"  man A moved in W1"
+],
+  "timestamp": "2026-06-18T17:35:25Z"
+}

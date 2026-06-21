@@ -1,0 +1,146 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1300,
+  "input_text": "The cat slept on the velvet sofa. Where did the cat sleep?",
+  "expected_answer": ["On the velvet sofa.","On the sofa."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The velvet sofa.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The cat slept on the velvet sofa.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The cat 1 slept on the velvet sofa 2.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"},
+            {"id": "sofa 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "sleep",
+              "mode": "event",
+              "roles": {"location": "sofa 2", "location_prep": "on"}
+            }
+          ],
+          "adjectives": [["velvet","none","sofa"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did the cat sleep?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity did the cat 1 sleep on?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "cat 1", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "sleep", "mode": "event"}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["isa","sofa","sofa 2"],
+            ["has degree property","velvet","sofa 2","none","sofa"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","sleep"],
+                ["has actor","E","cat 1"],
+                ["has location","E","sofa 2","on"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","sleep"],
+            ["has actor","E","cat 1"],
+            ["has location","E","X","on"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 slept on the velvet sofa 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","sofa","#:sofa 2"],
+ "@nl": "The cat 1 slept on the velvet sofa 2."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "velvet", "#:sofa 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cat 1 slept on the velvet sofa 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "sleep", "#:cat 1", ["eventprop","$location","#:sofa 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cat 1 slept on the velvet sofa 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "sleep", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity did the cat 1 sleep on?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "sleep", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity did the cat 1 sleep on?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "Which entity did the cat 1 sleep on?"},
+{"@name": "pop_what",
+ "@logic": ["isa","sofa","$some_sofa"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","cat","$some_cat"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:sofa 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-is rel2", "sleep", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "sleep", "#:cat 1", ["eventprop","$location","#:sofa 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:sofa 2"]]],
+          [4, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","#:sofa 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The cat slept on the velvet sofa.",
+"  (2) Where did the cat sleep?",
+"Proof steps:",
+"  (1) If the cat A is sleep of X then some X is the answer  [sentence 2]",
+"  (2) The cat A is sleep of sofa B  [sentence 1]",
+"  (3) The sofa B is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) The velvet sofa is an answer  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-18T15:31:11Z"
+}

@@ -1,0 +1,277 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1180,
+  "input_text": "After Mary arrived, she called Tom. Mary arrived?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "After Mary arrived, she called Tom.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 arrived.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "arrive", "mode": "event", "roles": {"actor": "Mary 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 1 called Tom 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "Tom 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "call", "mode": "event", "roles": {"actor": "Mary 1", "target": "Tom 2"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary arrived?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 1 arrive?",
+          "type": "query",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "arrive", "mode": "event", "roles": {"actor": "Mary 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","arrive"],
+                ["has actor","E","Mary 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","person","Tom 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","call"],
+                ["has actor","E","Mary 1"],
+                ["has target","E","Tom 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","Mary 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","arrive"],
+              ["has actor","E","Mary 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 arrived."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 arrived."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 arrived."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 called Tom 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Tom 2"],
+ "@nl": "Mary 1 called Tom 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "call", "#:Mary 1", ["eventprop","$target","#:Tom 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 1 called Tom 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Mary 1 called Tom 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 1"]],
+ "@nl": "Did Mary 1 arrive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 1 arrive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 1"],
+            ["-has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 1 arrive?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 1 arrive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "arrive", "#:Mary 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Mary 1 arrive?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.990724,
+        "positive proof": [[1, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [2, ["in","sent_S1","assumption",1], [["has property", "arrive", "#:Mary 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","sent_S1","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["mp", [5,1], [1,1], "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:Z","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-next","W1","?:Z"]]],
+          [7, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [8, ["mp", [6,3], 7, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [9, ["in","sent_S3","assumption",1], [["-isa","person","#:Mary 1"], ["$defq0"], ["-has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [10, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [11, ["mp", [8,2], [9,2], 10, "fromga", 0.9801], [["-isa","person","#:Mary 1"], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]]]],
+          [12, ["in","sent_S2","assumption",1], [["isa","person","#:Mary 1"]]],
+          [13, ["mp",11,12,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [14, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [15, ["mp", [3,2], 14, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [16, ["mp", [15,1], [1,1], "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:Z","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-next","W1","?:Z"]]],
+          [17, ["mp", [16,3], 7, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [18, ["mp", [17,2], [9,2], 10, "fromga", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["-isa","person","#:Mary 1"]]],
+          [19, ["simp",18,12,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [20, ["cumul",13,19,"fromga",0.983351], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [21, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [22, ["mp", [16,3], 21, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [23, ["mp", [22,2], [9,2], 10, "fromga", 0.9801], [["-isa","person","#:Mary 1"], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X","?:Y"]]]]]],
+          [24, ["mp",23,12,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [25, ["cumul",20,24,"fromga",0.987116], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [26, ["in","sent_S1","assumption",1], [["isa","person","#:Mary 1"]]],
+          [27, ["mp",23,26,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]],
+          [28, ["cumul",25,27,"fromga",0.990724], [["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "arrive", "#:Mary 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) After Mary arrived, she called Tom.",
+"  (2) Mary arrived?",
+"Knowledge used:",
+"  If some Y is some X and a situation E1 is followed by a situation U then normally Y is X. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some X and a situation E1 is followed by a situation U then normally Y is X  [background knowledge, confidence 99%]",
+"  (2) Mary is arrive  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then normally Mary is arrive  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (5) Normally Mary is arrive  [from steps 3, 4, confidence 99%]",
+"  (6) If the situation W1 is followed by a situation Z then normally Mary is arrive, except when Mary is not arrive  [from steps 5, 1, confidence 98%]",
+"  (7) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (8) Normally Mary is arrive, except when Mary is not arrive  [from steps 6, 7, confidence 98%]",
+"  (9) If Mary is a person and Mary is arrive then answer holds  [sentence 2]",
+"  (10) assume for contradiction: the answer is no  [from question]",
+"  (11) Mary is not a person, except when Mary is not arrive and Mary is not arrive  [from steps 8, 9, 10, confidence 98%]",
+"  (12) Mary is a person  [sentence 1]",
+"  (13) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 11, 12, confidence 98%]",
+"  (14) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (15) Normally Mary is arrive  [from steps 3, 14, confidence 99%]",
+"  (16) If the situation W1 is followed by a situation Z then normally Mary is arrive, except when Mary is not arrive  [from steps 15, 1, confidence 98%]",
+"  (17) Normally Mary is arrive, except when Mary is not arrive  [from steps 16, 7, confidence 98%]",
+"  (18) Mary is not a person, except when Mary is not arrive and Mary is not arrive  [from steps 17, 9, 10, confidence 98%]",
+"  (19) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 18, 12, confidence 98%]",
+"  (20) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 13, 19, confidence 98%]",
+"  (21) The situation W1 is followed by the situation W2  [sentence 1]",
+"  (22) Normally Mary is arrive, except when Mary is not arrive  [from steps 16, 21, confidence 98%]",
+"  (23) Mary is not a person, except when Mary is not arrive and Mary is not arrive  [from steps 22, 9, 10, confidence 98%]",
+"  (24) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 23, 12, confidence 98%]",
+"  (25) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 20, 24, confidence 99%]",
+"  (26) Mary is a person  [sentence 1]",
+"  (27) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 23, 26, confidence 98%]",
+"  (28) Outstanding exception: Mary is not arrive and Mary is not arrive  [from steps 25, 27, confidence 99%]",
+"Exceptions checked and not holding:",
+"  Mary is not arrive",
+"  Mary is not arrive"
+],
+  "timestamp": "2026-06-19T11:10:44Z"
+}

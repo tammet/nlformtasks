@@ -1,0 +1,210 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 75,
+  "input_text": "Elephants have long or short trunks. John is an elephant. John has a long trunk?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants have long or short trunks.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants have trunks that are long or short.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["long","none","trunk"], ["short","none","trunk"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a long trunk?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does John 1 have a long trunk?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["long","none","trunk"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["exists","Y",
+                  ["and",
+                    ["isa","trunk","Y"],
+                    ["has part","X","Y"],
+                    ["or",
+                      ["has degree property","long","Y","none","trunk"],
+                      ["has degree property","short","Y","none","trunk"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id","S3",
+      ["question",
+        ["exists","Y",
+          ["and",
+            ["isa","elephant","John 1"],
+            ["isa","trunk","Y"],
+            ["has part","John 1","Y"],
+            ["has degree property","long","Y","none","trunk"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks that are long or short."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["has part", "?:X", ["sk0","?:X"], "?:Cu3"]],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks that are long or short."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has degree property", "long", ["sk0","?:X"], "none", "trunk", "?:Cu4"],
+            ["-has degree property", "long", ["sk0","?:X"], "none", "trunk", "?:Cu4"]
+           ],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks that are long or short."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:John 1"]],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","trunk","sk1_trunk"]],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:John 1","sk1_trunk","?:Cu8"]],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","long","sk1_trunk","none","trunk","?:Cu9"]],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","elephant","#:John 1"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","#:John 1","?:Y","?:Cu10"],
+            ["-has degree property","long","?:Y","none","trunk","?:Cu10"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a long trunk?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","long","$some_long_trunk","none","trunk","?:Cu16"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_long_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","long","$some_not_long_trunk","none","trunk","?:Cu18"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","long","$some_short_trunk","none","trunk","?:Cu19"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_short_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","long","$some_not_short_trunk","none","trunk","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["has degree property","long","?:X","none","?:Fv75","?:Fv25"],
+            ["-has degree property","high","?:X","none","?:Fv76","?:Fv25"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["has degree property","high","?:X","none","?:Fv77","?:Fv26"],
+            ["-has degree property","long","?:X","none","?:Fv78","?:Fv26"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","long","?:X","none","?:Fv79","?:Cu24"],
+            ["has degree property","long","?:X","none","?:Fv80","?:Cu24"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property","long","?:X","none","?:Fv82","?:Cu26"],
+            ["-has degree property","long","?:X","none","?:Fv83","?:Cu26"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T02:55:50Z"
+}

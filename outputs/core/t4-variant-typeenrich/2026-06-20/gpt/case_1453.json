@@ -1,0 +1,237 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1453,
+  "input_text": "Birds fly. Baby birds can not fly. John is a baby bird. Mike is a bird. Who does not fly?",
+  "expected_answer": "John",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "birds"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Baby birds can not fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Baby birds cannot fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "baby birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "baby birds"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bird.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a baby bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "baby bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Mike 2 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Who does not fly?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Which entity does not fly?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","baby bird","X"],
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","baby bird","John 1"]]]],
+    ["@id", "S4", ["holds", "W0", ["and", ["isa","bird","Mike 2"]]]],
+    ["@id","S5",
+      ["ask","X",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","X"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "entity_S4",
+ "@logic": ["isa","animal","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk0","?:X"], "fly", "?:Cu4"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu5"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["capability", ["sk0","?:X"]]],
+ "@confidence": 0.98,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","baby bird","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu7"],
+            ["-has actor","?:E","?:X","?:Cu7"],
+            ["-capability","?:E"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Baby birds cannot fly."},
+{"@name": "sent_S3",
+ "@logic": ["isa","baby bird","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bird","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu10"],
+            ["-has actor","?:E","?:X","?:Cu10"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa", "activity", ["sk1","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["has type", ["sk1","?:X"], "fly", "?:Cu12"], ["$defq0","?:X"]],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["has actor", ["sk1","?:X"], "?:X", "?:Cu13"], ["$defq0","?:X"]],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["capability", ["sk1","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bird","$some_not_baby_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bird","?:X"], ["isa","bird","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bird","?:X"], ["isa","baby bird","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv29"], ["has type","?:E","go","?:Fv29"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","baby bird","$some_baby_bird"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence for candidate answers below limit"},
+  "timestamp": "2026-06-19T02:51:15Z"
+}

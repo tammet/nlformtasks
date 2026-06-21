@@ -1,0 +1,304 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 987,
+  "input_text": "John ate the pizza on the table. Where was the pizza?",
+  "expected_answer": "On the table.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "On the table.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John ate the pizza on the table.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 ate the pizza 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "pizza 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "John 1", "target": "pizza 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The pizza 2 was on the table 3.",
+          "type": "situation",
+          "entities": [{"id": "pizza 2", "type": "concrete", "category": "artifact"},
+            {"id": "table 3", "type": "concrete", "category": "artifact"}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where was the pizza?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity was the pizza 2 located in?",
+          "type": "query",
+          "entities": [{"id": "pizza 2", "type": "concrete", "category": "artifact"},
+            {"id": "entity", "type": "generic", "wh_placeholder": true}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","pizza","pizza 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","pizza 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","pizza","pizza 2"],
+            ["isa","table","table 3"],
+            ["@time", "past", ["is rel2","on","pizza 2","table 3"]]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["@time", "past", ["is rel2","in","pizza 2","X"]]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate the pizza 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","pizza","#:pizza 2"],
+ "@nl": "John 1 ate the pizza 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","#:pizza 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 ate the pizza 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 ate the pizza 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pizza","#:pizza 2"],
+ "@nl": "The pizza 2 was on the table 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","table","#:table 3"],
+ "@nl": "The pizza 2 was on the table 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "on", "#:pizza 2", "#:table 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The pizza 2 was on the table 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "in", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","in","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","in","?:Q1"],
+            ["is rel2", "in", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "on", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","on","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","on","?:Q1"],
+            ["is rel2", "on", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "at", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","at","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","at","?:Q1"],
+            ["is rel2", "at", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree rel2", "near", "#:pizza 2", "?:Q1", "none", "?:Fv13", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","near","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","near","?:Q1"],
+            ["has degree rel2", "near", "#:pizza 2", "?:Q1", "none", "?:Fv14", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "above", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","above","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","above","?:Q1"],
+            ["is rel2", "above", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "under", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","under","?:Q1"]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","under","?:Q1"],
+            ["is rel2", "under", "#:pizza 2", "?:Q1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:Rel","?:Q1"],
+ "@askvars": 2,
+ "@where_query": true,
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "#:pizza 2", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "in", "#:pizza 2", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "#:pizza 2", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "above", "#:pizza 2", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "above", "#:pizza 2", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "above", "#:pizza 2", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "under", "#:pizza 2", "?:Br3", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "under", "#:pizza 2", "?:Br3", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "under", "#:pizza 2", "?:Br3", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "at", "#:pizza 2", "?:Br4", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "at", "#:pizza 2", "?:Br4", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "at", "#:pizza 2", "?:Br4", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2", "near", "#:pizza 2", "?:Br5", "none", "?:Fv10", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree rel2", "near", "#:pizza 2", "?:Br5", "none", "?:Fv11", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "near", "#:pizza 2", "?:Br5", "none", "?:Fv12", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "on", "#:pizza 2", "?:Br6", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "on", "#:pizza 2", "?:Br6", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "on", "#:pizza 2", "?:Br6", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was the pizza 2 located in?"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","table","$some_table"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","pizza","$some_pizza"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","at","#:table 3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["is rel2", "on", "#:pizza 2", "#:table 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","frm_28","axiom",1], [["-is rel2","on","?:X","?:Y","?:Z"], ["is rel2","at","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["is rel2", "at", "#:pizza 2", "#:table 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S3","assumption",1], [["-is rel2", "at", "#:pizza 2", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","at","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","at","#:table 3"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","at","#:table 3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","on","#:table 3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["is rel2", "on", "#:pizza 2", "#:table 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-is rel2", "on", "#:pizza 2", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","on","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","on","#:table 3"]]],
+          [4, ["in","sent_S3","goal",1], [["-$defq0","?:X","?:Y"], ["$ans","?:X","?:Y"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","on","#:table 3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"[on, the table]:",
+"Sentences used:",
+"  (1) John ate the pizza on the table.",
+"  (2) Where was the pizza?",
+"Proof steps:",
+"  (1) The pizza B is on the table C  [sentence 1]",
+"  (2) If the pizza B is on some X then 'on X' is the answer  [sentence 2]",
+"  (3) 'On the table C' is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) 'On the table C' is an answer  [from steps 3, 4]",
+"",
+"[at, the table]:",
+"Sentences used:",
+"  (1) John ate the pizza on the table.",
+"  (2) Where was the pizza?",
+"Knowledge used:",
+"  If some X is on some Y then X is at Y. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) The pizza B is on the table C  [sentence 1]",
+"  (2) If some X is on some Y then X is at Y  [background knowledge]",
+"  (3) The pizza B is at the table C  [from steps 1, 2]",
+"  (4) If the pizza B is at some X then 'at X' is the answer  [sentence 2]",
+"  (5) 'At the table C' is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) 'At the table C' is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-18T17:36:20Z"
+}

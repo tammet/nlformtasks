@@ -1,0 +1,179 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1467,
+  "input_text": "Elephants are big. Young elephants are not big.\n      Who is big?",
+  "expected_answer": ["An elephant.","Elephants that are not young."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "An elephant.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants are big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants are big.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Young elephants are not big.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Young elephants are not big.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["young","none","elephant"], ["big","none","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is big?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity is big?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["big","none","elephant"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["has degree property","big","X","none","elephant"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","elephant","X"], ["has degree property","young","X","none","elephant"]],
+            ["normally", ["not", ["has degree property","big","X","none","elephant"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["has degree property","big","X","none","elephant"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has degree property","big","?:X","none","elephant","?:Cu1"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Elephants are big."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has degree property","young","?:X","none","elephant","?:Cu2"],
+            ["-has degree property","big","?:X","none","elephant","?:Cu2"]
+           ],
+ "@nl": "Young elephants are not big."},
+{"@name": "sent_S3",
+ "@question": ["has degree property","big","?:X","none","elephant","?:Cu3"],
+ "@askvars": 1,
+ "@nl": "Which entity is big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_elephant","none","elephant","?:Cu7"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_big_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_elephant","none","elephant","?:Cu9"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","young","$some_young_elephant","none","elephant","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_young_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","young","$some_not_young_elephant","none","elephant","?:Cu12"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_young_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","young","$some_young_elephant","none","elephant","?:Cu14"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv65","?:Cu15"],
+            ["has degree property","big","?:X","none","?:Fv66","?:Cu15"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","young","?:X","none","?:Fv68","?:Cu17"],
+            ["has degree property","young","?:X","none","?:Fv69","?:Cu17"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_big_elephant","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property","big","$some_big_elephant","none","elephant","?:X"]]],
+          [2, ["in","sent_S3","goal",1], [["-has degree property","big","?:X","none","elephant","?:Y"], ["$ans","?:X","?:Y"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_big_elephant","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_elephant","?:X3"]],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["isa","elephant","$some_elephant"]]],
+          [2, ["in","sent_S1","assumption",0.98], [["has degree property","big","?:X","none","elephant","?:Y"], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 0.98], [["has degree property","big","$some_elephant","none","elephant","?:X"]]],
+          [4, ["in","sent_S3","goal",1], [["-has degree property","big","?:X","none","elephant","?:Y"], ["$ans","?:X","?:Y"]]],
+          [5, ["mp",3,4,"fromga",0.98], [["$ans","$some_elephant","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Elephants are big.",
+"  (2) Who is big?",
+"Proof steps:",
+"  (1) An elephant is an elephant  [sentence 1]",
+"  (2) If some X is an elephant then X is a big elephant  [sentence 1, confidence 98%]",
+"  (3) An elephant is a big elephant  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is a big elephant then X is an answer  [from question]",
+"  (5) An elephant is an answer  [from steps 3, 4, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:44:41Z"
+}

@@ -1,0 +1,126 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1022,
+  "input_text": "Clinton defeated Dole. Dole was defeated by Clinton?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Clinton defeated Dole.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Clinton 1 defeated Dole 2.",
+          "type": "situation",
+          "entities": [{"id": "Clinton 1", "type": "concrete", "category": "person"},
+            {"id": "Dole 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "defeat", "mode": "event", "roles": {"actor": "Clinton 1", "target": "Dole 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Dole was defeated by Clinton?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Clinton 1 defeat Dole 2?",
+          "type": "query",
+          "entities": [{"id": "Clinton 1", "type": "concrete", "category": "person"},
+            {"id": "Dole 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "defeat", "mode": "event", "roles": {"actor": "Clinton 1", "target": "Dole 2"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Clinton 1"],
+            ["isa","person","Dole 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","defeat"],
+                ["has actor","E","Clinton 1"],
+                ["has target","E","Dole 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","Clinton 1"],
+          ["isa","person","Dole 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","defeat"],
+              ["has actor","E","Clinton 1"],
+              ["has target","E","Dole 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Clinton 1"],
+ "@nl": "Clinton 1 defeated Dole 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Dole 2"],
+ "@nl": "Clinton 1 defeated Dole 2."},
+{"@name": "sent_S1",
+ "@logic": ["-is rel2", "victory", "#:Clinton 1", ["eventprop","$target","#:Dole 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Clinton 1 defeated Dole 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Clinton 1 defeated Dole 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Clinton 1"]],
+ "@nl": "Did Clinton 1 defeat Dole 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Dole 2"]],
+ "@nl": "Did Clinton 1 defeat Dole 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-is rel2", "victory", "#:Clinton 1", ["eventprop","$target","#:Dole 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Clinton 1 defeat Dole 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Clinton 1"],
+            ["-isa","person","#:Dole 2"],
+            ["is rel2", "victory", "#:Clinton 1", ["eventprop","$target","#:Dole 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Clinton 1 defeat Dole 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Clinton 1 defeat Dole 2?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T10:44:52Z"
+}

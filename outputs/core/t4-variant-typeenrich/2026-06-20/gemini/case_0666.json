@@ -1,0 +1,130 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 666,
+  "input_text": "The road leading to the village was narrow. The road was wide?",
+  "expected_answer": false,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The road leading to the village was narrow.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The road 1 leading to the village 2 was narrow.",
+          "type": "situation",
+          "entities": [{"id": "road 1", "type": "concrete", "category": "artifact"},
+            {"id": "village 2", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["narrow","none","road"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The road was wide?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Was the road 1 wide?",
+          "type": "query",
+          "entities": [{"id": "road 1", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["wide","none","road"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","road","road 1"],
+            ["isa","village","village 2"],
+            ["is rel2","leading to","road 1","village 2"],
+            ["has degree property","narrow","road 1","none","road"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and", ["isa","road","road 1"], ["has degree property","wide","road 1","none","road"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","road","#:road 1"],
+ "@nl": "The road 1 leading to the village 2 was narrow."},
+{"@name": "sent_S1",
+ "@logic": ["isa","village","#:village 2"],
+ "@nl": "The road 1 leading to the village 2 was narrow."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","leading to","#:road 1","#:village 2","?:Cu3"],
+ "@nl": "The road 1 leading to the village 2 was narrow."},
+{"@name": "sent_S1",
+ "@logic": ["-has degree property","wide","#:road 1","none","road","?:Cu4"],
+ "@nl": "The road 1 leading to the village 2 was narrow."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","road","#:road 1"]],
+ "@nl": "Was the road 1 wide?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","wide","#:road 1","none","?:Fv29","?:Cu6"]],
+ "@nl": "Was the road 1 wide?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","road","#:road 1"],
+            ["-has degree property","wide","#:road 1","none","?:Fv30","?:Cu7"],
+            ["$defq0"]
+           ],
+ "@nl": "Was the road 1 wide?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Was the road 1 wide?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property","wide","?:X","none","?:Fv23","?:Cu9"],
+            ["-has degree property","wide","?:X","none","?:Fv24","?:Cu9"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","wide","?:X","none","?:Fv26","?:Cu11"],
+            ["has degree property","wide","?:X","none","?:Fv27","?:Cu11"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["-has degree property","wide","#:road 1","none","road","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["-$defq0"], ["has degree property","wide","#:road 1","none","?:X","?:Y"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["has degree property","wide","#:road 1","none","?:X","?:Y"]]],
+          [5, ["mp",1,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The road leading to the village was narrow.",
+"  (2) The road was wide?",
+"Proof steps (by contradiction):",
+"  (1) The road A is not wide  [sentence 1]",
+"  (2) If answer holds then the road A is wide  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) The road A is wide  [from steps 2, 3]",
+"  (5) Contradiction  [from steps 1, 4]"
+],
+  "timestamp": "2026-06-19T03:27:25Z"
+}

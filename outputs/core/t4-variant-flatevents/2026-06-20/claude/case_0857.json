@@ -1,0 +1,197 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 857,
+  "input_text": "John drove a car Eve bought. Eve drove a car?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John drove a car Eve bought.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 drove a car 2 which Eve 3 bought.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "Eve 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "John 1", "target": "car 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Eve 3 bought the car 2.",
+          "type": "situation",
+          "entities": [{"id": "Eve 3", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "Eve 3", "target": "car 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Eve drove a car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Eve 3 drive a car?",
+          "type": "query",
+          "entities": [{"id": "Eve 3", "type": "concrete", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "drive", "mode": "event", "roles": {"actor": "Eve 3", "target": "car"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","car","car 2"],
+          ["isa","person","Eve 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","drive"],
+              ["has actor","E","John 1"],
+              ["has target","E","car 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Eve 3"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","Eve 3"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","car","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","drive"],
+                ["has actor","E","Eve 3"],
+                ["has target","E","X"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 drove a car 2 which Eve 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 drove a car 2 which Eve 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Eve 3"],
+ "@nl": "John 1 drove a car 2 which Eve 3 bought."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "drive", "#:John 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 drove a car 2 which Eve 3 bought."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Eve 3"],
+ "@nl": "Eve 3 bought the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Eve 3 bought the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "buy", "#:Eve 3", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Eve 3 bought the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Eve 3 bought the car 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","sk0_car"]],
+ "@nl": "Did Eve 3 drive a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "drive", "#:Eve 3", ["eventprop","$target","sk0_car"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Eve 3 drive a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-is rel2", "drive", "#:Eve 3", ["eventprop","$target","?:X"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Eve 3 drive a car?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Eve 3 drive a car?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv12"], ["has type","?:E","go","?:Fv12"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv13","?:Fv14","?:Fv16","?:Fv17"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv13","?:Fv14","?:Fv16","?:Fv17"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv13","?:Fv14","?:Fv16","?:Fv17"]],
+            ["-next","?:Fv14","?:Fv15"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-next","?:Fv19","?:Fv20"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-next","?:Fv24","?:Fv25"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv25","?:Fv26","?:Fv27"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T15:27:59Z"
+}

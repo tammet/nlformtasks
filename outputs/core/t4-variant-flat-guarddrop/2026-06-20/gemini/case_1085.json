@@ -1,0 +1,164 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1085,
+  "input_text": "A surgeon, Dr. Smith, entered the room. Who entered the room?",
+  "expected_answer": ["Dr. Smith.","A surgeon."],
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Dr. Smith.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A surgeon, Dr. Smith, entered the room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Dr. Smith 1 entered the room 2.",
+          "type": "situation",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person", "text": "surgeon"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "enter",
+              "mode": "event",
+              "roles": {"actor": "Dr. Smith 1", "target": "room 2"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who entered the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity entered the room 2?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "enter", "mode": "event", "roles": {"actor": "entity", "target": "room 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","surgeon","Dr. Smith 1"],
+            ["isa","room","room 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","enter"],
+                ["has actor","E","Dr. Smith 1"],
+                ["has target","E","room 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["and",
+          ["isa","room","room 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","enter"],
+              ["has actor","E","X"],
+              ["has target","E","room 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","surgeon","Dr. Smith 1"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "enter", "Dr. Smith 1", ["eventprop","$target","#:room 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","room","#:room 2"]],
+ "@nl": "Which entity entered the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "enter", "?:X", ["eventprop","$target","#:room 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Which entity entered the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","room","#:room 2"],
+            ["-is rel2", "enter", "?:X", ["eventprop","$target","#:room 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity entered the room 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity entered the room 2?"},
+{"@name": "pop_what",
+ "@logic": ["isa","room","$some_room"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","surgeon","$some_surgeon"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","Dr. Smith 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","room","#:room 2"], ["-is rel2", "enter", "?:X", ["eventprop","$target","#:room 2"], ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "enter", "Dr. Smith 1", ["eventprop","$target","#:room 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","room","#:room 2"], ["$defq0","Dr. Smith 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","room","#:room 2"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","Dr. Smith 1"]]],
+          [6, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","Dr. Smith 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) A surgeon, Dr. Smith, entered the room.",
+"  (2) Who entered the room?",
+"Proof steps:",
+"  (1) If some X is enter of room B then X is the answer  [sentence 2]",
+"  (2) Dr. Smith is enter of room B  [sentence 1]",
+"  (3) Dr. Smith is the answer  [from steps 1, 2]",
+"  (4) The room B is a room  [sentence 1]",
+"  (5) Dr. Smith is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) Dr. Smith is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T09:06:51Z"
+}

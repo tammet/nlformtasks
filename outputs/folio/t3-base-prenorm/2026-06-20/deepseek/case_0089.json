@@ -1,0 +1,468 @@
+{
+  "test_name": "folio_v2_prenorm",
+  "case_id": 89,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. Harry is smarter than before?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Books contain tons of knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain a large amount of knowledge.",
+          "type": "strict_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, that person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, they become smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person becomes smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            },
+            {"root": "become", "mode": "habitual"}
+          ],
+          "adjectives": [["smart","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Harry reads the book 'Walden' by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 reads the book 'Walden' 2.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "Walden 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "present"
+        },
+        {
+          "unit_id": "S5",
+          "text": "Henry Thoreau 3 wrote Walden 2.",
+          "type": "real",
+          "entities": [{"id": "Henry Thoreau 3", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "event",
+              "roles": {"actor": "Henry Thoreau 3", "target": "Walden 2"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Does Harry become smarter than before?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does Harry 1 become smarter than before?",
+          "type": "query",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["smart","high","person"]],
+          "actions": [{"root": "become", "mode": "event", "roles": {"actor": "Harry 1"}}],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["json-fail retry: Unterminated string starting at: line 30 column 87 (char 110"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","book","X"], ["is rel2","in","knowledge","X"]]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["isa","book","Y"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","read"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","Y"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ],
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","gain"],
+                    ["has actor","E2","X"],
+                    ["has target","E2","knowledge"],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","gain"],
+                    ["has actor","E1","X"],
+                    ["has target","E1","knowledge"],
+                    ["typical","E1"]
+                  ]
+                ]
+              ],
+              ["and",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","become"],
+                    ["has actor","E2","X"],
+                    ["typical","E2"]
+                  ]
+                ],
+                ["has degree rel2","smart","X","person","high","person"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Harry 1"],
+            ["isa","book","Walden 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","read"],
+                ["has actor","E","Harry 1"],
+                ["has target","E","Walden 2"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Henry Thoreau 3"],
+          ["isa","book","Walden 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","Henry Thoreau 3"],
+              ["has target","E","Walden 2"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","become"],
+            ["has actor","E","Harry 1"],
+            ["has degree rel2","smart","Harry 1","person","high","person"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "stage_2_retries": ["sanity #1: comparative_as_degree_property_nonmeasurable"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"],
+            ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Books contain a large amount of knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["isa", "activity", ["sk0","?:X","?:Y"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has type", ["sk0","?:X","?:Y"], "loss", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has actor", ["sk0","?:X","?:Y"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["isa", "knowledge", ["sk1","?:X","?:Y"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has target", ["sk0","?:X","?:Y"], ["sk1","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","book","?:Y"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["typical", ["sk0","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","person",4], ["$not", ["typical", ["sk0","?:X","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["has type", "?:E1", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E1", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa", "activity", ["sk2","?:X"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["has type", "?:E1", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E1", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has type", ["sk2","?:X"], "become", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["has type", "?:E1", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E1", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has actor", ["sk2","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["has type", "?:E1", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E1", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["typical", ["sk2","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["has type", "?:E1", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E1", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has degree rel2", "stupid", "?:X", "person", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","person",4], ["$not", ["has degree rel2", "smart", "?:X", "person", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk3_activity"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["has type", "sk3_activity", "read", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["has actor", "sk3_activity", "#:Harry 1", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["has target", "sk3_activity", "#:Walden 2", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk3_activity", "present", "in", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["actuality","sk3_activity"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","activity","sk4_activity"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["has type", "sk4_activity", "write", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["has actor", "sk4_activity", "#:Henry Thoreau 3", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["has target", "sk4_activity", "#:Walden 2", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["actuality","sk4_activity"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk5_activity"]],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk5_activity", "become", ["$ctxt","?:Fv23","?:Fv22","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk5_activity", "#:Harry 1", ["$ctxt","?:Fv25","?:Fv24","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2", "stupid", "#:Harry 1", "person", "high", "?:Fv48", ["$ctxt","present","W1","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk5_activity"]],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type", "?:E", "become", ["$ctxt","?:Fv29","?:Fv28","?:Fv17","?:Fv18"]],
+            ["-has actor", "?:E", "#:Harry 1", ["$ctxt","?:Fv31","?:Fv30","?:Fv17","?:Fv18"]],
+            ["has degree rel2", "stupid", "#:Harry 1", "person", "high", "?:Fv49", ["$ctxt","present","W1","?:Fv17","?:Fv18"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["has degree rel2", "stupid", "#:Harry 1", "person", "high", "person", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["-has degree rel2", "stupid", "#:Harry 1", "person", "high", "person", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "smart", "#:Harry 1", "person", "high", "person", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T20:20:12Z"
+}

@@ -1,0 +1,295 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1439,
+  "input_text": "Bears eat berries. Baby bears do not eat berries. John is a baby bear.\n     John eats berries?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears eat berries.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat berries.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Baby bears do not eat berries.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Baby bears do not eat berries.",
+          "type": "normal_rule",
+          "entities": [{"id": "baby bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bear.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a baby bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John eats berries?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 eat berries?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","baby bear","X"],
+              ["normally",
+                ["not",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                      ["typical","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","baby bear","John 1"]]],
+    ["@id","S4",
+      ["question",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 1"],
+              ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["event", "eat", "?:X", "berry", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears eat berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "berry", ["sk1","?:X"]]],
+ "@nl": "Bears eat berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bear",1], ["$not", ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Bears eat berries."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","baby bear","?:X"],
+            ["-event", "eat", "?:X", "berry", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","berry","?:Y"],
+            ["-typical", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","baby bear",2], ["typical", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Baby bears do not eat berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","baby bear","#:John 1"],
+ "@nl": "John 1 is a baby bear."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "eat", "#:John 1", "berry", "sk2", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Does John 1 eat berries?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","berry","sk3_berry"]],
+ "@nl": "Does John 1 eat berries?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["typical", "sk2", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]],
+ "@nl": "Does John 1 eat berries?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-event", "eat", "#:John 1", "berry", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-isa","berry","?:Y"],
+            ["-typical", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 eat berries?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 eat berries?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bear","$some_not_baby_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bear","?:X"], ["isa","bear","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bear","?:X"], ["isa","baby bear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", ["$","baby bear",2], ["typical", "sk2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+        "confidence": 0.98,
+        "negative proof": [[1, ["in","compound_sub","assumption",1], [["-isa","baby bear","?:X"], ["isa","bear","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","baby bear","#:John 1"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","bear","#:John 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa", "berry", ["sk1","?:X"]], ["-isa","bear","?:X"]]],
+          [5, ["mp", 3, [4,1], "fromassumption", 1], [["isa", "berry", ["sk1","#:John 1"]]]],
+          [6, ["in","sent_S2","assumption",0.98], [["$block", ["$","baby bear",2], ["typical", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]], ["-event", "eat", "?:W", "berry", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-typical", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","baby bear","?:W"], ["-isa","berry","?:2006"]]],
+          [7, ["in","sent_S4","assumption",1], [["-$defq0"], ["event", "eat", "#:John 1", "berry", "sk2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [8, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [9, ["mp",7,8,"fromga",1], [["event", "eat", "#:John 1", "berry", "sk2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [10, ["in","sent_S4","assumption",1], [["-$defq0"], ["typical", "sk2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["mp",10,8,"fromga",1], [["typical", "sk2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [12, ["mp", [6,1], 9, 11, "fromga", 0.98], [["-isa","baby bear","#:John 1"], ["$block", ["$","baby bear",2], ["typical", "sk2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]], ["-isa","berry","?:V3"]]],
+          [13, ["simp",12,2,"fromga",0.98], [["$block", ["$","baby bear",2], ["typical", "sk2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]], ["-isa","berry","?:V"]]],
+          [14, ["mp", 5, [13,1], "fromga", 0.98], [["$block", ["$","baby bear",2], ["typical", "sk2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Bears eat berries.",
+"  (2) Baby bears do not eat berries.",
+"  (3) John is a baby bear.",
+"  (4) John eats berries?",
+"Knowledge used:",
+"  If some X is a baby bear then X is a bear. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some X is a baby bear then X is a bear  [background knowledge]",
+"  (2) John is a baby bear  [sentence 3]",
+"  (3) John is a bear  [from steps 1, 2]",
+"  (4) If some X is a bear then the berry sk1 of X is a berry  [sentence 1]",
+"  (5) The berry sk1 of John 1 is a berry  [from steps 3, 4]",
+"  (6) If some baby bear W eats berry and some E1 is a berry then X is not typical, except when X is typical  [sentence 2, confidence 98%]",
+"  (7) If answer holds then John eats berry  [sentence 4]",
+"  (8) Answer holds  [assumption]",
+"  (9) John eats berry  [from steps 7, 8]",
+"  (10) If answer holds then sk2 is typical  [sentence 4]",
+"  (11) sk2 is typical  [from steps 10, 8]",
+"  (12) If John is a baby bear then V3 is not a berry, except when sk2 is typical  [from steps 6, 9, 11, confidence 98%]",
+"  (13) V is not a berry, except when sk2 is typical  [from steps 12, 2, confidence 98%]",
+"  (14) Outstanding exception: sk2 is typical  [from steps 5, 13, confidence 98%]",
+"Exceptions checked and not holding:",
+"  sk2 is typical"
+],
+  "timestamp": "2026-06-20T12:47:52Z"
+}

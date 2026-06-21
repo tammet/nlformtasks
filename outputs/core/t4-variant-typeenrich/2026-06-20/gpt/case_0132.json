@@ -1,0 +1,104 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 132,
+  "input_text": "Mary was in a room. She was not in the room?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary was in a room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 was in a room 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "She was not in the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Was Mary 1 not in the room 2?",
+          "type": "query",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","room","room 2"],
+            ["is rel2","in","Mary 1","room 2"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S2", ["question", ["not", ["is rel2","in","Mary 1","room 2"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","woman","#:Mary 1"],
+ "@nl": "Mary 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "Mary 1 was in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","in","#:Mary 1","#:room 2","?:Cu4"],
+ "@nl": "Mary 1 was in a room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-is rel2","in","#:Mary 1","#:room 2","?:Cu5"]],
+ "@nl": "Was Mary 1 not in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["is rel2","in","#:Mary 1","#:room 2","?:Cu6"], ["$defq0"]],
+ "@nl": "Was Mary 1 not in the room 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Was Mary 1 not in the room 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-$defq0"], ["-is rel2","in","#:Mary 1","#:room 2","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2","in","#:Mary 1","#:room 2","?:X"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary was in a room.",
+"  (2) She was not in the room?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds then Mary is not in the room B  [sentence 2]",
+"  (2) Mary is in the room B  [sentence 1]",
+"  (3) Answer holds  [assumption]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T02:45:36Z"
+}

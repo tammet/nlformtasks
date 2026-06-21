@@ -1,0 +1,311 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 230,
+  "input_text": "John's brother's car is red. John's brother has a car?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John's brother's car is red.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1's brother 2's car 3 is red.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "brother 2", "type": "concrete", "text": "brother", "category": "person"},
+            {"id": "car 3", "type": "concrete", "category": "artifact"}
+          ],
+          "adjectives": [["red","none","none"]],
+          "definites": [["brother of","brother 2","John 1"], ["car of","car 3","brother 2"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Brother 2 is the brother of John 1.",
+          "type": "situation",
+          "entities": [{"id": "brother 2", "type": "concrete", "text": "brother", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["brother of","brother 2","John 1"]]
+        },
+        {
+          "unit_id": "S3",
+          "text": "Car 3 is the car of brother 2.",
+          "type": "situation",
+          "entities": [{"id": "car 3", "type": "concrete", "category": "artifact"},
+            {"id": "brother 2", "type": "concrete", "text": "brother", "category": "person"}
+          ],
+          "definites": [["car of","car 3","brother 2"]]
+        }
+      ]
+    },
+    {
+      "raw": "John's brother has a car?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1's brother 2 have a car?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "brother 2", "type": "concrete", "text": "brother", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "definites": [["brother of","brother 2","John 1"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","brother","brother 2"],
+            ["isa","car","car 3"],
+            ["is rel2","brother of","brother 2","John 1"],
+            ["have","brother 2","car 3"],
+            ["has degree property","red","car 3","none","none"]
+          ]
+        ],
+        ["@definite","S1","W0","brother of","John 1","brother 2"],
+        ["@definite","S1","W0","car of","brother 2","car 3"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","brother","brother 2"],
+            ["isa","person","John 1"],
+            ["is rel2","brother of","brother 2","John 1"]
+          ]
+        ],
+        ["@definite","S2","W0","brother of","John 1","brother 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","car","car 3"],
+            ["isa","brother","brother 2"],
+            ["have","brother 2","car 3"]
+          ]
+        ],
+        ["@definite","S3","W0","car of","brother 2","car 3"]
+      ]
+    ],
+    ["@id","S4",
+      ["question", ["exists", "X", ["and", ["isa","car","X"], ["have","brother 2","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","brother","#:brother 2"],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "entity_S1",
+ "@logic": ["isa","car","#:car 3"],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "brother", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "car", ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S1",
+ "@logic": ["have", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "red", ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1's brother 2's car 3 is red."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "brother", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "Brother 2 is the brother of John 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Brother 2 is the brother of John 1."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "brother of", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], "#:John 1", ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Brother 2 is the brother of John 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa", "car", ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "Car 3 is the car of brother 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa", "brother", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "Car 3 is the car of brother 2."},
+{"@name": "sent_S3",
+ "@logic": ["have", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "Car 3 is the car of brother 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", ["$have","car"], ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Does John 1's brother 2 have a car?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has property", ["$have","car"], ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1's brother 2 have a car?"},
+{"@name": "sent_S2",
+ "@logic": ["have", "#:John 1", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Brother 2 is the brother of John 1."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","?:Cef","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1's brother 2 have a car?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:John 1", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:John 1", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:John 1", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "brother of", ["$theof1","brother","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "brother", ["$theof1","brother","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "car of", ["$theof1","car","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "car", ["$theof1","car","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv11","?:Fv12","?:Fv13"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:Cef", ["$typed_partof","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"],
+            ["has part", "?:Xef", ["$typed_partof","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:Cef","?:Yef"],
+            ["-has part","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$has_part","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["isa", "?:Cef", ["$typed_have","?:Xef","?:Cef"]]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold",
+ "@logic": [["-has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"],
+            ["have", "?:Xef", ["$typed_have","?:Xef","?:Cef"], "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold]"},
+{"@name": "frm_existfold_rev",
+ "@logic": [["-isa","?:Cef","?:Yef"],
+            ["-have","?:Xef","?:Yef","?:Ctef"],
+            ["has property", ["$have","?:Cef"], "?:Xef", "?:Ctef"]
+           ],
+ "@nl": "[generated: frm_existfold_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_theof","assumption",1], [["have", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]], ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]], ["$ctxt","present","W0","?:X","?:Y"]], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","frm_existfold_rev","assumption",1], [["has property", ["$have","?:X"], "?:Y", "?:Z"], ["-have","?:Y","?:U","?:Z"], ["-isa","?:X","?:U"]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 1], [["-isa", "?:X", ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Y","?:Z"]], ["$ctxt","present","W0","?:Y","?:Z"]]], ["has property", ["$have","?:X"], ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:Y","?:Z"]], ["$ctxt","present","W0","?:Y","?:Z"]]]],
+          [4, ["in","sent_S1","assumption",1], [["isa", "car", ["$theof1", "car", ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]], ["$ctxt","present","W0","?:X","?:Y"]]]]],
+          [5, ["mp",3,4,"fromassumption",1], [["has property", ["$have","car"], ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [6, ["in","sent_S4","assumption",1], [["$defq0"], ["-has property", ["$have","car"], ["$theof1", "brother", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]], ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [7, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John's brother's car is red.",
+"  (2) John's brother has a car?",
+"Knowledge used:",
+"  John's brother has John's brother's car. Why: assumed basic knowledge.",
+"  If some Y has some U and U is a ?:X then Y has a ?:X. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) John's brother has John's brother's car  [background knowledge]",
+"  (2) If some Y has some U and U is a ?:X then Y has a ?:X  [background knowledge]",
+"  (3) If John's brother's car is a ?:X then John's brother has a ?:X  [from steps 1, 2]",
+"  (4) John's brother's car is a car  [sentence 1]",
+"  (5) John's brother has a car  [from steps 3, 4]",
+"  (6) If John's brother has a car then answer holds  [sentence 2]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7]"
+],
+  "timestamp": "2026-06-20T12:39:55Z"
+}

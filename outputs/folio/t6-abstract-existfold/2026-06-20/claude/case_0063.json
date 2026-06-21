@@ -1,0 +1,258 @@
+{
+  "test_name": "folio_v2_ultracoarse2_existfold",
+  "case_id": 63,
+  "input_text": "All Brown Swiss cattle are cows. Some pets are Brown Swiss Cattle. All cows are domesticated animals. Alligators are not domesticated animals. Ted is an alligator. Ted is a pet?",
+  "expected_answer": "Unknown.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All Brown Swiss cattle are cows.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All Brown Swiss cattle are cows.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "Brown Swiss cattle",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "animal"
+            },
+            {"id": "cows", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Some pets are Brown Swiss cattle.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some pets are Brown Swiss cattle.",
+          "type": "normal_rule",
+          "entities": [{"id": "pets", "type": "generic", "category": "animal"},
+            {
+              "id": "Brown Swiss cattle",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "animal"
+            }
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All cows are domesticated animals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All cows are domesticated animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "cows", "type": "generic", "category": "animal"},
+            {
+              "id": "domesticated animals",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "animal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Alligators are not domesticated animals.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Alligators are not domesticated animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "alligators", "type": "generic", "category": "animal"},
+            {
+              "id": "domesticated animals",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "animal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Ted is an alligator.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Ted 1 is an alligator.",
+          "type": "situation",
+          "entities": [{"id": "Ted 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Is Ted a pet?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is Ted 1 a pet?",
+          "type": "query",
+          "entities": [{"id": "Ted 1", "type": "concrete", "category": "animal"},
+            {"id": "pet", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","Brown Swiss cattle","X"], ["isa","cow","X"]]]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["exists", "X", ["and", ["isa","pet","X"], ["isa","Brown Swiss cattle","X"]]]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","cow","X"], ["isa","domesticated animal","X"]]]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","alligator","X"], ["not", ["isa","domesticated animal","X"]]]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","alligator","Ted 1"]]],
+    ["@id", "S6", ["question", ["isa","pet","Ted 1"]]]
+  ],
+  "stage_2_retries": ["sanity #1: constant_vs_class"],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","animal","#:Ted 1"],
+ "@nl": "Ted 1 is an alligator."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","brown swiss cattle","?:X"], ["isa","cow","?:X"]],
+ "@nl": "All Brown Swiss cattle are cows."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pet","sk0_pet"],
+ "@confidence": 0.9899,
+ "@nl": "Some pets are Brown Swiss cattle."},
+{"@name": "sent_S2",
+ "@logic": ["isa","brown swiss cattle","sk0_pet"],
+ "@confidence": 0.9899,
+ "@nl": "Some pets are Brown Swiss cattle."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","cow","?:X"], ["isa","domesticated animal","?:X"]],
+ "@nl": "All cows are domesticated animals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","alligator","?:X"], ["-isa","domesticated animal","?:X"]],
+ "@nl": "Alligators are not domesticated animals."},
+{"@name": "sent_S5",
+ "@logic": ["isa","alligator","#:Ted 1"],
+ "@nl": "Ted 1 is an alligator."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","pet","#:Ted 1"]],
+ "@nl": "Is Ted 1 a pet?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","pet","#:Ted 1"], ["$defq0"]],
+ "@nl": "Is Ted 1 a pet?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is Ted 1 a pet?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","brown swiss cattle","$some_Brown_Swiss_cattle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","brown swiss cattle","$some_not_Brown_Swiss_cattle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","cow","$some_cow"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","cow","$some_not_cow"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","pet","$some_pet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","pet","$some_not_pet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","domesticated animal","$some_domesticated_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","domesticated animal","$some_not_domesticated_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","alligator","$some_not_alligator"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","brown swiss cattle","?:X"], ["isa","cattle","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","brown swiss","?:X"],
+            ["-isa","cattle","?:X"],
+            ["isa","brown swiss cattle","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","domesticated animal","?:X"], ["isa","animal","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","domesticated","?:X"],
+            ["-isa","animal","?:X"],
+            ["isa","domesticated animal","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","cow","?:Xg"], ["isa","woman","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T04:48:53Z"
+}

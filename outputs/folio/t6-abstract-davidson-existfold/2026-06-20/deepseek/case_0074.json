@@ -1,0 +1,302 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_existfold_fix",
+  "case_id": 74,
+  "input_text": "All vehicle registration plates in Istanbul begin with the number 34. Plates that do not begin with the number 34 are not from Istanbul. Joe's vehicle registration plate is from Istanbul. Tom's license plate begins with the number 35. If a license plate begins with the number 35, then it does not begin with the number 34. Joe's license plate begins with the number 34?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All license plates in Istanbul begin with the number 34.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All license plates in Istanbul begin with the number 34.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plate", "type": "generic", "category": "artifact"},
+            {
+              "id": "Istanbul",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            },
+            {"id": "number 34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "License plates that do not begin with the number 34 are not from Istanbul.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "License plates that do not begin with the number 34 are not from Istanbul.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plate", "type": "generic", "category": "artifact"},
+            {"id": "number 34", "type": "concrete", "category": "number"},
+            {
+              "id": "Istanbul",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Joe's license plate is from Istanbul.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Joe 1's license plate 1 is from Istanbul.",
+          "type": "real",
+          "entities": [{"id": "Joe 1", "type": "concrete", "category": "person"},
+            {"id": "license plate 1", "type": "concrete", "category": "artifact"},
+            {
+              "id": "Istanbul",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate begins with the number 35.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Tom 2's license plate 2 begins with the number 35.",
+          "type": "real",
+          "entities": [{"id": "Tom 2", "type": "concrete", "category": "person"},
+            {"id": "license plate 2", "type": "concrete", "category": "artifact"},
+            {"id": "number 35", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a license plate begins with the number 35, then it does not begin with the number 34.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If a license plate begins with the number 35, then the license plate does not begin with the number 34.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plate", "type": "generic", "category": "artifact"},
+            {"id": "number 35", "type": "concrete", "category": "number"},
+            {"id": "number 34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Does Joe's license plate begin with the number 34?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does Joe 1's license plate 1 begin with the number 34?",
+          "type": "query",
+          "entities": [{"id": "Joe 1", "type": "concrete", "category": "person"},
+            {"id": "license plate 1", "type": "concrete", "category": "artifact"},
+            {"id": "number 34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","place","Istanbul"],
+          ["isa","number","number 34"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","license plate","X"], ["is rel2","in","X","Istanbul"]],
+              ["is rel2","begins with","X","number 34"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","license plate","X"], ["not", ["is rel2","begins with","X","number 34"]]],
+            ["not", ["is rel2","from","X","Istanbul"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Joe 1"],
+          ["isa","license plate","license plate 1"],
+          ["have","Joe 1","license plate 1"],
+          ["is rel2","from","license plate 1","Istanbul"]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Tom 2"],
+          ["isa","license plate","license plate 2"],
+          ["isa","number","number 35"],
+          ["have","Tom 2","license plate 2"],
+          ["is rel2","begins with","license plate 2","number 35"]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","license plate","X"], ["is rel2","begins with","X","number 35"]],
+            ["not", ["is rel2","begins with","X","number 34"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S6", ["question", ["is rel2","begins with","license plate 1","number 34"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","place","Istanbul"],
+ "@nl": "All license plates in Istanbul begin with the number 34."},
+{"@name": "sent_S1",
+ "@logic": ["isa","number","#:number 34"],
+ "@nl": "All license plates in Istanbul begin with the number 34."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2","in","?:X","Istanbul","?:Cu3"],
+            ["is rel2","begins with","?:X","#:number 34","?:Cu3"]
+           ],
+ "@nl": "All license plates in Istanbul begin with the number 34."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","license plate","?:X"],
+            ["is rel2","begins with","?:X","#:number 34","?:Cu4"],
+            ["-is rel2","from","?:X","Istanbul","?:Cu4"]
+           ],
+ "@nl": "License plates that do not begin with the number 34 are not from Istanbul."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Joe 1"],
+ "@nl": "Joe 1's license plate 1 is from Istanbul."},
+{"@name": "sent_S3",
+ "@logic": ["isa","license plate","#:license plate 1"],
+ "@nl": "Joe 1's license plate 1 is from Istanbul."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:Joe 1","#:license plate 1","?:Cu7"],
+ "@nl": "Joe 1's license plate 1 is from Istanbul."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2","from","#:license plate 1","Istanbul","?:Cu8"],
+ "@nl": "Joe 1's license plate 1 is from Istanbul."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Tom 2"],
+ "@nl": "Tom 2's license plate 2 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["isa","license plate","#:license plate 2"],
+ "@nl": "Tom 2's license plate 2 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["isa","number","#:number 35"],
+ "@nl": "Tom 2's license plate 2 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["have","#:Tom 2","#:license plate 2","?:Cu12"],
+ "@nl": "Tom 2's license plate 2 begins with the number 35."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2","begins with","#:license plate 2","#:number 35","?:Cu13"],
+ "@nl": "Tom 2's license plate 2 begins with the number 35."},
+{"@name": "sent_S5",
+ "@logic": [["-is rel2","begins with","?:X","#:number 35","?:Cu14"],
+            ["-is rel2","begins with","?:X","#:number 34","?:Cu14"]
+           ],
+ "@nl": "If a license plate begins with the number 35, then the license plate does not begin with the number 34."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","begins with","#:license plate 1","#:number 34","?:Cu15"]],
+ "@nl": "Does Joe 1's license plate 1 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2","begins with","#:license plate 1","#:number 34","?:Cu16"], ["$defq0"]],
+ "@nl": "Does Joe 1's license plate 1 begin with the number 34?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does Joe 1's license plate 1 begin with the number 34?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","license plate","$some_not_license_plate"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","license plate","?:X"], ["isa","plate","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","license","?:X"], ["-isa","plate","?:X"], ["isa","license plate","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-is rel2","from","?:X","Istanbul","?:Y"], ["is rel2","begins with","?:X","#:number 34","?:Y"], ["-isa","license plate","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["is rel2","from","#:license plate 1","Istanbul","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","license plate","#:license plate 1"], ["is rel2","begins with","#:license plate 1","#:number 34","?:X3"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","license plate","#:license plate 1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["is rel2","begins with","#:license plate 1","#:number 34","?:X"]]],
+          [6, ["in","sent_S6","assumption",1], [["$defq0"], ["-is rel2","begins with","#:license plate 1","#:number 34","?:X"]]],
+          [7, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) License plates that do not begin with the number 34 are not from Istanbul.",
+"  (2) Joe's license plate is from Istanbul.",
+"  (3) Does Joe's license plate begin with the number 34?",
+"Proof steps (by contradiction):",
+"  (1) If some X is from Istanbul and X is a license plate then X is begins with the number 34  [sentence 1]",
+"  (2) The license plate 1 is from Istanbul  [sentence 2]",
+"  (3) The license plate 1 is begins with the number 34  [from steps 1, 2]",
+"  (4) The license plate 1 is a license plate  [sentence 2]",
+"  (5) The license plate 1 is begins with the number 34  [from steps 3, 4]",
+"  (6) If the license plate 1 is begins with the number 34 then answer holds  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7]"
+],
+  "timestamp": "2026-06-20T13:59:19Z"
+}

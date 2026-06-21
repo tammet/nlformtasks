@@ -1,0 +1,208 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1297,
+  "input_text": "Before 1900, John jumped in a house. After 1902, John sat in a house. When did John sat?",
+  "expected_answer": ["After the year 1902","After 1902."],
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Before 1900, John jumped in a house.",
+      "units": [{
+          "actions": [{
+              "mode": "event",
+              "roles": {"location": "house 2", "location_prep": "in"},
+              "root": "jump"
+            }
+          ],
+          "entities": [{"category": "person", "id": "John 1", "type": "concrete"},
+            {"category": "place", "id": "house 2", "type": "concrete"}
+          ],
+          "next_state": "W1",
+          "pre_state": "W0",
+          "state_tense": "past",
+          "text": "John 1 jumped in a house 2.",
+          "time": "1900",
+          "time_prep": "before",
+          "type": "situation",
+          "unit_id": "S1"
+        }
+      ]
+    },
+    {
+      "raw": "After 1902, John sat in a house.",
+      "units": [{
+          "actions": [{
+              "mode": "event",
+              "roles": {"location": "house 3", "location_prep": "in"},
+              "root": "sit"
+            }
+          ],
+          "entities": [{"category": "person", "id": "John 1", "type": "concrete"},
+            {"category": "place", "id": "house 3", "type": "concrete"}
+          ],
+          "next_state": "W2",
+          "pre_state": "W1",
+          "state_tense": "past",
+          "text": "John 1 sat in a house 3.",
+          "time": "1902",
+          "time_prep": "after",
+          "type": "situation",
+          "unit_id": "S2"
+        }
+      ]
+    },
+    {
+      "raw": "When did John sat?",
+      "units": [{
+          "actions": [{"mode": "event", "roles": {"actor": "John 1"}, "root": "sit"}],
+          "entities": [{"category": "person", "id": "John 1", "type": "concrete"},
+            {"id": "time_point", "type": "generic", "wh_placeholder": true, "category": "abstract"}
+          ],
+          "pre_state": "W1",
+          "text": "When did John 1 sit?",
+          "time": "past",
+          "type": "query",
+          "unit_id": "S3"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: missing_wh_placeholder"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","house","house 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","jump"],
+                ["has actor","E","John 1"],
+                ["has location","E","house 2","in"],
+                ["has time","E","1900","before"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","house","house 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","sit"],
+                ["has actor","E","John 1"],
+                ["has location","E","house 3","in"],
+                ["has time","E","1902","after"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","person","John 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","sit"],
+              ["has actor","E","John 1"],
+              ["has time","E","X","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","house","#:house 2"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv3"], ["$datetime",1900]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is_past_world","W0"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","house","#:house 3"],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "sit", "#:John 1", ["eventprop","$location","#:house 3"], ["$ctxt","present","W1","?:Fv4","?:Fv5"]],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S2",
+ "@logic": ["=", ["$theof1","time","W1","?:Fv6"], ["$datetime",1902]],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S2",
+ "@logic": ["is_past_world","W1"],
+ "@nl": "John 1 sat in a house 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","person","#:John 1"]],
+ "@nl": "When did John 1 sit?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "sit", "#:John 1", ["$ctxt","past","W1","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "When did John 1 sit?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-has property", "sit", "#:John 1", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "When did John 1 sit?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "When did John 1 sit?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "sit", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "sit", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "sit", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "When did John 1 sit?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-18T17:10:42Z"
+}

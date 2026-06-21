@@ -1,0 +1,107 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 1209,
+  "input_text": "We are in the barn. We are in the barn?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "We are in the barn.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "We 1 are in the barn 2.",
+          "type": "situation",
+          "entities": [{"id": "we 1", "type": "concrete", "category": "person"},
+            {"id": "barn 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "We are in the barn?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Are we 1 in the barn 2?",
+          "type": "query",
+          "entities": [{"id": "we 1", "type": "concrete", "category": "person"},
+            {"id": "barn 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and", ["isa","person","we 1"], ["isa","barn","barn 2"], ["is rel2","in","we 1","barn 2"]]
+      ]
+    ],
+    ["@id", "S2", ["question", ["is rel2","in","we 1","barn 2"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","we","#:we 1"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:we 1"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","barn","#:barn 2"],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "We 1 are in the barn 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Are we 1 in the barn 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Are we 1 in the barn 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["$defq0"], ["-is rel2", "in", "#:we 1", "#:barn 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) We are in the barn.",
+"  (2) We are in the barn?",
+"Proof steps (by contradiction):",
+"  (1) The we A is in the barn B  [sentence 1]",
+"  (2) If the we A is in the barn B then answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T00:12:11Z"
+}

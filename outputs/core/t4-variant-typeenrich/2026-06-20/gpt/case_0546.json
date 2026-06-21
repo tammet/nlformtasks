@@ -1,0 +1,141 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 546,
+  "input_text": "Most bears are big. John is a bear. John is big?",
+  "expected_answer": "Likely true.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Likely true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Most bears are big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Most bears are big.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","bear"]],
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is big?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 big?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally", ["has degree property","big","X","none","bear"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.8]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id", "S3", ["question", ["has degree property","big","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["has degree property","big","?:X","none","bear","?:Cu2"]],
+ "@confidence": 0.6,
+ "@nl": "Most bears are big."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","big","#:John 1","none","bear","?:Cu4"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","big","#:John 1","none","bear","?:Cu5"], ["$defq0"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_bear","none","bear","?:Cu8"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_big_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_bear","none","bear","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv33","?:Cu11"],
+            ["has degree property","big","?:X","none","?:Fv34","?:Cu11"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.6,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.6], [["has degree property","big","?:X","none","bear","?:Y"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.6], [["has degree property","big","#:John 1","none","bear","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property","big","#:John 1","none","bear","?:X"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.6], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 60%.",
+"Sentences used:",
+"  (1) Most bears are big.",
+"  (2) John is a bear.",
+"  (3) John is big?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a bear then X is a big bear  [sentence 1, confidence 60%]",
+"  (2) John is a bear  [sentence 2]",
+"  (3) John is a big bear  [from steps 1, 2, confidence 60%]",
+"  (4) If John is a big bear then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Contradiction  [from steps 3, 4, 5, confidence 60%]"
+],
+  "timestamp": "2026-06-19T02:46:45Z"
+}

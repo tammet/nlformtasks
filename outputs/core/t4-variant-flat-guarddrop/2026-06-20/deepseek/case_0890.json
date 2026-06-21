@@ -1,0 +1,189 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 890,
+  "input_text": "The car which John drove was red. What color was the car?",
+  "expected_answer": "Red.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Red.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The car which John drove was red.",
+      "units": [{
+          "actions": [{"mode": "event", "roles": {"actor": "John 1", "target": "car 2"}, "root": "drive"}],
+          "entities": [{"category": "person", "id": "John 1", "type": "concrete"},
+            {"category": "artifact", "id": "car 2", "type": "concrete"}
+          ],
+          "pre_state": "W0",
+          "text": "John 1 drove the car 2.",
+          "time": "past",
+          "type": "situation",
+          "unit_id": "S1"
+        },
+        {
+          "adjectives": [["red","none","car"]],
+          "entities": [{"category": "artifact", "id": "car 2", "type": "concrete"}],
+          "pre_state": "W0",
+          "text": "The car 2 was red.",
+          "time": "past",
+          "type": "situation",
+          "unit_id": "S2"
+        }
+      ]
+    },
+    {
+      "raw": "What color was the car?",
+      "units": [{
+          "entities": [{"id": "color", "type": "generic", "wh_placeholder": true},
+            {"category": "artifact", "id": "car 2", "type": "concrete"}
+          ],
+          "pre_state": "W0",
+          "text": "Which color was the car 2?",
+          "time": "past",
+          "type": "query",
+          "unit_id": "S3"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: missing_wh_placeholder"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","car","car 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","drive"],
+              ["has actor","E","John 1"],
+              ["has target","E","car 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","car","car 2"], ["has degree property","red","car 2","none","car"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S3", ["ask", "X", ["is rel2","color","car 2","X"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "drive", "#:John 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 drove the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "red", "#:car 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The car 2 was red."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-is rel2", "black_and_white", "#:car 2", "?:X", ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which color was the car 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["is rel2", "black_and_white", "#:car 2", "?:X", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which color was the car 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which color was the car 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["is rel2", "black_and_white", "#:car 2", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["-is rel2", "black_and_white", "#:car 2", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "color", "#:car 2", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which color was the car 2?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","drive","?:Fv8"], ["has type","?:E","go","?:Fv8"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_attr_relation",
+ "@logic": [["-has property","red","?:X","?:Fv9"],
+            ["-is rel2","black_and_white","red","?:X","?:Fv9"]
+           ],
+ "@nl": "[generated: frm_attr_relation]"},
+{"@name": "frm_attr_relation",
+ "@logic": [["-has property","red","?:X","?:Fv10"],
+            ["-is rel2","black_and_white","?:X","red","?:Fv10"]
+           ],
+ "@nl": "[generated: frm_attr_relation]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv11","?:Fv12","?:Fv13"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","red"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["is rel2", "black_and_white", "#:car 2", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [2, ["in","frm_attr_relation","assumption",1], [["-is rel2","black_and_white","?:X","red","?:Y"], ["-has property","red","?:X","?:Y"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","red"], ["-has property", "red", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S2","assumption",1], [["has property", "red", "#:car 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 1], [["$defq0","red"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","red"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The car which John drove was red.",
+"  (2) What color was the car?",
+"Knowledge used:",
+"  If some X is black_and_white of red then X is not red. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) The car B is black_and_white of some X or X is the answer  [sentence 2]",
+"  (2) If some X is black_and_white of red then X is not red  [background knowledge]",
+"  (3) If the car B is red then red is the answer  [from steps 1, 2]",
+"  (4) The car B is red  [sentence 1]",
+"  (5) Red is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) Red is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T10:44:03Z"
+}

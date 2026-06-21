@@ -1,0 +1,199 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1382,
+  "input_text": "If an animal or bird has a tail, it is cute. John is a bird. John has a tail. John is cute?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If an animal or bird has a tail, it is cute.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If an animal or a bird has a tail, the animal or bird is cute.",
+          "type": "normal_rule",
+          "entities": [{"id": "animal", "type": "generic", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["cute","none","entity"]]
+        }
+      ]
+    },
+    {
+      "raw": "John is a bird.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a tail 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail 2", "type": "concrete"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is cute?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 cute?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["cute","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["or", ["isa","animal","X"], ["isa","bird","X"]],
+                ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","X","Y"]]]
+              ],
+              ["has degree property","cute","X","none","entity"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bird","John 1"]]],
+    ["@id","S3",
+      ["holds","W0",
+        ["and", ["isa","animal","John 1"], ["isa","tail","tail 2"], ["have","John 1","tail 2"]]
+      ]
+    ],
+    ["@id", "S4", ["question", ["has degree property","cute","John 1","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","tail","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu1"],
+            ["has degree property","cute","?:X","none","?:Fv37","?:Cu1"]
+           ],
+ "@nl": "If an animal or a bird has a tail, the animal or bird is cute."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["-isa","tail","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu2"],
+            ["has degree property","cute","?:X","none","?:Fv39","?:Cu2"]
+           ],
+ "@nl": "If an animal or a bird has a tail, the animal or bird is cute."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bird","#:John 1"],
+ "@nl": "John 1 is a bird."},
+{"@name": "sent_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","tail","#:tail 2"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:John 1","#:tail 2","?:Cu6"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","cute","#:John 1","none","?:Fv41","?:Cu7"]],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","cute","#:John 1","none","?:Fv42","?:Cu8"], ["$defq0"]],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S3",
+ "@logic": ["has part","#:John 1","#:tail 2","?:Cu9"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tail","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","cute","#:John 1","none","?:Fv43","?:Cu11"],
+            ["has degree property","cute","#:John 1","none","?:Fv44","?:Cu11"]
+           ],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","cute","$some_cute_entity","none","?:Fv46","?:Cu15"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","cute","$some_not_cute_entity","none","?:Fv47","?:Cu16"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property","cute","?:X","none","?:Y","?:Z"], ["-has part","?:X","?:U","?:Z"], ["-isa","tail","?:U"], ["-isa","bird","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","tail","#:tail 2"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["has degree property","cute","?:X","none","?:Y","?:Z"], ["-has part","?:X","#:tail 2","?:Z"], ["-isa","bird","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["has part","#:John 1","#:tail 2","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 1], [["-isa","bird","#:John 1"], ["has degree property","cute","#:John 1","none","?:X3","?:Y3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","bird","#:John 1"]]],
+          [7, ["simp",5,6,"fromassumption",1], [["has degree property","cute","#:John 1","none","?:X","?:Y"]]],
+          [8, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","cute","#:John 1","none","?:X","?:Y"]]],
+          [9, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [10, ["mp", 7, [8,1], 9, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If an animal or bird has a tail, it is cute.",
+"  (2) John is a bird.",
+"  (3) John has a tail.",
+"  (4) John is cute?",
+"Proof steps (by contradiction):",
+"  (1) If some X has some U as a part and U is a tail and X is a bird then X is cute  [sentence 1]",
+"  (2) The tail B is a tail  [sentence 3]",
+"  (3) If some X has the tail B as a part and X is a bird then X is cute  [from steps 1, 2]",
+"  (4) John has the tail B as a part  [sentence 3]",
+"  (5) If John is a bird then John is cute  [from steps 3, 4]",
+"  (6) John is a bird  [sentence 2]",
+"  (7) John is cute  [from steps 5, 6]",
+"  (8) If John is cute then answer holds  [sentence 4]",
+"  (9) assume for contradiction: the answer is no  [from question]",
+"  (10) Contradiction  [from steps 7, 8, 9]"
+],
+  "timestamp": "2026-06-19T04:42:04Z"
+}

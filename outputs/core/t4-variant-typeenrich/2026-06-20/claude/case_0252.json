@@ -1,0 +1,151 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 252,
+  "input_text": "The toy of the child was broken. Was the toy intact?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The toy of the child was broken.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The toy 2 is the toy of the child 1.",
+          "type": "situation",
+          "entities": [{"id": "child 1", "type": "concrete", "category": "person"},
+            {"id": "toy 2", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["toy of","toy 2","child 1"]],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The toy 2 was broken.",
+          "type": "situation",
+          "entities": [{"id": "toy 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["broken","none","artifact"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Was the toy intact?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was the toy 2 intact?",
+          "type": "query",
+          "entities": [{"id": "toy 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["intact","none","artifact"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","child","child 1"], ["isa","toy","toy 2"], ["have","child 1","toy 2"]]
+        ],
+        ["@definite","S1","W0","toy of","child 1","toy 2"],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","toy","toy 2"], ["has degree property","broken","toy 2","none","artifact"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S3", ["question", ["has degree property","intact","toy 2","none","artifact"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:child 1"],
+ "@nl": "The toy 2 is the toy of the child 1."},
+{"@name": "entity_S1",
+ "@logic": ["isa","toy","#:toy 2"],
+ "@nl": "The toy 2 is the toy of the child 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","child","#:child 1"],
+ "@nl": "The toy 2 is the toy of the child 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "toy", ["$theof1","toy","#:child 1","?:Cu4"]],
+ "@nl": "The toy 2 is the toy of the child 1."},
+{"@name": "sent_S1",
+ "@logic": ["have", "#:child 1", ["$theof1","toy","#:child 1","?:Cu5"], "?:Cu5"],
+ "@nl": "The toy 2 is the toy of the child 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "toy", ["$theof1","toy","#:child 1","?:Cu6"]],
+ "@nl": "The toy 2 was broken."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "broken", ["$theof1","toy","#:child 1","?:Cu7"], "?:Cu7"],
+ "@nl": "The toy 2 was broken."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property", "intact", ["$theof1","toy","#:child 1","?:Cu8"], "?:Cu8"]],
+ "@nl": "Was the toy 2 intact?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "intact", ["$theof1","toy","#:child 1","?:Cu9"], "?:Cu9"], ["$defq0"]],
+ "@nl": "Was the toy 2 intact?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was the toy 2 intact?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:child 1", ["$theof1","toy","#:child 1","?:Cu11"], "?:Cu11"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "toy of", ["$theof1","toy","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "toy", ["$theof1","toy","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","broken","?:X","?:Fv8"], ["-has property","intact","?:X","?:Fv8"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.95,
+        "negative proof": [[1, ["in","frm_excl","assumption",0.95], [["-has property","intact","?:X","?:Y"], ["-has property","broken","?:X","?:Y"]]],
+          [2, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property", "intact", ["$theof1","toy","#:child 1","?:X"], "?:X"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["has property", "intact", ["$theof1","toy","#:child 1","?:X"], "?:X"]]],
+          [5, ["mp",1,4,"fromga",0.95], [["-has property", "broken", ["$theof1","toy","#:child 1","?:X"], "?:X"]]],
+          [6, ["in","sent_S2","assumption",1], [["has property", "broken", ["$theof1","toy","#:child 1","?:X"], "?:X"]]],
+          [7, ["mp",5,6,"fromga",0.95], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) The toy of the child was broken.",
+"  (2) Was the toy intact?",
+"Knowledge used:",
+"  If some X is intact then X is not broken. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is intact then X is not broken  [background knowledge, confidence 95%]",
+"  (2) If answer holds then the toy of child A is intact  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) The toy of child A is intact  [from steps 2, 3]",
+"  (5) The toy of child A is not broken  [from steps 1, 4, confidence 95%]",
+"  (6) The toy of child A is broken  [sentence 1]",
+"  (7) Contradiction  [from steps 5, 6, confidence 95%]"
+],
+  "timestamp": "2026-06-19T02:39:05Z"
+}

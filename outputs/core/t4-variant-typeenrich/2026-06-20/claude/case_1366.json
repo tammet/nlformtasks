@@ -1,0 +1,395 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1366,
+  "input_text": "If X1 is a father of Y1, Y1 is a child of X1.\n      If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.\n      John is a father of Mike and Mickey. Luke is a father of John.\n      If X1 is a grandfather of Y1, Y1 is a grandchild of X1.\n      If X1 is male and X1 is a grandchild of Y1, X1 is a grandson of Y1.\n      Mike or Mickey are not female. Any person is male or female.\n      Who is a grandson of Luke?",
+  "expected_answer": "Mike or Mickey.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Mickey or Mike.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If X1 is a father of Y1, Y1 is a child of X1.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If X1 is a father of Y1, Y1 is a child of X1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"},
+            {"id": "Z1", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a father of Mike and Mickey.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a father of Mike 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ]
+        },
+        {
+          "unit_id": "S4",
+          "text": "John 1 is a father of Mickey 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mickey 3", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Luke is a father of John.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Luke 4 is a father of John 1.",
+          "type": "situation",
+          "entities": [{"id": "Luke 4", "type": "concrete", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If X1 is a grandfather of Y1, Y1 is a grandchild of X1.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If X1 is a grandfather of Y1, Y1 is a grandchild of X1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If X1 is male and X1 is a grandchild of Y1, X1 is a grandson of Y1.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "If X1 is male and X1 is a grandchild of Y1, X1 is a grandson of Y1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["male","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Mike or Mickey are not female.",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Mike 2 or Mickey 3 are not female.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "Mickey 3", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["female","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Any person is male or female.",
+      "units": [{
+          "unit_id": "S9",
+          "text": "Any person is male or female.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"}],
+          "adjectives": [["male","none","person"], ["female","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is a grandson of Luke?",
+      "units": [{
+          "unit_id": "S10",
+          "text": "Which entity is a grandson of Luke 4?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "Luke 4", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["implies", ["is rel2","father of","X1","Y1"], ["is rel2","child of","Y1","X1"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["forall","Z1",
+              ["implies",
+                ["and", ["is rel2","father of","X1","Y1"], ["is rel2","father of","Y1","Z1"]],
+                ["is rel2","grandfather of","X1","Z1"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["is rel2","father of","John 1","Mike 2"]]],
+    ["@id", "S4", ["holds", "W0", ["is rel2","father of","John 1","Mickey 3"]]],
+    ["@id", "S5", ["holds", "W0", ["is rel2","father of","Luke 4","John 1"]]],
+    ["@id","S6",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["implies",
+              ["is rel2","grandfather of","X1","Y1"],
+              ["is rel2","grandchild of","Y1","X1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["implies",
+              ["and",
+                ["has degree property","male","X1","none","person"],
+                ["is rel2","grandchild of","X1","Y1"]
+              ],
+              ["is rel2","grandson of","X1","Y1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["holds","W0",
+        ["or",
+          ["not", ["has degree property","female","Mike 2","none","person"]],
+          ["not", ["has degree property","female","Mickey 3","none","person"]]
+        ]
+      ]
+    ],
+    ["@id","S9",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","person","X"],
+            ["or",
+              ["has degree property","male","X","none","person"],
+              ["has degree property","female","X","none","person"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S10", ["ask", "X", ["is rel2","grandson of","X","Luke 4"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","man","#:Mike 2"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S4",
+ "@logic": ["isa","person","#:Mickey 3"],
+ "@nl": "John 1 is a father of Mickey 3."},
+{"@name": "entity_S4",
+ "@logic": ["isa","man","#:Mickey 3"],
+ "@nl": "John 1 is a father of Mickey 3."},
+{"@name": "entity_S5",
+ "@logic": ["isa","person","#:Luke 4"],
+ "@nl": "Luke 4 is a father of John 1."},
+{"@name": "entity_S5",
+ "@logic": ["isa","man","#:Luke 4"],
+ "@nl": "Luke 4 is a father of John 1."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2","father of","?:X1","?:Y1","?:Cu9"],
+            ["is rel2","child of","?:Y1","?:X1","?:Cu9"]
+           ],
+ "@nl": "If X1 is a father of Y1, Y1 is a child of X1."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2","father of","?:X1","?:Y1","?:Cu10"],
+            ["-is rel2","father of","?:Y1","?:Z1","?:Cu10"],
+            ["is rel2","grandfather of","?:X1","?:Z1","?:Cu10"]
+           ],
+ "@nl": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2","father of","#:John 1","#:Mike 2","?:Cu11"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2","father of","#:John 1","#:Mickey 3","?:Cu12"],
+ "@nl": "John 1 is a father of Mickey 3."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2","father of","#:Luke 4","#:John 1","?:Cu13"],
+ "@nl": "Luke 4 is a father of John 1."},
+{"@name": "sent_S6",
+ "@logic": [["-is rel2","grandfather of","?:X1","?:Y1","?:Cu14"],
+            ["is rel2","grandchild of","?:Y1","?:X1","?:Cu14"]
+           ],
+ "@nl": "If X1 is a grandfather of Y1, Y1 is a grandchild of X1."},
+{"@name": "sent_S7",
+ "@logic": [["-has property","male","?:X1","?:Cu15"],
+            ["-is rel2","grandchild of","?:X1","?:Y1","?:Cu15"],
+            ["is rel2","grandson of","?:X1","?:Y1","?:Cu15"]
+           ],
+ "@nl": "If X1 is male and X1 is a grandchild of Y1, X1 is a grandson of Y1."},
+{"@name": "sent_S8",
+ "@logic": [["-has property","female","#:Mike 2","?:Cu16"],
+            ["-has property","female","#:Mickey 3","?:Cu16"]
+           ],
+ "@nl": "Mike 2 or Mickey 3 are not female."},
+{"@name": "sent_S9",
+ "@logic": [["-isa","person","?:X"],
+            ["has property","male","?:X","?:Cu17"],
+            ["has property","female","?:X","?:Cu17"]
+           ],
+ "@nl": "Any person is male or female."},
+{"@name": "sent_S10",
+ "@question": ["is rel2","grandson of","?:X","#:Luke 4","?:Cu18"],
+ "@askvars": 1,
+ "@nl": "Which entity is a grandson of Luke 4?"},
+{"@name": "sent_S9",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S9",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["has property","male","$some_male_person","?:Cu22"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_male_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","male","$some_not_male_person","?:Cu24"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S8",
+ "@sourcetype": "populate",
+ "@logic": ["has property","female","$some_female_person","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S8",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_female_person"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","female","?:X","?:Fv33"], ["-has property","male","?:X","?:Fv33"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:Mickey 3","?:X3"], ["$ans","#:Mike 2","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S9","assumption",1], [["has property","male","?:X","?:Y"], ["has property","female","?:X","?:Y"], ["-isa","person","?:X"]]],
+          [2, ["in","entity_S4","assumption",1], [["isa","person","#:Mickey 3"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 1], [["has property","male","#:Mickey 3","?:X"], ["has property","female","#:Mickey 3","?:X"]]],
+          [4, ["in","sent_S7","assumption",1], [["-is rel2","grandchild of","?:X","?:Y","?:Z"], ["is rel2","grandson of","?:X","?:Y","?:Z"], ["-has property","male","?:X","?:Z"]]],
+          [5, ["mp", 3, [4,2], "fromassumption", 1], [["-is rel2","grandchild of","#:Mickey 3","?:X","?:Y"], ["is rel2","grandson of","#:Mickey 3","?:X","?:Y"], ["has property","female","#:Mickey 3","?:Y"]]],
+          [6, ["in","sent_S2","assumption",1], [["-is rel2","father of","?:X","?:Y","?:Z"], ["-is rel2","father of","?:U","?:X","?:Z"], ["is rel2","grandfather of","?:U","?:Y","?:Z"]]],
+          [7, ["in","sent_S4","assumption",1], [["is rel2","father of","#:John 1","#:Mickey 3","?:X"]]],
+          [8, ["mp",6,7,"fromassumption",1], [["-is rel2","father of","?:X","#:John 1","?:Y"], ["is rel2","grandfather of","?:X","#:Mickey 3","?:Y"]]],
+          [9, ["in","sent_S5","assumption",1], [["is rel2","father of","#:Luke 4","#:John 1","?:X"]]],
+          [10, ["mp",8,9,"fromassumption",1], [["is rel2","grandfather of","#:Luke 4","#:Mickey 3","?:X"]]],
+          [11, ["in","sent_S6","assumption",1], [["-is rel2","grandfather of","?:X","?:Y","?:Z"], ["is rel2","grandchild of","?:Y","?:X","?:Z"]]],
+          [12, ["mp",10,11,"fromassumption",1], [["is rel2","grandchild of","#:Mickey 3","#:Luke 4","?:X"]]],
+          [13, ["mp",5,12,"fromassumption",1], [["is rel2","grandson of","#:Mickey 3","#:Luke 4","?:X"], ["has property","female","#:Mickey 3","?:X"]]],
+          [14, ["in","sent_S10","goal",1], [["-is rel2","grandson of","?:X","#:Luke 4","?:Y"], ["$ans","?:X","?:Y"]]],
+          [15, ["mp",13,14,"fromga",1], [["has property","female","#:Mickey 3","?:X"], ["$ans","#:Mickey 3","?:X"]]],
+          [16, ["in","sent_S8","assumption",1], [["-has property","female","#:Mickey 3","?:X"], ["-has property","female","#:Mike 2","?:X"]]],
+          [17, ["mp",15,16,"fromga",1], [["-has property","female","#:Mike 2","?:X"], ["$ans","#:Mickey 3","?:X"]]],
+          [18, ["in","entity_S3","assumption",1], [["isa","person","#:Mike 2"]]],
+          [19, ["mp", [1,2], 18, "fromassumption", 1], [["has property","male","#:Mike 2","?:X"], ["has property","female","#:Mike 2","?:X"]]],
+          [20, ["mp", 19, [4,2], "fromassumption", 1], [["-is rel2","grandchild of","#:Mike 2","?:X","?:Y"], ["is rel2","grandson of","#:Mike 2","?:X","?:Y"], ["has property","female","#:Mike 2","?:Y"]]],
+          [21, ["in","sent_S3","assumption",1], [["is rel2","father of","#:John 1","#:Mike 2","?:X"]]],
+          [22, ["mp",6,21,"fromassumption",1], [["-is rel2","father of","?:X","#:John 1","?:Y"], ["is rel2","grandfather of","?:X","#:Mike 2","?:Y"]]],
+          [23, ["mp",22,9,"fromassumption",1], [["is rel2","grandfather of","#:Luke 4","#:Mike 2","?:X"]]],
+          [24, ["mp",23,11,"fromassumption",1], [["is rel2","grandchild of","#:Mike 2","#:Luke 4","?:X"]]],
+          [25, ["mp",20,24,"fromassumption",1], [["is rel2","grandson of","#:Mike 2","#:Luke 4","?:X"], ["has property","female","#:Mike 2","?:X"]]],
+          [26, ["mp",25,14,"fromga",1], [["has property","female","#:Mike 2","?:X"], ["$ans","#:Mike 2","?:X"]]],
+          [27, ["mp",17,26,"fromga",1], [["$ans","#:Mickey 3","?:X3"], ["$ans","#:Mike 2","?:X3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+"  (2) John is a father of Mike and Mickey.",
+"  (3) Luke is a father of John.",
+"  (4) If X1 is a grandfather of Y1, Y1 is a grandchild of X1.",
+"  (5) If X1 is male and X1 is a grandchild of Y1, X1 is a grandson of Y1.",
+"  (6) Mike or Mickey are not female.",
+"  (7) Any person is male or female.",
+"  (8) Who is a grandson of Luke?",
+"Knowledge used:",
+"  Mickey is a person. Why: assumed basic knowledge.",
+"  Mike is a person. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some X is a person then X is male or X is female  [sentence 7]",
+"  (2) Mickey is a person  [background knowledge]",
+"  (3) Mickey is male or Mickey is female  [from steps 1, 2]",
+"  (4) If some X is grandchild of some Y and X is male then X is grandson of Y  [sentence 5]",
+"  (5) If Mickey is grandchild of some X then Mickey is grandson of X or Mickey is female  [from steps 3, 4]",
+"  (6) If some X is father of some Y and some U is father of X then U is grandfather of Y  [sentence 1]",
+"  (7) John is father of Mickey  [sentence 2]",
+"  (8) If some X is father of John then X is grandfather of Mickey  [from steps 6, 7]",
+"  (9) Luke is father of John  [sentence 3]",
+"  (10) Luke is grandfather of Mickey  [from steps 8, 9]",
+"  (11) If some X is grandfather of some Y then Y is grandchild of X  [sentence 4]",
+"  (12) Mickey is grandchild of Luke  [from steps 10, 11]",
+"  (13) Mickey is grandson of Luke or Mickey is female  [from steps 5, 12]",
+"  (14) If some X is grandson of Luke then X is an answer  [from question]",
+"  (15) Mickey is female or Mickey is an answer  [from steps 13, 14]",
+"  (16) If Mickey is female then Mike is not female  [sentence 6]",
+"  (17) If Mike is female then Mickey is an answer  [from steps 15, 16]",
+"  (18) Mike is a person  [background knowledge]",
+"  (19) Mike is male or Mike is female  [from steps 1, 18]",
+"  (20) If Mike is grandchild of some X then Mike is grandson of X or Mike is female  [from steps 19, 4]",
+"  (21) John is father of Mike  [sentence 2]",
+"  (22) If some X is father of John then X is grandfather of Mike  [from steps 6, 21]",
+"  (23) Luke is grandfather of Mike  [from steps 22, 9]",
+"  (24) Mike is grandchild of Luke  [from steps 23, 11]",
+"  (25) Mike is grandson of Luke or Mike is female  [from steps 20, 24]",
+"  (26) Mike is female or Mike is an answer  [from steps 25, 14]",
+"  (27) Mickey is an answer or Mike is an answer  [from steps 17, 26]"
+],
+  "timestamp": "2026-06-19T02:44:11Z"
+}

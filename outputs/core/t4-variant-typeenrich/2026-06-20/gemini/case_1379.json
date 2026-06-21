@@ -1,0 +1,245 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1379,
+  "input_text": "If an animal has a trunk, it is an elephant. John has a long trunk. John is an animal.\n      John is an elephant?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If an animal has a trunk, it is an elephant.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If an animal has a trunk, the animal is an elephant.",
+          "type": "normal_rule",
+          "entities": [{"id": "animal", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John has a long trunk.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 has a long trunk 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "trunk 2", "type": "concrete", "category": "artifact"}
+          ],
+          "adjectives": [["long","none","trunk"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is an animal.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is an animal.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 an elephant?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","animal","X"],
+                ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]
+              ],
+              ["normally", ["isa","elephant","X"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","trunk","trunk 2"],
+            ["have","John 1","trunk 2"],
+            ["has degree property","long","trunk 2","none","trunk"]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds", "W0", ["and", ["isa","person","John 1"], ["isa","animal","John 1"]]],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id", "S4", ["question", ["and", ["isa","person","John 1"], ["isa","elephant","John 1"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu2"],
+            ["isa","elephant","?:X"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If an animal has a trunk, the animal is an elephant."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","trunk","#:trunk 2"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_S2",
+ "@logic": ["have","#:John 1","#:trunk 2","?:Cu5"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","long","#:trunk 2","none","trunk","?:Cu6"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is an animal."},
+{"@name": "sent_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an animal."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:John 1"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"], ["-isa","elephant","#:John 1"], ["$defq0"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@logic": ["has part","#:John 1","#:trunk 2","?:Cu12"],
+ "@nl": "John 1 has a long trunk 2."},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","long","?:X","none","?:Fv43","?:Cu18"],
+            ["has degree property","long","?:X","none","?:Fv44","?:Cu18"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.918692,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["-has part","?:X","?:Y","?:Z"], ["-isa","trunk","?:Y"], ["-isa","animal","?:X"], ["isa","elephant","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","trunk","#:trunk 2"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-has part","?:X","#:trunk 2","?:Y"], ["-isa","animal","?:X"], ["isa","elephant","?:X"]]],
+          [4, ["in","sent_haspart_bridge","assumption",0.9], [["-have","?:X","?:Y","?:Z"], ["has part","?:X","?:Y","?:Z"], ["-isa","trunk","?:Y"]]],
+          [5, ["mp", [4,2], 2, "fromassumption", 0.9], [["-have","?:X","#:trunk 2","?:Y"], ["has part","?:X","#:trunk 2","?:Y"]]],
+          [6, ["in","sent_S2","assumption",1], [["have","#:John 1","#:trunk 2","?:X"]]],
+          [7, ["mp",5,6,"fromassumption",0.9], [["has part","#:John 1","#:trunk 2","?:X"]]],
+          [8, ["mp",3,7,"fromassumption",0.81], [["-isa","animal","#:John 1"], ["isa","elephant","#:John 1"]]],
+          [9, ["in","sent_S3","assumption",1], [["isa","animal","#:John 1"]]],
+          [10, ["simp",8,9,"fromassumption",0.81], [["isa","elephant","#:John 1"]]],
+          [11, ["in","sent_S4","assumption",1], [["-isa","elephant","#:John 1"], ["-isa","person","#:John 1"], ["$defq0"]]],
+          [12, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [13, ["mp",10,11,12,"fromga",0.81], [["-isa","person","#:John 1"]]],
+          [14, ["in","sent_S2","assumption",1], [["isa","person","#:John 1"]]],
+          [15, ["simp",13,14,"fromga",0.81], false],
+          [16, ["in","sent_S2","assumption",1], [["has part","#:John 1","#:trunk 2","?:X"]]],
+          [17, ["mp",3,16,"fromassumption",0.9], [["-isa","animal","#:John 1"], ["isa","elephant","#:John 1"]]],
+          [18, ["simp",17,9,"fromassumption",0.9], [["isa","elephant","#:John 1"]]],
+          [19, ["mp",18,11,12,"fromga",0.9], [["-isa","person","#:John 1"]]],
+          [20, ["simp",19,14,"fromga",0.9], false],
+          [21, ["cumul",15,20,"fromga",0.918692], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 92%.",
+"Sentences used:",
+"  (1) sent_haspart_bridge",
+"  (2) If an animal has a trunk, it is an elephant.",
+"  (3) John has a long trunk.",
+"  (4) John is an animal.",
+"  (5) John is an elephant?",
+"Proof steps (by contradiction):",
+"  (1) If some X has some Y as a part and Y is a trunk and X is an animal then X is an elephant  [sentence 2, confidence 90%]",
+"  (2) The trunk B is a trunk  [sentence 3]",
+"  (3) If some X has the trunk B as a part and X is an animal then X is an elephant  [from steps 1, 2, confidence 90%]",
+"  (4) If some X has some Y and Y is a trunk then X has Y as a part  [sentence 1, confidence 90%]",
+"  (5) If some X has the trunk B then X has the trunk B as a part  [from steps 4, 2, confidence 90%]",
+"  (6) John has the trunk B  [sentence 3]",
+"  (7) John has the trunk B as a part  [from steps 5, 6, confidence 90%]",
+"  (8) If John is an animal then John is an elephant  [from steps 3, 7, confidence 81%]",
+"  (9) John is an animal  [sentence 4]",
+"  (10) John is an elephant  [from steps 8, 9, confidence 81%]",
+"  (11) If John is an elephant and John is a person then answer holds  [sentence 5]",
+"  (12) assume for contradiction: the answer is no  [from question]",
+"  (13) John is not a person  [from steps 10, 11, 12, confidence 81%]",
+"  (14) John is a person  [sentence 3]",
+"  (15) Contradiction  [from steps 13, 14, confidence 81%]",
+"  (16) John has the trunk B as a part  [sentence 3]",
+"  (17) If John is an animal then John is an elephant  [from steps 3, 16, confidence 90%]",
+"  (18) John is an elephant  [from steps 17, 9, confidence 90%]",
+"  (19) John is not a person  [from steps 18, 11, 12, confidence 90%]",
+"  (20) Contradiction  [from steps 19, 14, confidence 90%]",
+"  (21) Contradiction  [from steps 15, 20, confidence 92%]"
+],
+  "timestamp": "2026-06-19T04:24:03Z"
+}

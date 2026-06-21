@@ -1,0 +1,307 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 126,
+  "input_text": "All of Peter's pets that are mammals are also animals. All monkeys are mammals. Peter's pets are all either monkeys or birds. Peter's birds can fly. All animals that are Peter's pets can breathe. If Peter's pet can fly, then it has wings. Rock is Peter's pet. Rock can fly, or Rock is a bird, or Rock cannot breathe. Rock has wings?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "stage1": [{
+      "raw": "All of Peter's pets that are mammals are animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All pets of Peter 1 that are mammals are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pets of Peter 1", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "definites": [["pets of","pets of Peter 1","Peter 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "All monkeys are mammals.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All monkeys are mammals.",
+          "type": "strict_rule",
+          "entities": [{"id": "monkeys", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Peter's pets are all either monkeys or birds.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All pets of Peter 1 are either monkeys or birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pets of Peter 1", "type": "generic", "category": "animal"},
+            {"id": "monkeys", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ],
+          "definites": [["pets of","pets of Peter 1","Peter 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "Peter's pets that are birds can fly.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Pets of Peter 1 that are birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pets of Peter 1", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "pets of Peter 1"}}],
+          "definites": [["pets of","pets of Peter 1","Peter 1"]],
+          "confidence": 0.98
+        }
+      ]
+    },
+    {
+      "raw": "All of Peter's pets that are animals can breathe.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "All pets of Peter 1 that are animals can breathe.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pets of Peter 1", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "breathe", "mode": "capability", "roles": {"actor": "pets of Peter 1"}}],
+          "definites": [["pets of","pets of Peter 1","Peter 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "If Peter's pet can fly, then Peter's pet has wings.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If a pet of Peter 1 can fly, then the pet of Peter 1 has wings.",
+          "type": "normal_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pet of Peter 1", "type": "generic", "category": "animal", "scope": "dependent"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "pet of Peter 1"}}],
+          "definites": [["pet of","pet of Peter 1","Peter 1"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Rock is Peter's pet.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Rock 2 is a pet of Peter 1.",
+          "type": "situation",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pet of Peter 1", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Rock can fly, or Rock is a bird, or Rock cannot breathe.",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Rock 2 can fly, or Rock 2 is a bird, or Rock 2 cannot breathe.",
+          "type": "situation",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "Rock 2"}},
+            {"root": "breathe", "mode": "capability", "roles": {"actor": "Rock 2"}}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Rock has wings?",
+      "units": [{
+          "unit_id": "S9",
+          "text": "Does Rock 2 have wings?",
+          "type": "query",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "wings", "type": "generic"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Peter 1"],
+            ["forall","X",
+              ["implies",
+                ["and", ["isa","pet","X"], ["have","Peter 1","X"], ["isa","mammal","X"]],
+                ["isa","animal","X"]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","pets of","Peter 1","pets of Peter 1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","monkey","X"], ["isa","mammal","X"]]]]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Peter 1"],
+            ["forall","X",
+              ["implies",
+                ["and", ["isa","pet","X"], ["have","Peter 1","X"]],
+                ["xor", ["isa","monkey","X"], ["isa","bird","X"]]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S3","W0","pets of","Peter 1","pets of Peter 1"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Peter 1"],
+            ["forall","X",
+              ["implies",
+                ["and", ["isa","pet","X"], ["have","Peter 1","X"], ["isa","bird","X"]],
+                ["normally",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","fly"],
+                      ["has actor","E","X"],
+                      ["capability","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S4","W0","pets of","Peter 1","pets of Peter 1"],
+        ["@p","S4",0.98]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Peter 1"],
+            ["forall","X",
+              ["implies",
+                ["and", ["isa","pet","X"], ["have","Peter 1","X"], ["isa","animal","X"]],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","breathe"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S5","W0","pets of","Peter 1","pets of Peter 1"]
+      ]
+    ],
+    ["@id","S6",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Peter 1"],
+            ["forall","X",
+              ["normally",
+                ["implies",
+                  ["and",
+                    ["isa","pet","X"],
+                    ["have","Peter 1","X"],
+                    ["exists","E",
+                      ["and",
+                        ["isa","activity","E"],
+                        ["has type","E","fly"],
+                        ["has actor","E","X"],
+                        ["capability","E"]
+                      ]
+                    ]
+                  ],
+                  ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S6","W0","pet of","Peter 1","pet of Peter 1"],
+        ["@p","S6",0.95]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","Rock 2"],
+          ["isa","person","Peter 1"],
+          ["isa","pet","Rock 2"],
+          ["have","Peter 1","Rock 2"]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","Rock 2"],
+          ["or",
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","fly"],
+                ["has actor","E1","Rock 2"],
+                ["capability","E1"]
+              ]
+            ],
+            ["isa","bird","Rock 2"],
+            ["not",
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","breathe"],
+                  ["has actor","E2","Rock 2"],
+                  ["capability","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S9",
+      ["question",
+        ["and",
+          ["isa","animal","Rock 2"],
+          ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","Rock 2","Y"]]]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: free_variable, free_variable, free_variable, free_variable, free_variable, either_or_not_xor"],
+  "error": {
+    "exception": "TypeError",
+    "message": "unhashable type: 'list'",
+    "traceback": "Traceback (most recent call last):\n  File \"/opt/nlpsolver/llmpipe/runtests.py\", line 115, in _worker\n    english_to_answer(input_text, options=ro, collect=collect)\n  File \"/opt/nlpsolver/llmpipe/solver/solve.py\", line 279, in english_to_answer\n    logic = rawlogic_convert(s2_json, s1_json, fixes=lc_fixes)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/nlpsolver/llmpipe/solver/logconvert.py\", line 1369, in rawlogic_convert\n    _add_haspart_for_typed_have(result)\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 1029, in add_haspart_for_typed_have\n    and atom[2] in haspart_vars):\n        ^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unhashable type: 'list'\n"
+  },
+  "timestamp": "2026-06-18T21:32:43Z"
+}

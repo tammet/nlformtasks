@@ -1,0 +1,129 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1315,
+  "input_text": "Eve planned to travel. Eve traveled?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Eve planned to travel.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Eve 1 planned to travel.",
+          "type": "situation",
+          "entities": [{"id": "Eve 1", "type": "concrete", "category": "person"}],
+          "actions": [{
+              "root": "plan",
+              "mode": "intention",
+              "roles": {
+                "actor": "Eve 1",
+                "content": {"root": "travel", "mode": "event", "roles": {"actor": "Eve 1"}}
+              }
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Eve traveled?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Eve 1 travel?",
+          "type": "query",
+          "entities": [{"id": "Eve 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "travel", "mode": "event", "roles": {"actor": "Eve 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Eve 1"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","plan"],
+              ["has actor","E1","Eve 1"],
+              ["has time","E1","past","in"],
+              ["exists","E2",
+                ["and",
+                  ["has content","E1","E2"],
+                  ["isa","activity","E2"],
+                  ["has type","E2","travel"],
+                  ["has actor","E2","Eve 1"],
+                  ["has time","E2","past","in"]
+                ]
+              ],
+              ["intention","E1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","Eve 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","travel"],
+              ["has actor","E","Eve 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Eve 1"],
+ "@nl": "Eve 1 planned to travel."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "plan", "#:Eve 1", ["eventprop","$target","go"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Eve 1 planned to travel."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Eve 1"]],
+ "@nl": "Did Eve 1 travel?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "go", "#:Eve 1", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Eve 1 travel?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Eve 1"],
+            ["-has property", "go", "#:Eve 1", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Eve 1 travel?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Eve 1 travel?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "go", "#:Eve 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "go", "#:Eve 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "go", "#:Eve 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Eve 1 travel?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv11"], ["has type","?:E","go","?:Fv11"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T17:43:40Z"
+}

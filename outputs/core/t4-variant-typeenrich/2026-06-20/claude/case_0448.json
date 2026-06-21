@@ -1,0 +1,132 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 448,
+  "input_text": "The weight of the car is below 20 tons. The car weighs less than 20 tons?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The weight of the car is below 20 tons.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The weight 1 of the car 2 is less than 20 tons.",
+          "type": "real",
+          "entities": [{"id": "weight 1", "type": "concrete", "text": "weight"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "20 tons", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["weight of","weight 1","car 2"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The weight 1 is the weight of the car 2.",
+          "type": "real",
+          "entities": [{"id": "weight 1", "type": "concrete", "text": "weight"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["weight of","weight 1","car 2"]]
+        }
+      ]
+    },
+    {
+      "raw": "The car weighs less than 20 tons?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does the car 2 weigh less than 20 tons?",
+          "type": "query",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "20 tons", "type": "concrete", "category": "measure"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 2"],
+          ["<", ["$measure_of","weight","car 2","W0"], ["$measure",20,"ton"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds", "W0", ["and", ["isa","car","car 2"], ["isa","weight","weight 1"]]],
+        ["@definite","S2","W0","weight of","car 2","weight 1"]
+      ]
+    ],
+    ["@id", "S3", ["question", ["<", ["$measure_of","weight","car 2","W0"], ["$measure",20,"ton"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","measure","20 tons"],
+ "@nl": "The weight 1 of the car 2 is less than 20 tons."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The weight 1 of the car 2 is less than 20 tons."},
+{"@name": "sent_S1",
+ "@logic": ["less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]],
+ "@nl": "The weight 1 of the car 2 is less than 20 tons."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The weight 1 is the weight of the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","weight","#:weight 1"],
+ "@nl": "The weight 1 is the weight of the car 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]]
+           ],
+ "@nl": "Does the car 2 weigh less than 20 tons?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["not",
+             ["less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]]
+            ],
+            ["$defq0"]
+           ],
+ "@nl": "Does the car 2 weigh less than 20 tons?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does the car 2 weigh less than 20 tons?"},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","weight","?:S","?:W"], "?:Cu8"],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "weight", ["$measure_of","weight","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]], ["$defq0"]]],
+          [2, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [3, ["mp", [1,1], 2, "fromga", 1], [["-less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]]]],
+          [4, ["in","sent_S1","assumption",1], [["less_measure", ["$measure_of","weight","#:car 2","W0"], ["$list",20000,"#:kilogram"]]]],
+          [5, ["simp",3,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The weight of the car is below 20 tons.",
+"  (2) The car weighs less than 20 tons?",
+"Proof steps (by contradiction):",
+"  (1) If the weight of car B is less than 20000 kilograms then answer holds  [sentence 2]",
+"  (2) assume for contradiction: the answer is no  [from question]",
+"  (3) The weight of car B is not less than 20000 kilograms  [from steps 1, 2]",
+"  (4) The weight of car B is less than 20000 kilograms  [sentence 1]",
+"  (5) Contradiction  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T02:39:40Z"
+}

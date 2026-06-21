@@ -1,0 +1,162 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1419,
+  "input_text": "Red cars do not have trunks. Cars have trunks. Red cars have a trunk?",
+  "expected_answer": false,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Red cars do not have trunks.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Red cars do not have trunks.",
+          "type": "strict_rule",
+          "entities": [{"id": "red cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Cars have trunks.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars have trunks.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Red cars have a trunk?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Do red cars have a trunk?",
+          "type": "query",
+          "entities": [{"id": "red cars", "type": "generic", "category": "artifact"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","red cars","X"],
+            ["not", ["exists", "Y", ["and", ["isa","trunks","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","cars","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","trunks","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","red cars","X"],
+            ["normally", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","red car","?:X"], ["-isa","trunk","?:Y"], ["-has part","?:X","?:Y","?:Cu1"]],
+ "@nl": "Red cars do not have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["has part", "?:X", ["sk0","?:X"], "?:Cu3"]],
+ "@confidence": 0.98,
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","red car","skq_S3_red_cars"],
+ "@nl": "Do red cars have a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","trunk","sk1_trunk"]],
+ "@nl": "Do red cars have a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","skq_S3_red_cars","sk1_trunk","?:Cu6"]],
+ "@nl": "Do red cars have a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"], ["-has part","skq_S3_red_cars","?:Y","?:Cu7"], ["$defq0"]],
+ "@nl": "Do red cars have a trunk?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Do red cars have a trunk?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","red car","$some_red_cars"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","red car","$some_not_red_cars"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunks"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunks"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_cars"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_cars"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","red car","?:X"], ["isa","car","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","red","?:X"], ["-isa","car","?:X"], ["isa","red car","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-19T04:42:14Z"
+}

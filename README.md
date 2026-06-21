@@ -1,124 +1,101 @@
-# nlformtasks
+# nlformtasks — LPAR experiment data
 
-Natural-language → formal-logic test cases, LLM pipeline results, and analysis for the
-`nlpsolver` semantic parser.
+Recorded pipeline outputs for the LPAR paper *"Representation Abstraction and Proof Search
+for English-to-Logic Question Answering"*. This branch (`lpar`) holds the test sets, the
+per-case pipeline outputs (generated logic, clauses, prover input and prover output), the
+evaluation scripts, and a snapshot of the prompts and axioms — everything needed to match
+and reproduce the numbers in the paper.
 
-Each test case is an English problem (premises + a question) paired with an expected answer. The
-cases are run through the LLM parser in nlpsolver, which translates English into first-order logic
-and calls the `gk` theorem prover. This repository holds the cases and the recorded outputs, not
-the pipeline code.
+This is **data only**; the pipeline code lives in the `nlpsolver` repository under `llmpipe/`:
+<https://github.com/tammet/nlpsolver>.
 
-The repository's focus is the in-house **core** suite (1600 cases). It also holds a second,
-third-party benchmark — **FOLIO** — used in the paper as a contrast; FOLIO is not our data (see
-[`tests/folio/README.md`](tests/folio/README.md) for authorship, the introducing publication, the
-upstream source, and its MIT license).
+## Pipeline version — read this first
 
-- Pipeline (the code that produces these answers): https://github.com/tammet/nlpsolver — the parser
-  lives under `llmpipe/`. The exact pipeline state for each run is marked with a git tag there; see
-  [REPRODUCE.md](REPRODUCE.md).
+Every run here was produced by the pipeline at git tag **`lpar-2026-06-22`** (the state
+just before this tag is `lpar-pre-2026-06-22`). The pipeline is under active development, so
+`main` will behave differently. **To reproduce, check out the `nlpsolver` repo at tag
+`lpar-2026-06-22`** and run the per-run command. The post-translation abstraction flags used
+below are documented in `llmpipe/ENCODINGS.md` §6 (a snapshot is in `pipeline-snapshot/`).
 
-## What's here
+```
+git clone https://github.com/tammet/nlpsolver && cd nlpsolver
+git checkout lpar-2026-06-22
+cd llmpipe   # then run the per-run commands below
+```
+
+## Layout
 
 ```
 tests/
-  core/
-    core_tests.py              # 1600 cases: [id, english, expected]
-    core_tests_100.py          # curated 100-case all-LLMs-correct subset
-    core_tests_challenging.py  # 341-case challenging subset (>=2 errors across the 16 grid cells)
-  folio/
-    folio_tests.py             # 203 FOLIO v2 validation items (third-party; original gold)
-    source/                    # upstream FOLIO jsonl, verbatim, + provenance + MIT license
+  core/   core_tests.py (1600), core_tests_challenging.py (341 subset), core_tests_100.py
+  folio/  folio_tests.py (203 FOLIO v2 validation items; third-party, MIT — see tests/folio/README.md)
 outputs/
-  core/
-    two-stage/2026-06-03/      # PRIMARY core result (the full two-stage pipeline)
-    ablations/                 # auxiliary single-call pipeline shapes
-      single-full-examples/...  single-minimal-examples/...  single-full-no-examples/...
-  folio/
-    two-stage-abstracted/2026-06-14/   # PRIMARY FOLIO pipeline result
-    direct-answer/2026-06-12/          # reference: LLM verdict, no logic, no prover
-    two-stage-standard/...  single-full-examples-standard/...  single-full-examples-abstracted/...
+  core/   <run>/<date>/<llm>/case_NNNN.json   + meta.json + README.md + provenance.json
+  folio/  <run>/<date>/<llm>/case_NNNN.json   + ...
 eval/
-  summarize.py   # one run dir -> per-LLM / per-subsection tables + meta.json (no pipeline needed)
-  matrix.py      # cross-run shape-by-model matrix; regenerates the paper tables
-summaries/       # one pasteable markdown table per run
-REPRODUCE.md  CHANGELOG.md  LICENSE
+  summarize.py   one run dir -> per-LLM table + meta.json (no pipeline needed)
+  matrix.py      cross-run shape-by-model matrix
+summaries/       one markdown table per run
+pipeline-snapshot/   prompts/ + axioms_std.js + ENCODINGS.md, as used by every run here
 ```
 
-Run folders are named `outputs/<benchmark>/<shape>/<date>/`. Each carries its own `README.md`,
-`meta.json` (pipeline tag/commit, role, per-LLM model + totals + decoding), a `prompts/` snapshot,
-and — where a prover is used — an `axioms_std.js` + `ENCODINGS.md` snapshot, since prompts, axioms
-and the encoding scheme all change over time. Each run's `meta.json` carries a `role`: `primary`
-(the headline result), `auxiliary` (an ablation / contrast), or `reference` (no-prover baseline).
+Each `case_NNNN.json` carries the full record per case: `input_text`, `expected_answer`,
+`answer`, `correctness`, `stage1` (ASUs), `stage2` (logic JSON), `clauses` (generated
+clauses), `gk_command` (prover input) and `proof` (prover output). Run folders are named
+`t<N>-...` after the paper table they feed.
 
-## Core results (1600 cases)
+## Paper table → folder map
 
-Answer accuracy (%) by pipeline shape × LLM. **Two-stage is the primary result;** the three
-single-call shapes are ablations. Regenerate with
-`python3 eval/matrix.py outputs/core --subset tests/core/core_tests_challenging.py`.
+Run names carry a `t<N>-` prefix for the paper table plus a descriptive part. Proof-length
+tables (5, 6) are Claude-only, matching the paper; the abstraction tables (3, 4) and the
+baselines use all four backends.
 
-| pipeline shape | role | GPT | Claude | Gemini | DeepSeek |
-|---|---|---:|---:|---:|---:|
-| two-stage | primary | 97 | 99 | 98 | 99 |
-| single-full-examples | aux | 93 | 96 | 95 | 95 |
-| single-minimal-examples | aux | 95 | 95 | 93 | 93 |
-| single-full-no-examples | aux | 83 | 91 | 87 | 88 |
+| Paper | row / use | folder | flags |
+|---|---|---|---|
+| **T1** | NLFT baseline (full) | `outputs/core/t1-baseline-full` | *(none)* |
+| **T1** | NLFT challenging subset | same folder, scored with `tests/core/core_tests_challenging.py` | *(none)* |
+| **T1** | FOLIO baseline (standard) | `outputs/folio/t1-baseline-standard` | *(none)* |
+| **T4** | NLFT, lossy event simplification | `outputs/core/t4-variant-flatevents` | `-flatevents` |
+| **T4** | NLFT, extra type/class atoms | `outputs/core/t4-variant-typeenrich` | `-typeenrich` |
+| **T4** | NLFT, entity merging | `outputs/core/t4-variant-entitymerge` | `-entitymerge` |
+| **T4** | NLFT, definite-description terms | `outputs/core/t4-variant-definites` | `-definites` |
+| **T4** | NLFT, + guard removal | `outputs/core/t4-variant-flat-guarddrop` | `-flatevents -guarddrop` |
+| **T4** | NLFT, + extra bridges | `outputs/core/t4-variant-flat-bridges` | `-flatevents -bridges` |
+| **§5** | NLFT type-enrich diagnostic (91.2→98.1) | `outputs/core/t4-diag-typeenrich-noplural` | `-typeenrich` + `TE_SKIP=plural` |
+| **T3** | FOLIO, pre-normalized base (reference) | `outputs/folio/t3-base-prenorm` | `-prenorm` |
+| **T3** | FOLIO, lossy event simplification | `outputs/folio/t3-variant-flatevents` | `-prenorm -flatevents` |
+| **T3** | FOLIO, extra type/class atoms | `outputs/folio/t3-variant-typeenrich` | `-prenorm -typeenrich` |
+| **T3** | FOLIO, entity merging | `outputs/folio/t3-variant-entitymerge` | `-prenorm -entitymerge` |
+| **T3** | FOLIO, definite-description terms | `outputs/folio/t3-variant-definites` | `-prenorm -definites` |
+| **T3** | FOLIO, + guard removal | `outputs/folio/t3-variant-flat-guarddrop` | `-prenorm -flatevents -guarddrop` |
+| **T3** | FOLIO, + extra bridges | `outputs/folio/t3-variant-flat-bridges` | `-prenorm -flatevents -bridges` |
+| **T3** | FOLIO abstraction (best row) | `outputs/folio/t3-abstraction-full` | `-prenorm -ultracoarse2` |
+| **T5** | NLFT proof-length base / davidson / existfold / both | `outputs/core/t1-baseline-full`, `t5-prooflen-davidson`, `t5-prooflen-existfold`, `t5-prooflen-davidson-existfold` | *(none)* / `-davidson` / `-existfold -nocrossstage` / `-davidson -existfold -nocrossstage` |
+| **T5** | FOLIO proof-length base / davidson / existfold / both | `outputs/folio/t5-prooflen-base`, `t5-prooflen-davidson`, `t5-prooflen-existfold`, `t5-prooflen-davidson-existfold` | `-nocrossstage` / `-davidson -nocrossstage` / `-existfold -nocrossstage` / `-davidson -existfold -nocrossstage` |
+| **T6** | NLFT long cases (864, 618, 785) | core `t1-baseline-full` + `t5-prooflen-davidson` + `t5-prooflen-existfold` | as T5 |
+| **T6** | FOLIO 198 (abstracted base / +dav / +exist / +both) | `outputs/folio/t6-abstract-base`, `t6-abstract-davidson`, `t6-abstract-existfold`, `t6-abstract-davidson-existfold` | `-prenorm -ultracoarse2 -nocrossstage` / `-prenorm -ultracoarse -davidson -nocrossstage` / `-prenorm -ultracoarse2 -existfold -nocrossstage` / `-prenorm -ultracoarse -davidson -existfold -nocrossstage` |
+| **§4** | FOLIO direct-answer (incl. Fable-5) | `outputs/folio/ref-direct-answer` | direct-answer mode (`-directanswer`) |
 
-On the **challenging subset** (341 cases missed ≥2× across the 16 grid cells) the spread widens:
+Table 2 is definitions only (no data). Each folder's `meta.json`/`README.md` repeats its exact
+command, flags, role and per-LLM accuracy. Note the davidson runs (`t5-prooflen-davidson*`,
+`t6-abstract-davidson*`) are the corrected-clausify builds; at tag `lpar-2026-06-22` the fix is
+in the code, so the plain flags above reproduce them.
 
-| pipeline shape | GPT | Claude | Gemini | DeepSeek |
-|---|---:|---:|---:|---:|
-| two-stage | 90 | 96 | 95 | 96 |
-| single-full-examples | 72 | 83 | 80 | 81 |
-| single-minimal-examples | 79 | 82 | 73 | 75 |
-| single-full-no-examples | 44 | 67 | 66 | 69 |
+## Regenerate the numbers (no pipeline needed)
 
-The core suite was built during development with the design goal that no case is failed by more
-than one of the four LLMs under the full two-stage pipeline; that holds in the primary run (every
-case correct for at least three of four). The 100-subset is stricter (all four correct on every
-case).
+```
+# one run's per-LLM accuracy + per-subsection breakdown
+python3 eval/summarize.py outputs/core/t1-baseline-full/2026-06-03 --tests tests/core/core_tests.py
 
-## FOLIO results (203 validation items, third-party data)
+# T1 NLFT challenging-subset column
+python3 eval/summarize.py outputs/core/t1-baseline-full/2026-06-03 --subset tests/core/core_tests_challenging.py
 
-**Two-stage-abstracted is the primary FOLIO pipeline result.** FOLIO is scored against its original
-v2 gold (72 True / 62 False / 69 Unknown). Regenerate with `python3 eval/matrix.py outputs/folio`.
+# cross-run matrices (T3 / T4 style)
+python3 eval/matrix.py outputs/folio
+python3 eval/matrix.py outputs/core
+```
 
-| configuration | role | GPT | Claude | Gemini | DeepSeek | Fable-5 |
-|---|---|---:|---:|---:|---:|---:|
-| two-stage-abstracted | primary | 65 | **70** | **67** | 53 | |
-| direct answer (no logic) | reference | 69 | 67 | 86 | 86 | 91* |
-| two-stage-standard | aux | 54 | 57 | 51 | 47 | |
-| single-full-examples-standard | aux | 61 | 59 | 58 | 54 | |
-| single-full-examples-abstracted | aux | **66** | 67 | 62 | **55** | |
+## Reproducing from scratch
 
-`*` Fable-5 direct answer excludes 8 content refusals from the denominator (178/195 = 91%); the raw
-figure in `outputs/folio/direct-answer/.../fable5/` is 178/203 = 88%. "Abstracted" = the pipeline's
-`-ultracoarse -prenorm` mode (strips defeasible blockers, tense/world senses, Davidsonian event
-structure), designed to match FOLIO's flat first-order style. The "direct answer" reference (one
-LLM verdict, no logic, no prover) beats every pipeline variant for GPT/Gemini/DeepSeek — on this
-benchmark the formalization step is net-negative.
-
-## How a run is produced
-
-For each `(case, LLM)` the pipeline runs five stages:
-
-1. Stage 1 (LLM): English → abstract semantic units.
-2. Stage 2 (LLM): semantic units → first-order-logic JSON.
-3. Stage 3 (pipeline code): the Stage-2 JSON is rewritten and extended — structural repair,
-   context/tense injection, FOL→CNF clausification, dynamic axiom injection — before the prover.
-4. Stage 4 (`gk` prover): the resulting clauses plus the static axioms (`axioms_std.js`) are run.
-5. Stage 5 (pipeline code): the proof is post-processed into an English answer, graded against the
-   case's expected value.
-
-The single-call shapes collapse Stages 1–2 into one LLM call (no Stage-1 artifact); the direct-answer
-reference is a single LLM call with no Stages 3–5. Only the LLM stages call an API, and those answers
-are served from the pipeline's SQLite cache, so a run is deterministic for a given pipeline commit and
-model set. Exact reproduction steps and the nlpsolver commit per run are in [REPRODUCE.md](REPRODUCE.md).
-
-A new run goes into a new `outputs/<benchmark>/<shape>/<date>/` folder rather than overwriting an
-existing one.
-
-## License
-
-Apache License 2.0 — see [LICENSE](LICENSE). Same license as the nlpsolver repository
-(https://github.com/tammet/nlpsolver). The third-party FOLIO files under `tests/folio/` remain under
-their upstream MIT license (`tests/folio/source/UPSTREAM_LICENSE`).
+See [REPRODUCE.md](REPRODUCE.md): check out `nlpsolver` at tag `lpar-2026-06-22`, then run the
+`runtests.py` command from each folder's `meta.json` (`command` field).

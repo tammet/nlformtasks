@@ -1,0 +1,276 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 1465,
+  "input_text": "Elephants are big. Young elephants are not big.\n      Mike is an elephant. John is a young elephant. Who is big?",
+  "expected_answer": "Mike.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Mike.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants are big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants are big.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Young elephants are not big.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Young elephants are not big.",
+          "type": "normal_rule",
+          "entities": [{"id": "young elephants", "type": "generic", "category": "animal"}],
+          "adjectives": [["young","none","elephant"], ["big","none","elephant"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike is an elephant.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Mike 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a young elephant.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 2 is a young elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 2", "type": "concrete", "category": "person"},
+            {"id": "young elephant", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["young","none","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is big?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Which entity is big?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["big","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["has degree property","big","X","none","elephant"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","elephant","X"], ["has degree property","young","X","none","elephant"]],
+              ["normally", ["not", ["has degree property","big","X","none","elephant"]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","elephant","Mike 1"]]],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","elephant","John 2"],
+          ["has degree property","young","John 2","none","elephant"]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["ask", "X", ["has degree property","big","X","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Elephants are big."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"],
+            ["-has degree property", "young", "?:X", "none", "elephant", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","elephant",2], ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Young elephants are not big."},
+{"@name": "sent_S3",
+ "@logic": ["isa","elephant","#:Mike 1"],
+ "@nl": "Mike 1 is an elephant."},
+{"@name": "sent_S4",
+ "@logic": ["isa","elephant","#:John 2"],
+ "@nl": "John 2 is a young elephant."},
+{"@name": "sent_S4",
+ "@logic": ["has degree property", "young", "#:John 2", "none", "elephant", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "John 2 is a young elephant."},
+{"@name": "sent_S5",
+ "@question": ["has degree property", "big", "?:X", "none", "?:Fv49", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+ "@askvars": 1,
+ "@nl": "Which entity is big?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "big", "?:Br1", "none", "?:Fv50", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "big", "?:Br1", "none", "?:Fv51", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:Br1", "none", "?:Fv52", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity is big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:Fv36","?:Fv33","?:Fv34","?:Fv35"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_big_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "big", "$some_not_big_elephant", "none", "elephant", ["$ctxt","?:Fv44","?:Fv41","?:Fv42","?:Fv43"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "young", "$some_not_young_elephant", "none", "elephant", ["$ctxt","?:Fv48","?:Fv45","?:Fv46","?:Fv47"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "none", "?:Fv53", ["$ctxt","past","?:Fv17","?:Fv18","?:Fv19"]],
+            ["has degree property", "big", "?:X", "none", "?:Fv54", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Fv55", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "young", "?:X", "none", "?:Fv56", ["$ctxt","past","?:Fv23","?:Fv24","?:Fv25"]],
+            ["has degree property", "young", "?:X", "none", "?:Fv57", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]],
+            ["$block", 0, ["$not", ["has degree property", "young", "?:X", "none", "?:Fv58", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "young", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv26","?:Fv27","?:Fv28"]],
+            ["has degree property", "young", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]],
+            ["$block", 0, ["$not", ["has degree property", "young", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_big_elephant","elephant","?:X3","?:Y3","?:Z3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S5","goal",1], [["-has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$ans","?:X","?:Y","?:Z","?:U","?:V"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_big_elephant","elephant","?:X3","?:Y3","?:Z3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:Mike 1","elephant","?:X3","?:Y3","?:Z3"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "#:Mike 1", "none", "elephant", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["isa","elephant","#:Mike 1"]]],
+          [2, ["in","sent_S1","assumption",0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "#:Mike 1", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "big", "#:Mike 1", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S5","goal",1], [["-has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$ans","?:X","?:Y","?:Z","?:U","?:V"]]],
+          [5, ["mp", [3,1], 4, "fromga", 0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "#:Mike 1", "none", "elephant", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","#:Mike 1","elephant","?:X3","?:Y3","?:Z3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_big_elephant","?:V3","?:Y3","?:Z3","?:U3"]],
+        "blockers": [["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.99931,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","elephant","$some_big_elephant"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "big", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "big", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.931], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "big", "$some_big_elephant", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S5","goal",1], [["-has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$ans","?:X","?:Y","?:Z","?:U","?:V"]]],
+          [7, ["mp", [5,2], 6, "fromga", 0.931], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_big_elephant","?:V3","?:X3","?:Y3","?:Z3"]]],
+          [8, ["in","sent_S5","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "big", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "big", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [9, ["in","sent_S1","assumption",1], [["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [10, ["mp", [8,1], 9, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["has degree property", "big", "$some_big_elephant", "none", "?:V", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [11, ["mp", [10,1], 6, "fromga", 0.99], [["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]], ["$ans","$some_big_elephant","?:V3","?:Y3","?:Z3","?:U3"]]],
+          [12, ["cumul",7,11,"fromga",0.99931], [["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]], ["$ans","$some_big_elephant","?:V3","?:Y3","?:Z3","?:U3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_big_elephant","?:V3","?:X3","?:Y3","?:Z3"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.979448,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "big", "?:X", "none", "elephant", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","elephant","$some_big_elephant"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "big", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "big", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.931], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "big", "$some_big_elephant", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S5","goal",1], [["-has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["$ans","?:X","?:Y","?:Z","?:U","?:V"]]],
+          [7, ["mp", [5,2], 6, "fromga", 0.931], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_big_elephant","?:V3","?:X3","?:Y3","?:Z3"]]],
+          [8, ["in","sent_S5","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "big", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "big", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [9, ["mp", [3,1], [8,1], "fromassumption", 0.9702], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "big", "$some_big_elephant", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [10, ["mp", [9,2], 6, "fromga", 0.9702], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_big_elephant","?:V3","?:X3","?:Y3","?:Z3"]]],
+          [11, ["cumul",7,10,"fromga",0.979448], [["$block", ["$","elephant",1], ["$not", ["has degree property", "big", "$some_big_elephant", "none", "elephant", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "big", "$some_big_elephant", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_big_elephant","?:V3","?:X3","?:Y3","?:Z3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Elephants are big.",
+"  (2) Mike is an elephant.",
+"  (3) Who is big?",
+"Proof steps:",
+"  (1) Mike is an elephant  [sentence 2]",
+"  (2) If some X is an elephant then normally X is a big elephant  [sentence 1, confidence 98%]",
+"  (3) Normally Mike is a big elephant  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is big then X is an answer  [from question]",
+"  (5) [Mike, the elephant] is an answer, except when Mike is not a big elephant  [from steps 3, 4, confidence 98%]",
+"Exceptions checked and not holding:",
+"  Mike is not a big elephant"
+],
+  "timestamp": "2026-06-19T00:27:01Z"
+}

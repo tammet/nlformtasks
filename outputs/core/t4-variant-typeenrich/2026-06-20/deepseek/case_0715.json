@@ -1,0 +1,302 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 715,
+  "input_text": "Bears who are nice and eat berries have a tail. John is a nice big bear. John eats berries. John has a tail?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears who are nice and eat berries have a tail.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears that are nice and eat berries have a tail.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["nice","none","bear"]],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a nice big bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a nice big bear.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice","none","bear"], ["big","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John eats berries.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 eats berries.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "berries"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a tail?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail", "type": "generic"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","bear","X"],
+              ["has degree property","nice","X","none","bear"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","X"],
+                  ["exists", "Z", ["and", ["isa","berries","Z"], ["has target","E","Z"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ],
+            ["normally", ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","bear","John 1"],
+          ["has degree property","nice","John 1","none","bear"],
+          ["has degree property","big","John 1","none","bear"]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","John 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","John 1"],
+              ["exists", "Z", ["and", ["isa","berries","Z"], ["has target","E","Z"]]],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["question", ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","John 1","Y"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu1"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu1"],
+            ["-has actor","?:E","?:X","?:Cu1"],
+            ["-isa","berries","?:Z"],
+            ["-has target","?:E","?:Z","?:Cu1"],
+            ["isa", "tail", ["sk0","?:X"]]
+           ],
+ "@nl": "Bears that are nice and eat berries have a tail."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","good","?:X","none","bear","?:Cu2"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu2"],
+            ["-has actor","?:E","?:X","?:Cu2"],
+            ["-isa","berries","?:Z"],
+            ["-has target","?:E","?:Z","?:Cu2"],
+            ["has part", "?:X", ["sk0","?:X"], "?:Cu2"]
+           ],
+ "@nl": "Bears that are nice and eat berries have a tail."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a nice big bear."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","good","#:John 1","none","bear","?:Cu4"],
+ "@nl": "John 1 is a nice big bear."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","big","#:John 1","none","bear","?:Cu5"],
+ "@nl": "John 1 is a nice big bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["has type","sk1_activity","eat","?:Cu8"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["has actor","sk1_activity","#:John 1","?:Cu9"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","berries","sk2_berries"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S3",
+ "@logic": ["has target","sk1_activity","sk2_berries","?:Cu11"],
+ "@nl": "John 1 eats berries."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","tail","sk3_tail"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:John 1","sk3_tail","?:Cu14"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","tail","?:Y"], ["-has part","#:John 1","?:Y","?:Cu15"], ["$defq0"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tail","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berries","$some_berries"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berries","$some_not_berries"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tail","$some_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_bear","none","bear","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv57","?:Cu26"],
+            ["has degree property","big","?:X","none","?:Fv58","?:Cu26"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-has degree property","good","?:X","none","bear","?:Y"], ["has part", "?:X", ["sk0","?:X"], "?:Y"], ["-has type","?:Z","eat","?:Y"], ["-has actor","?:Z","?:X","?:Y"], ["-has target","?:Z","?:U","?:Y"], ["-isa","berries","?:U"], ["-isa","bear","?:X"], ["-isa","activity","?:Z"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property","good","#:John 1","none","bear","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","bear","#:John 1"], ["has part", "#:John 1", ["sk0","#:John 1"], "?:X3"], ["-has type","?:Y3","eat","?:X3"], ["-has actor","?:Y3","#:John 1","?:X3"], ["-has target","?:Y3","?:Z3","?:X3"], ["-isa","berries","?:Z3"], ["-isa","activity","?:Y3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"], ["-has type","?:Y","eat","?:X"], ["-has actor","?:Y","#:John 1","?:X"], ["-has target","?:Y","?:Z","?:X"], ["-isa","berries","?:Z"], ["-isa","activity","?:Y"]]],
+          [6, ["in","sent_S3","assumption",1], [["has type","sk1_activity","eat","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 1], [["-isa","activity","sk1_activity"], ["has part", "#:John 1", ["sk0","#:John 1"], "?:X3"], ["-has actor","sk1_activity","#:John 1","?:X3"], ["-has target","sk1_activity","?:Y3","?:X3"], ["-isa","berries","?:Y3"]]],
+          [8, ["in","sent_S3","assumption",1], [["isa","activity","sk1_activity"]]],
+          [9, ["simp",7,8,"fromassumption",1], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"], ["-has actor","sk1_activity","#:John 1","?:X"], ["-has target","sk1_activity","?:Y","?:X"], ["-isa","berries","?:Y"]]],
+          [10, ["in","sent_S3","assumption",1], [["has actor","sk1_activity","#:John 1","?:X"]]],
+          [11, ["mp", [9,1], 10, "fromassumption", 1], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"], ["-has target","sk1_activity","?:Y","?:X"], ["-isa","berries","?:Y"]]],
+          [12, ["in","sent_S3","assumption",1], [["has target","sk1_activity","sk2_berries","?:X"]]],
+          [13, ["mp", [11,1], 12, "fromassumption", 1], [["-isa","berries","sk2_berries"], ["has part", "#:John 1", ["sk0","#:John 1"], "?:X3"]]],
+          [14, ["in","sent_S3","assumption",1], [["isa","berries","sk2_berries"]]],
+          [15, ["simp",13,14,"fromassumption",1], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"]]],
+          [16, ["in","sent_S4","assumption",1], [["$defq0"], ["-has part","#:John 1","?:X","?:Y"], ["-isa","tail","?:X"]]],
+          [17, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [18, ["mp", 15, [16,1], 17, "fromga", 1], [["-isa", "tail", ["sk0","#:John 1"]]]],
+          [19, ["in","sent_S1","assumption",1], [["-has degree property","good","?:X","none","bear","?:Y"], ["isa", "tail", ["sk0","?:X"]], ["-has type","?:Z","eat","?:Y"], ["-has actor","?:Z","?:X","?:Y"], ["-has target","?:Z","?:U","?:Y"], ["-isa","berries","?:U"], ["-isa","bear","?:X"], ["-isa","activity","?:Z"]]],
+          [20, ["mp",19,2,"fromassumption",1], [["-isa","bear","#:John 1"], ["isa", "tail", ["sk0","#:John 1"]], ["-has type","?:X3","eat","?:Y3"], ["-has actor","?:X3","#:John 1","?:Y3"], ["-has target","?:X3","?:Z3","?:Y3"], ["-isa","berries","?:Z3"], ["-isa","activity","?:X3"]]],
+          [21, ["simp",20,4,"fromassumption",1], [["isa", "tail", ["sk0","#:John 1"]], ["-has type","?:X","eat","?:Y"], ["-has actor","?:X","#:John 1","?:Y"], ["-has target","?:X","?:Z","?:Y"], ["-isa","berries","?:Z"], ["-isa","activity","?:X"]]],
+          [22, ["mp", [21,1], 6, "fromassumption", 1], [["-isa","activity","sk1_activity"], ["isa", "tail", ["sk0","#:John 1"]], ["-has actor","sk1_activity","#:John 1","?:X3"], ["-has target","sk1_activity","?:Y3","?:X3"], ["-isa","berries","?:Y3"]]],
+          [23, ["simp",22,8,"fromassumption",1], [["isa", "tail", ["sk0","#:John 1"]], ["-has actor","sk1_activity","#:John 1","?:X"], ["-has target","sk1_activity","?:Y","?:X"], ["-isa","berries","?:Y"]]],
+          [24, ["mp", [23,1], 10, "fromassumption", 1], [["isa", "tail", ["sk0","#:John 1"]], ["-has target","sk1_activity","?:X","?:Y"], ["-isa","berries","?:X"]]],
+          [25, ["mp", [24,1], 12, "fromassumption", 1], [["-isa","berries","sk2_berries"], ["isa", "tail", ["sk0","#:John 1"]]]],
+          [26, ["simp",25,14,"fromassumption",1], [["isa", "tail", ["sk0","#:John 1"]]]],
+          [27, ["simp",18,26,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Bears who are nice and eat berries have a tail.",
+"  (2) John is a nice big bear.",
+"  (3) John eats berries.",
+"  (4) John has a tail?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a good bear and Z is a eat event and X performs Z and Z targets some U and U is a berries and X is a bear and Z is an activity then X has the tail sk0 of X as a part  [sentence 1]",
+"  (2) John is a good bear  [sentence 2]",
+"  (3) If John is a bear and Y3 is a eat event and John performs Y3 and Y3 targets some Z3 and Z3 is a berries and Y3 is an activity then John has the tail sk0 of John 1 as a part  [from steps 1, 2]",
+"  (4) John is a bear  [sentence 2]",
+"  (5) If Y is a eat event and John performs Y and Y targets some Z and Z is a berries and Y is an activity then John has the tail sk0 of John 1 as a part  [from steps 3, 4]",
+"  (6) The event act1 is a eat event  [sentence 3]",
+"  (7) If the event act1 is an activity and John performs the act1 and the act1 targets some Y3 and Y3 is a berries then John has the tail sk0 of John 1 as a part  [from steps 5, 6]",
+"  (8) The event act1 is an activity  [sentence 3]",
+"  (9) If John performs the event act1 and the act1 targets some Y and Y is a berries then John has the tail sk0 of John 1 as a part  [from steps 7, 8]",
+"  (10) John performs the event act1  [sentence 3]",
+"  (11) If the event act1 targets some Y and Y is a berries then John has the tail sk0 of John 1 as a part  [from steps 9, 10]",
+"  (12) The event act1 targets some berries ber1  [sentence 3]",
+"  (13) If ber1 is a berries then John has the tail sk0 of John 1 as a part  [from steps 11, 12]",
+"  (14) Ber1 is a berries  [sentence 3]",
+"  (15) John has the tail sk0 of John 1 as a part  [from steps 13, 14]",
+"  (16) If John has some X as a part and X is a tail then answer holds  [sentence 4]",
+"  (17) assume for contradiction: the answer is no  [from question]",
+"  (18) sk0 of John 1 is not a tail  [from steps 15, 16, 17]",
+"  (19) If some X is a good bear and Z is a eat event and X performs Z and Z targets some U and U is a berries and X is a bear and Z is an activity then the tail sk0 of X is a tail  [sentence 1]",
+"  (20) If John is a bear and X3 is a eat event and John performs X3 and X3 targets some Z3 and Z3 is a berries and X3 is an activity then the tail sk0 of John 1 is a tail  [from steps 19, 2]",
+"  (21) If X is a eat event and John performs X and X targets some Z and Z is a berries and X is an activity then the tail sk0 of John 1 is a tail  [from steps 20, 4]",
+"  (22) If the event act1 is an activity and John performs the act1 and the act1 targets some Y3 and Y3 is a berries then the tail sk0 of John 1 is a tail  [from steps 21, 6]",
+"  (23) If John performs the event act1 and the act1 targets some Y and Y is a berries then the tail sk0 of John 1 is a tail  [from steps 22, 8]",
+"  (24) If the event act1 targets some X and X is a berries then the tail sk0 of John 1 is a tail  [from steps 23, 10]",
+"  (25) If ber1 is a berries then the tail sk0 of John 1 is a tail  [from steps 24, 12]",
+"  (26) The tail sk0 of John 1 is a tail  [from steps 25, 14]",
+"  (27) Contradiction  [from steps 18, 26]"
+],
+  "timestamp": "2026-06-19T04:38:32Z"
+}

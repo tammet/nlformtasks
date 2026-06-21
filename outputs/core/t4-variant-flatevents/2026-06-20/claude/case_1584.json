@@ -1,0 +1,155 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1584,
+  "input_text": "Everyone except John arrived. Did John arrive?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Everyone except John arrived.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Everyone except John 1 arrived.",
+          "type": "situation",
+          "entities": [{"id": "everyone", "type": "generic", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "arrive", "mode": "event", "roles": {"actor": "everyone"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "John 1 did not arrive.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "arrive", "mode": "event", "roles": {"actor": "John 1"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did John arrive?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 arrive?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "arrive", "mode": "event", "roles": {"actor": "John 1"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","person","X"], ["not", ["=","X","John 1"]]],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","arrive"],
+                  ["has actor","E","X"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","arrive"],
+                ["has actor","E","John 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","arrive"],
+            ["has actor","E","John 1"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["=","?:X","#:John 1"],
+            ["has property", "arrive", "?:X", ["$ctxt","past","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Everyone except John 1 arrived."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Everyone except John 1 arrived."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 did not arrive."},
+{"@name": "sent_S2",
+ "@logic": ["-has property", "arrive", "#:John 1", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 did not arrive."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "arrive", "#:John 1", ["$ctxt","past","W1","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did John 1 arrive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "arrive", "#:John 1", ["$ctxt","past","W1","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 arrive?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 arrive?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "arrive", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "arrive", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "arrive", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 arrive?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "arrive", "$some_arrive", ["$ctxt","?:Fv17","?:Fv14","?:Fv15","?:Fv16"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T15:36:04Z"
+}

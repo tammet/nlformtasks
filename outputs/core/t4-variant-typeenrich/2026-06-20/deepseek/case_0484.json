@@ -1,0 +1,213 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 484,
+  "input_text": "The price of the car is 3 dollars. The bike costs as much as the car. The bike costs more than 20 dollars?",
+  "expected_answer": false,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The price of the car is 3 dollars.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The price 2 of the car 1 is 3 dollars.",
+          "type": "real",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"},
+            {"id": "price 2", "type": "concrete", "text": "price"},
+            {"id": "3 dollars", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["price of","price 2","car 1"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The price 2 is the price of the car 1.",
+          "type": "real",
+          "entities": [{"id": "price 2", "type": "concrete", "text": "price"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["price of","price 2","car 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "The bike costs as much as the car.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The bike 3 costs as much as the car 1.",
+          "type": "real",
+          "entities": [{"id": "bike 3", "type": "concrete", "category": "artifact"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The bike costs more than 20 dollars?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does the bike 3 cost greater than 20 dollars?",
+          "type": "query",
+          "entities": [{"id": "bike 3", "type": "concrete", "category": "artifact"},
+            {"id": "20 dollars", "type": "concrete", "category": "measure"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 1"],
+          ["isa","price","price 2"],
+          ["=", ["$measure_of","price","car 1","W0"], ["$measure",3,"dollar"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","car","car 1"],
+            ["isa","price","price 2"],
+            ["is rel2","price of","price 2","car 1"]
+          ]
+        ],
+        ["@definite","S2","W0","price of","car 1","price 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","bike","bike 3"],
+          ["=", ["$measure_of","price","bike 3","W0"], ["$measure_of","price","car 1","W0"]]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","bike","bike 3"],
+          [">", ["$measure_of","price","bike 3","W0"], ["$measure",20,"dollar"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","measure","3 dollars"],
+ "@nl": "The price 2 of the car 1 is 3 dollars."},
+{"@name": "entity_S4",
+ "@logic": ["isa","measure","20 dollars"],
+ "@nl": "Does the bike 3 cost greater than 20 dollars?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The price 2 of the car 1 is 3 dollars."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "price", ["$theof1","price","#:car 1","?:Cu4"]],
+ "@nl": "The price 2 of the car 1 is 3 dollars."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$measure_of","price","#:car 1","W0"], ["$list",3,"#:dollar"]],
+ "@nl": "The price 2 of the car 1 is 3 dollars."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The price 2 is the price of the car 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "price", ["$theof1","price","#:car 1","?:Cu7"]],
+ "@nl": "The price 2 is the price of the car 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bike","#:bike 3"],
+ "@nl": "The bike 3 costs as much as the car 1."},
+{"@name": "sent_S3",
+ "@logic": ["=", ["$measure_of","price","#:bike 3","W0"], ["$measure_of","price","#:car 1","W0"]],
+ "@nl": "The bike 3 costs as much as the car 1."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","bike","#:bike 3"]],
+ "@nl": "Does the bike 3 cost greater than 20 dollars?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["less_measure", ["$list",20,"#:dollar"], ["$measure_of","price","#:bike 3","W0"]]
+           ],
+ "@nl": "Does the bike 3 cost greater than 20 dollars?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","bike","#:bike 3"],
+            ["not",
+             ["less_measure", ["$list",20,"#:dollar"], ["$measure_of","price","#:bike 3","W0"]]
+            ],
+            ["$defq0"]
+           ],
+ "@nl": "Does the bike 3 cost greater than 20 dollars?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does the bike 3 cost greater than 20 dollars?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:car 1", ["$theof1","price","#:car 1","?:Cu13"], "?:Cu13"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:car 1", ["$theof1","price","#:car 1","?:Cu14"], "?:Cu14"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "price of", ["$theof1","price","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "price", ["$theof1","price","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","price","?:S","?:W"], "?:Cu17"],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "price", ["$measure_of","price","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure_rel_bridge",
+ "@logic": [["-=", ["$measure_of","price","?:S","?:W"], "?:V"],
+            ["is rel2","price of","?:V","?:S","?:Ctxt"]
+           ],
+ "@nl": "[generated: frm_measure_rel_bridge]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","frm_127","axiom",1], [["-=", "?:X", ["$list","?:Y","?:Z"]], ["-=", "?:U", ["$list","?:V","?:Z"]], ["-less_measure","?:X","?:U"], ["$less","?:Y","?:V"]]],
+          [2, ["r=", [1,0], "fromaxiom", 1], [["-less_measure", ["$list","?:X","?:Y"], "?:Z"], ["-=", "?:Z", ["$list","?:U","?:Y"]], ["$less","?:X","?:U"]]],
+          [3, ["r=", [2,1], "fromaxiom", 1], [["-less_measure", ["$list","?:X","?:Y"], ["$list","?:Z","?:Y"]], ["$less","?:X","?:Z"]]],
+          [4, ["in","sent_S3","assumption",1], [["=", ["$measure_of","price","#:bike 3","W0"], ["$measure_of","price","#:car 1","W0"]]]],
+          [5, ["in","sent_S1","assumption",1], [["=", ["$measure_of","price","#:car 1","W0"], ["$list",3,"#:dollar"]]]],
+          [6, ["simp",4,5,"fromassumption",1], [["=", ["$measure_of","price","#:bike 3","W0"], ["$list",3,"#:dollar"]]]],
+          [7, ["in","sent_S4","assumption",1], [["-$defq0"], ["less_measure", ["$list",20,"#:dollar"], ["$measure_of","price","#:bike 3","W0"]]]],
+          [8, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [9, ["=", 6, [7,1,4], 8, "fromga", 1], [["less_measure", ["$list",20,"#:dollar"], ["$list",3,"#:dollar"]]]],
+          [10, ["mp",3,9,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The price of the car is 3 dollars.",
+"  (2) The bike costs as much as the car.",
+"  (3) The bike costs more than 20 dollars?",
+"Knowledge used:",
+"  If some X equals ?:Y ?:Zs and some U equals ?:V ?:Zs and X is less than U then some Y is less than some V. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X equals ?:Y ?:Zs and some U equals ?:V ?:Zs and X is less than U then some Y is less than some V  [background knowledge]",
+"  (2) If ?:X ?:Ys is less than some Z and Z equals ?:U ?:Ys then some X is less than some U  [from steps 1]",
+"  (3) If ?:X ?:Ys is less than ?:Z ?:Ys then some X is less than some Z  [from steps 2]",
+"  (4) The price of bike C equals the price of car A  [sentence 2]",
+"  (5) The price of car A equals 3 dollars  [sentence 1]",
+"  (6) The price of bike C equals 3 dollars  [from steps 4, 5]",
+"  (7) If answer holds then 20 dollars is less than the price of bike C  [sentence 3]",
+"  (8) Answer holds  [assumption]",
+"  (9) 20 Dollars is less than 3 dollars  [from steps 6, 7, 8]",
+"  (10) Contradiction  [from steps 3, 9]"
+],
+  "timestamp": "2026-06-19T04:37:47Z"
+}

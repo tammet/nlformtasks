@@ -1,0 +1,124 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1087,
+  "input_text": "John likes tea and Mary coffee. What does Mary like?",
+  "expected_answer": "Coffee.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The coffee.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John likes tea and Mary coffee.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 likes tea.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "tea", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "mental_attitude": "liking",
+          "mental_holder": "John 1",
+          "attitude_target": "tea"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 2 likes coffee.",
+          "type": "real",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "coffee", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "mental_attitude": "liking",
+          "mental_holder": "Mary 2",
+          "attitude_target": "coffee"
+        }
+      ]
+    },
+    {
+      "raw": "What does Mary like?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity does Mary 2 like?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["is rel2","like","John 1","tea"]]],
+    ["@id", "S2", ["holds", "W0", ["is rel2","like","Mary 2","coffee"]]],
+    ["@id", "S3", ["ask", "X", ["is rel2","like","Mary 2","X"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 likes tea."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 likes tea."},
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "Mary 2 likes coffee."},
+{"@name": "entity_S2",
+ "@logic": ["isa","woman","#:Mary 2"],
+ "@nl": "Mary 2 likes coffee."},
+{"@name": "sent_S1",
+ "@logic": ["has degree rel2","like","#:John 1","tea","none","?:Fv10","?:Cu5"],
+ "@nl": "John 1 likes tea."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2","like","#:Mary 2","coffee","none","?:Fv11","?:Cu6"],
+ "@nl": "Mary 2 likes coffee."},
+{"@name": "sent_S3",
+ "@question": ["has degree rel2","like","#:Mary 2","?:X","none","?:Fv16","?:Cu7"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity does Mary 2 like?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2","like","#:Mary 2","?:Br1","none","?:Fv13","?:Cu8"],
+            ["has degree rel2","like","#:Mary 2","?:Br1","none","?:Fv14","?:Cu8"]
+           ],
+ "@nl": "Which entity does Mary 2 like?"},
+{"@name": "frm_excl",
+ "@logic": [["-has property","man","?:X","?:Fv9"], ["-has property","woman","?:X","?:Fv9"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl]"},
+{"@name": "pop_what",
+ "@logic": ["isa","woman","$some_woman"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","coffee","?:X3","?:Y3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has degree rel2","like","#:Mary 2","coffee","none","?:X","?:Y"]]],
+          [2, ["in","sent_S3","goal",1], [["-has degree rel2","like","#:Mary 2","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","coffee","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John likes tea and Mary coffee.",
+"  (2) What does Mary like?",
+"Proof steps:",
+"  (1) Mary is like of the coffee  [sentence 1]",
+"  (2) If Mary is like of some X then X is an answer  [from question]",
+"  (3) The coffee is an answer  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T02:41:57Z"
+}

@@ -1,0 +1,100 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 1217,
+  "input_text": "There is a ghost in the room. There is a lamp in the room?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "There is a ghost in the room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A ghost 1 is in the room 2.",
+          "type": "situation",
+          "entities": [{"id": "ghost 1", "type": "concrete", "category": "abstract"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "There is a lamp in the room?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is a lamp in the room 2?",
+          "type": "query",
+          "entities": [{"id": "lamp", "type": "generic", "category": "artifact"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","ghost","ghost 1"],
+          ["isa","room","room 2"],
+          ["is rel2","in","ghost 1","room 2"]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","X",
+          ["and", ["isa","lamp","X"], ["isa","room","room 2"], ["is rel2","in","X","room 2"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","ghost","#:ghost 1"],
+ "@nl": "A ghost 1 is in the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "A ghost 1 is in the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "in", "#:ghost 1", "#:room 2", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A ghost 1 is in the room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","lamp","sk0_lamp"]],
+ "@nl": "Is a lamp in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","room","#:room 2"]],
+ "@nl": "Is a lamp in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "sk0_lamp", "#:room 2", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Is a lamp in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","lamp","?:X"],
+            ["-isa","room","#:room 2"],
+            ["-is rel2", "in", "?:X", "#:room 2", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is a lamp in the room 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is a lamp in the room 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "?:Br1", "#:room 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is a lamp in the room 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T01:33:27Z"
+}

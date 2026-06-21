@@ -1,0 +1,188 @@
+{
+  "test_name": "core_existfold",
+  "case_id": 1360,
+  "input_text": "If X1 is a father of Y1, Y1 is a child of X1.\n      If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.\n      John is a father of Mike. Luke is a father of John. Luke is a grandfather of Mike?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If X1 is a father of Y1, Y1 is a child of X1.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If X1 is a father of Y1, Y1 is a child of X1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+          "type": "strict_rule",
+          "entities": [{"id": "X1", "type": "generic", "category": "person"},
+            {"id": "Y1", "type": "generic", "category": "person"},
+            {"id": "Z1", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a father of Mike.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a father of Mike 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Luke is a father of John.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Luke 3 is a father of John 1.",
+          "type": "situation",
+          "entities": [{"id": "Luke 3", "type": "concrete", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Luke is a grandfather of Mike?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is Luke 3 a grandfather of Mike 2?",
+          "type": "query",
+          "entities": [{"id": "Luke 3", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["implies", ["is rel2","father of","X1","Y1"], ["is rel2","child of","Y1","X1"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X1",
+          ["forall","Y1",
+            ["forall","Z1",
+              ["implies",
+                ["and", ["is rel2","father of","X1","Y1"], ["is rel2","father of","Y1","Z1"]],
+                ["is rel2","grandfather of","X1","Z1"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["is rel2","father of","John 1","Mike 2"]]],
+    ["@id", "S4", ["holds", "W0", ["is rel2","father of","Luke 3","John 1"]]],
+    ["@id", "S5", ["question", ["is rel2","grandfather of","Luke 3","Mike 2"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "entity_S4",
+ "@logic": ["isa","person","#:Luke 3"],
+ "@nl": "Luke 3 is a father of John 1."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2", "father of", "?:X1", "?:Y1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["is rel2", "child of", "?:Y1", "?:X1", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If X1 is a father of Y1, Y1 is a child of X1."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2", "father of", "?:X1", "?:Y1", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "father of", "?:Y1", "?:Z1", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["is rel2", "grandfather of", "?:X1", "?:Z1", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "father of", "#:John 1", "#:Mike 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "John 1 is a father of Mike 2."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "father of", "#:Luke 3", "#:John 1", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "Luke 3 is a father of John 1."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Is Luke 3 a grandfather of Mike 2?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is Luke 3 a grandfather of Mike 2?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is Luke 3 a grandfather of Mike 2?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is Luke 3 a grandfather of Mike 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-is rel2", "father of", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-is rel2", "father of", "?:2006", "?:X", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["is rel2", "grandfather of", "?:2006", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]],
+          [2, ["in","sent_S3","assumption",1], [["is rel2", "father of", "#:John 1", "#:Mike 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-is rel2", "father of", "?:X", "#:John 1", ["$ctxt","present","W0","?:Y","?:Z"]], ["is rel2", "grandfather of", "?:X", "#:Mike 2", ["$ctxt","present","W0","?:Y","?:Z"]]]],
+          [4, ["in","sent_S4","assumption",1], [["is rel2", "father of", "#:Luke 3", "#:John 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [5, ["mp",3,4,"fromassumption",1], [["is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [6, ["in","sent_S5","assumption",1], [["$defq0"], ["-is rel2", "grandfather of", "#:Luke 3", "#:Mike 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [7, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If X1 is a father of Y1 and Y1 is a father of Z1, X1 is a grandfather of Z1.",
+"  (2) John is a father of Mike.",
+"  (3) Luke is a father of John.",
+"  (4) Luke is a grandfather of Mike?",
+"Proof steps (by contradiction):",
+"  (1) If some X is father of some Y and some E1 is father of X then E1 is grandfather of Y  [sentence 1]",
+"  (2) John is father of Mike  [sentence 2]",
+"  (3) If some X is father of John then X is grandfather of Mike  [from steps 1, 2]",
+"  (4) Luke is father of John  [sentence 3]",
+"  (5) Luke is grandfather of Mike  [from steps 3, 4]",
+"  (6) If Luke is grandfather of Mike then answer holds  [sentence 4]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) Contradiction  [from steps 5, 6, 7]"
+],
+  "timestamp": "2026-06-20T04:43:06Z"
+}

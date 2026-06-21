@@ -1,0 +1,153 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 53,
+  "input_text": "Frogs are small. John is a frog. John is small?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Frogs are small.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Frogs are small.",
+          "type": "normal_rule",
+          "entities": [{"id": "frogs", "type": "generic", "category": "animal"}],
+          "adjectives": [["small","none","animal"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a frog.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a frog.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "frog", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is small?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is John 1 small?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["small","none","animal"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","frog","X"],
+              ["normally", ["has degree property","small","X","none","animal"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","frog","John 1"]]],
+    ["@id", "S3", ["question", ["has degree property","small","John 1","none","animal"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a frog."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","frog","?:X"], ["has degree property","small","?:X","none","animal","?:Cu2"]],
+ "@confidence": 0.98,
+ "@nl": "Frogs are small."},
+{"@name": "sent_S2",
+ "@logic": ["isa","frog","#:John 1"],
+ "@nl": "John 1 is a frog."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","small","#:John 1","none","animal","?:Cu4"]],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","small","#:John 1","none","animal","?:Cu5"], ["$defq0"]],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","frog","$some_not_frog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","small","$some_small_animal","none","animal","?:Cu8"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_small_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","small","$some_not_small_animal","none","animal","?:Cu10"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has degree property","small","?:X","none","?:Fv35","?:Fv11"],
+            ["-has degree property","high","?:X","none","?:Fv36","?:Fv11"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["has degree property","high","?:X","none","?:Fv37","?:Fv12"],
+            ["has degree property","small","?:X","none","?:Fv38","?:Fv12"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","small","?:X","none","?:Fv39","?:Cu13"],
+            ["has degree property","small","?:X","none","?:Fv40","?:Cu13"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has degree property","small","?:X","none","animal","?:Y"], ["-isa","frog","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","frog","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has degree property","small","#:John 1","none","animal","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property","small","#:John 1","none","animal","?:X"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Frogs are small.",
+"  (2) John is a frog.",
+"  (3) John is small?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a frog then X is a small animal  [sentence 1, confidence 98%]",
+"  (2) John is a frog  [sentence 2]",
+"  (3) John is a small animal  [from steps 1, 2, confidence 98%]",
+"  (4) If John is a small animal then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Contradiction  [from steps 3, 4, 5, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:45:24Z"
+}

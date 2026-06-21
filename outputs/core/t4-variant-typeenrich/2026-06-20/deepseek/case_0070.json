@@ -1,0 +1,233 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 70,
+  "input_text": "Elephants have trunks or tails. John is an elephant. John has no trunk. John has a tail?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants have trunks or tails.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants have trunks or tails.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an elephant.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has no trunk.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has no trunk.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "trunk", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a tail?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["or",
+                  ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]],
+                  ["exists", "Z", ["and", ["isa","tail","Z"], ["has part","X","Z"]]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id","S3",
+      ["holds", "W0", ["not", ["exists", "X", ["and", ["isa","trunk","X"], ["have","John 1","X"]]]]]
+    ],
+    ["@id", "S4", ["question", ["exists", "X", ["and", ["isa","tail","X"], ["have","John 1","X"]]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["isa", "trunk", ["sk0","?:X"]],
+            ["isa", "tail", ["sk1","?:X"]]
+           ],
+ "@nl": "Elephants have trunks or tails."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["isa", "trunk", ["sk0","?:X"]],
+            ["has part", "?:X", ["sk1","?:X"], "?:Cu3"]
+           ],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks or tails."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["isa", "tail", ["sk1","?:X"]],
+            ["has part", "?:X", ["sk0","?:X"], "?:Cu4"]
+           ],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks or tails."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], "?:Cu5"],
+            ["has part", "?:X", ["sk1","?:X"], "?:Cu5"]
+           ],
+ "@confidence": 0.9933,
+ "@nl": "Elephants have trunks or tails."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","trunk","?:X"], ["-have","#:John 1","?:X","?:Cu7"]],
+ "@nl": "John 1 has no trunk."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","tail","sk2_tail"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:John 1","sk2_tail","?:Cu9"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","tail","?:X"], ["-have","#:John 1","?:X","?:Cu10"], ["$defq0"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tail","$some_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.973468,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9933], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["has part", "?:X", ["sk1","?:X"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9933], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"], ["has part", "#:John 1", ["sk1","#:John 1"], "?:X"]]],
+          [4, ["in","frm_4","axiom",1], [["-has part","?:X","?:Y","?:Z"], ["have","?:X","?:Y","?:Z"]]],
+          [5, ["mp",3,4,"fromassumption",0.9933], [["has part", "#:John 1", ["sk1","#:John 1"], "?:X"], ["have", "#:John 1", ["sk0","#:John 1"], "?:X"]]],
+          [6, ["mp",5,4,"fromassumption",0.9933], [["have", "#:John 1", ["sk0","#:John 1"], "?:X"], ["have", "#:John 1", ["sk1","#:John 1"], "?:X"]]],
+          [7, ["in","sent_S3","assumption",1], [["-have","#:John 1","?:X","?:Y"], ["-isa","trunk","?:X"]]],
+          [8, ["mp",6,7,"fromassumption",0.9933], [["-isa", "trunk", ["sk0","#:John 1"]], ["have", "#:John 1", ["sk1","#:John 1"], "?:X3"]]],
+          [9, ["in","sent_S1","assumption",0.9933], [["has part", "?:X", ["sk1","?:X"], "?:Y"], ["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [10, ["mp", [9,2], 2, "fromassumption", 0.9933], [["isa", "trunk", ["sk0","#:John 1"]], ["has part", "#:John 1", ["sk1","#:John 1"], "?:X"]]],
+          [11, ["mp", [10,1], 4, "fromassumption", 0.9933], [["isa", "trunk", ["sk0","#:John 1"]], ["have", "#:John 1", ["sk1","#:John 1"], "?:X"]]],
+          [12, ["in","sent_S4","assumption",1], [["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["-isa","tail","?:X"]]],
+          [13, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [14, ["mp", [11,1], [12,1], 13, "fromga", 0.9933], [["-isa", "tail", ["sk1","#:John 1"]], ["isa", "trunk", ["sk0","#:John 1"]]]],
+          [15, ["in","sent_S1","assumption",0.9933], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["isa", "tail", ["sk1","?:X"]], ["-isa","elephant","?:X"]]],
+          [16, ["mp", [15,2], 2, "fromassumption", 0.9933], [["isa", "tail", ["sk1","#:John 1"]], ["has part", "#:John 1", ["sk0","#:John 1"], "?:X"]]],
+          [17, ["mp", [16,1], 4, "fromassumption", 0.9933], [["isa", "tail", ["sk1","#:John 1"]], ["have", "#:John 1", ["sk0","#:John 1"], "?:X"]]],
+          [18, ["mp", [17,1], 7, "fromassumption", 0.9933], [["-isa", "trunk", ["sk0","#:John 1"]], ["isa", "tail", ["sk1","#:John 1"]]]],
+          [19, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["isa", "tail", ["sk1","?:X"]], ["-isa","elephant","?:X"]]],
+          [20, ["mp", [19,2], 2, "fromassumption", 1], [["isa", "tail", ["sk1","#:John 1"]], ["isa", "trunk", ["sk0","#:John 1"]]]],
+          [21, ["mp", 18, [20,1], "fromassumption", 0.9933], [["isa", "tail", ["sk1","#:John 1"]]]],
+          [22, ["simp",14,21,"fromga",0.986645], [["isa", "trunk", ["sk0","#:John 1"]]]],
+          [23, ["simp",8,22,"fromga",0.980034], [["have", "#:John 1", ["sk1","#:John 1"], "?:X"]]],
+          [24, ["mp", 23, [12,1], 13, "fromga", 0.980034], [["-isa", "tail", ["sk1","#:John 1"]]]],
+          [25, ["simp",24,21,"fromga",0.973468], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 97%.",
+"Sentences used:",
+"  (1) Elephants have trunks or tails.",
+"  (2) John is an elephant.",
+"  (3) John has no trunk.",
+"  (4) John has a tail?",
+"Knowledge used:",
+"  If some X has some Y as a part then X has Y. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then X has the trunk sk0 of X as a part or X has the tail sk1 of X as a part  [sentence 1, confidence 99%]",
+"  (2) John is an elephant  [sentence 2]",
+"  (3) John has the trunk sk0 of John 1 as a part or John has the tail sk1 of John 1 as a part  [from steps 1, 2, confidence 99%]",
+"  (4) If some X has some Y as a part then X has Y  [background knowledge]",
+"  (5) John has the tail sk1 of John 1 as a part or John has the trunk sk0 of John 1  [from steps 3, 4, confidence 99%]",
+"  (6) John has the trunk sk0 of John 1 or John has the tail sk1 of John 1  [from steps 5, 4, confidence 99%]",
+"  (7) John does not have X  [sentence 3]",
+"  (8) If the trunk sk0 of John 1 is a trunk then John has the tail sk1 of John 1  [from steps 6, 7, confidence 99%]",
+"  (9) If some X is an elephant then X has the tail sk1 of X as a part or the trunk sk0 of X is a trunk  [sentence 1, confidence 99%]",
+"  (10) The trunk sk0 of John 1 is a trunk or John has the tail sk1 of John 1 as a part  [from steps 9, 2, confidence 99%]",
+"  (11) The trunk sk0 of John 1 is a trunk or John has the tail sk1 of John 1  [from steps 10, 4, confidence 99%]",
+"  (12) If John has some X and X is a tail then answer holds  [sentence 4]",
+"  (13) assume for contradiction: the answer is no  [from question]",
+"  (14) If the tail sk1 of John 1 is a tail then the trunk sk0 of John 1 is a trunk  [from steps 11, 12, 13, confidence 99%]",
+"  (15) If some X is an elephant then X has the trunk sk0 of X as a part or the tail sk1 of X is a tail  [sentence 1, confidence 99%]",
+"  (16) The tail sk1 of John 1 is a tail or John has the trunk sk0 of John 1 as a part  [from steps 15, 2, confidence 99%]",
+"  (17) The tail sk1 of John 1 is a tail or John has the trunk sk0 of John 1  [from steps 16, 4, confidence 99%]",
+"  (18) If the trunk sk0 of John 1 is a trunk then the tail sk1 of John 1 is a tail  [from steps 17, 7, confidence 99%]",
+"  (19) If some X is an elephant then the trunk sk0 of X is a trunk or the tail sk1 of X is a tail  [sentence 1]",
+"  (20) The tail sk1 of John 1 is a tail or the trunk sk0 of John 1 is a trunk  [from steps 19, 2]",
+"  (21) The tail sk1 of John 1 is a tail  [from steps 18, 20, confidence 99%]",
+"  (22) The trunk sk0 of John 1 is a trunk  [from steps 14, 21, confidence 99%]",
+"  (23) John has the tail sk1 of John 1  [from steps 8, 22, confidence 98%]",
+"  (24) sk1 of John 1 is not a tail  [from steps 23, 12, 13, confidence 98%]",
+"  (25) Contradiction  [from steps 24, 21, confidence 97%]"
+],
+  "timestamp": "2026-06-19T04:36:37Z"
+}

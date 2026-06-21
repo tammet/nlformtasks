@@ -1,0 +1,121 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1172,
+  "input_text": "John has finished his homework. Is the homework finished?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John has finished his homework.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 has finished the homework 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "homework 2", "type": "concrete", "category": "abstract"}
+          ],
+          "actions": [{"root": "finish", "mode": "event", "roles": {"target": "homework 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Is the homework finished?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is the homework 2 finished?",
+          "type": "query",
+          "entities": [{"id": "homework 2", "type": "concrete", "category": "abstract"}],
+          "adjectives": [["finished","none","homework"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","homework","homework 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","finish"],
+                ["has actor","E","John 1"],
+                ["has target","E","homework 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["question",
+          ["and",
+            ["isa","homework","homework 2"],
+            ["has degree property","finished","homework 2","none","homework"]
+          ]
+        ],
+        ["state time","W1","present"]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 has finished the homework 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","homework","#:homework 2"],
+ "@nl": "John 1 has finished the homework 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "finish", "#:John 1", ["eventprop","$target","#:homework 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 has finished the homework 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 has finished the homework 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","homework","#:homework 2"]],
+ "@nl": "Is the homework 2 finished?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "finished", "#:homework 2", ["$ctxt","present","W1","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Is the homework 2 finished?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","homework","#:homework 2"],
+            ["-has property", "finished", "#:homework 2", ["$ctxt","present","W1","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is the homework 2 finished?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is the homework 2 finished?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "finished", "#:homework 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "finished", "#:homework 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "finished", "#:homework 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is the homework 2 finished?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T09:11:37Z"
+}

@@ -1,0 +1,83 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1535,
+  "input_text": "John is an elephant with a probability 100 percent. John is an elephant?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is an elephant with a probability 100 percent.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is an elephant.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ],
+          "confidence": 1.0
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is John 1 an elephant?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id", "S2", ["question", ["isa","elephant","John 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","#:John 1"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","elephant","#:John 1"], ["$defq0"]],
+ "@nl": "Is John 1 an elephant?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 an elephant?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","elephant","#:John 1"], ["$defq0"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","elephant","#:John 1"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp",1,2,3,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John is an elephant with a probability 100 percent.",
+"  (2) John is an elephant?",
+"Proof steps (by contradiction):",
+"  (1) If John is an elephant then answer holds  [sentence 2]",
+"  (2) John is an elephant  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T08:08:17Z"
+}

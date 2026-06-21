@@ -1,0 +1,220 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1582,
+  "input_text": "Only John bought a car. Who bought a car?",
+  "expected_answer": "John.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Only John bought a car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Only John 1 bought a car 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "John 1", "target": "car 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who bought a car?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity bought a car?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "entity", "target": "car"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","John 1"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","E",
+            ["forall","Y",
+              ["implies",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","buy"],
+                  ["has actor","E","X"],
+                  ["isa","car","Y"],
+                  ["has target","E","Y"],
+                  ["has time","E","past","in"]
+                ],
+                ["=","X","John 1"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","Y",
+          ["and",
+            ["isa","car","Y"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","X"],
+                ["has target","E","Y"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Only John 1 bought a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Only John 1 bought a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "buy", "#:John 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Only John 1 bought a car 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Only John 1 bought a car 2."},
+{"@name": "sent_S1_2",
+ "@logic": [["-is rel2", "buy", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["-isa","car","?:Y"],
+            ["=","?:X","#:John 1"]
+           ],
+ "@nl": "Only John 1 bought a car 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "car", ["sk0","?:X"]]],
+ "@nl": "Which entity bought a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "buy", "?:X", ["eventprop", "$target", ["sk0","?:X"]], ["$ctxt","past","W0","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity bought a car?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:Y"],
+            ["-is rel2", "buy", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity bought a car?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity bought a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv14","?:Fv15","?:Fv17","?:Fv18"]],
+            ["-next","?:Fv15","?:Fv16"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv16","?:Fv17","?:Fv18"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv19","?:Fv20","?:Fv22","?:Fv23"]],
+            ["-next","?:Fv20","?:Fv21"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv24","?:Fv25","?:Fv27","?:Fv28"]],
+            ["-next","?:Fv25","?:Fv26"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-is rel2", "buy", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","past","W0","?:Z","?:U"]], ["-isa","car","?:Y"], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "buy", "#:John 1", ["eventprop","$target","#:car 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","car","#:car 2"], ["$defq0","#:John 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","car","#:car 2"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:John 1"]]],
+          [6, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:John 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Only John bought a car.",
+"  (2) Who bought a car?",
+"Proof steps:",
+"  (1) If some X buys Y and some Y is a car then X is the answer  [sentence 2]",
+"  (2) John buys car B  [sentence 1]",
+"  (3) John is the answer  [from steps 1, 2]",
+"  (4) The car B is a car  [sentence 1]",
+"  (5) John is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) John is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-18T17:29:38Z"
+}

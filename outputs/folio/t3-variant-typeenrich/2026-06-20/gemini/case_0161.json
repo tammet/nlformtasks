@@ -1,0 +1,492 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 161,
+  "input_text": "If George likes music, he wants to compose. If George has access to a program, he can compose. If George can compose and wants to compose, he will compose. If George likes music and has access to a program, he will compose?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If George likes music, he wants to compose.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If George 1 likes music, George 1 wants to compose.",
+          "type": "normal_rule",
+          "entities": [{"id": "George 1", "type": "concrete", "category": "person"},
+            {"id": "music", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "want",
+              "mode": "volition",
+              "roles": {
+                "actor": "George 1",
+                "content": {"root": "compose", "mode": "event", "roles": {"actor": "George 1"}}
+              }
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If George has access to a program, he can compose.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If George 1 has access to a program, George 1 can compose.",
+          "type": "normal_rule",
+          "entities": [{"id": "George 1", "type": "concrete", "category": "person"},
+            {"id": "program", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "compose", "mode": "capability", "roles": {"actor": "George 1"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If George can compose and wants to compose, he will compose.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If George 1 can compose and George 1 wants to compose, George 1 will compose.",
+          "type": "normal_rule",
+          "entities": [{"id": "George 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "compose", "mode": "event", "roles": {"actor": "George 1"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If George likes music and has access to a program, he will compose?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If George 1 likes music and George 1 has access to a program, will George 1 compose?",
+          "type": "query",
+          "entities": [{"id": "George 1", "type": "concrete", "category": "person"},
+            {"id": "music", "type": "generic", "scope": "kind", "category": "abstract"},
+            {"id": "program", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "compose", "mode": "event", "roles": {"actor": "George 1"}}],
+          "time": "future"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","George 1"],
+            ["normally",
+              ["implies",
+                ["is rel2","like","George 1","music"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","want"],
+                    ["has actor","E1","George 1"],
+                    ["exists","E2",
+                      ["and",
+                        ["has content","E1","E2"],
+                        ["isa","activity","E2"],
+                        ["has type","E2","compose"],
+                        ["has actor","E2","George 1"]
+                      ]
+                    ],
+                    ["volition","E1"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","George 1"],
+            ["normally",
+              ["implies",
+                ["exists","Y",
+                  ["and", ["isa","program","Y"], ["is rel2","has access to","George 1","Y"]]
+                ],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","compose"],
+                    ["has actor","E","George 1"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","George 1"],
+            ["normally",
+              ["implies",
+                ["and",
+                  ["exists","E_cap",
+                    ["and",
+                      ["isa","activity","E_cap"],
+                      ["has type","E_cap","compose"],
+                      ["has actor","E_cap","George 1"],
+                      ["capability","E_cap"]
+                    ]
+                  ],
+                  ["exists","E_vol1",
+                    ["and",
+                      ["isa","activity","E_vol1"],
+                      ["has type","E_vol1","want"],
+                      ["has actor","E_vol1","George 1"],
+                      ["exists","E_vol2",
+                        ["and",
+                          ["has content","E_vol1","E_vol2"],
+                          ["isa","activity","E_vol2"],
+                          ["has type","E_vol2","compose"],
+                          ["has actor","E_vol2","George 1"]
+                        ]
+                      ],
+                      ["volition","E_vol1"]
+                    ]
+                  ]
+                ],
+                ["exists","E_result",
+                  ["and",
+                    ["isa","activity","E_result"],
+                    ["has type","E_result","compose"],
+                    ["has actor","E_result","George 1"],
+                    ["has time","E_result","future","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","person","George 1"],
+          ["implies",
+            ["and",
+              ["is rel2","like","George 1","music"],
+              ["exists","Y",
+                ["and", ["isa","program","Y"], ["is rel2","has access to","George 1","Y"]]
+              ]
+            ],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","compose"],
+                ["has actor","E","George 1"],
+                ["has time","E","future","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:George 1"],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:George 1"],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv65","?:Cu3"],
+            ["isa","activity","sk0_activity"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv66","?:Cu4"],
+            ["has type","sk0_activity","want","?:Cu4"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv67","?:Cu5"],
+            ["has actor","sk0_activity","#:George 1","?:Cu5"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv68","?:Cu6"],
+            ["has content","sk0_activity","sk1_activity"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv69","?:Cu7"],
+            ["isa","activity","sk1_activity"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv70","?:Cu8"],
+            ["has type","sk1_activity","compose","?:Cu8"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv71","?:Cu9"],
+            ["has actor","sk1_activity","#:George 1","?:Cu9"]
+           ],
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S1",
+ "@logic": [["-has degree rel2","like","#:George 1","music","none","?:Fv72","?:Cu10"],
+            ["volition","sk0_activity"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If George 1 likes music, George 1 wants to compose."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:George 1"],
+ "@nl": "If George 1 has access to a program, George 1 can compose."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu12"],
+            ["isa","activity","sk2_activity"]
+           ],
+ "@nl": "If George 1 has access to a program, George 1 can compose."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu13"],
+            ["has type","sk2_activity","compose","?:Cu13"]
+           ],
+ "@nl": "If George 1 has access to a program, George 1 can compose."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu14"],
+            ["has actor","sk2_activity","#:George 1","?:Cu14"]
+           ],
+ "@nl": "If George 1 has access to a program, George 1 can compose."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu15"],
+            ["capability","sk2_activity"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If George 1 has access to a program, George 1 can compose."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:George 1"],
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","activity","?:E_cap"],
+            ["-has type","?:E_cap","compose","?:Cu17"],
+            ["-has actor","?:E_cap","#:George 1","?:Cu17"],
+            ["-capability","?:E_cap"],
+            ["-isa","activity","?:E_vol1"],
+            ["-has type","?:E_vol1","want","?:Cu17"],
+            ["-has actor","?:E_vol1","#:George 1","?:Cu17"],
+            ["-has content","?:E_vol1","?:E_vol2"],
+            ["-isa","activity","?:E_vol2"],
+            ["-has type","?:E_vol2","compose","?:Cu17"],
+            ["-has actor","?:E_vol2","#:George 1","?:Cu17"],
+            ["-volition","?:E_vol1"],
+            ["isa","activity","sk3_activity"]
+           ],
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","activity","?:E_cap"],
+            ["-has type","?:E_cap","compose","?:Cu18"],
+            ["-has actor","?:E_cap","#:George 1","?:Cu18"],
+            ["-capability","?:E_cap"],
+            ["-isa","activity","?:E_vol1"],
+            ["-has type","?:E_vol1","want","?:Cu18"],
+            ["-has actor","?:E_vol1","#:George 1","?:Cu18"],
+            ["-has content","?:E_vol1","?:E_vol2"],
+            ["-isa","activity","?:E_vol2"],
+            ["-has type","?:E_vol2","compose","?:Cu18"],
+            ["-has actor","?:E_vol2","#:George 1","?:Cu18"],
+            ["-volition","?:E_vol1"],
+            ["has type","sk3_activity","compose","?:Cu18"]
+           ],
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","activity","?:E_cap"],
+            ["-has type","?:E_cap","compose","?:Cu19"],
+            ["-has actor","?:E_cap","#:George 1","?:Cu19"],
+            ["-capability","?:E_cap"],
+            ["-isa","activity","?:E_vol1"],
+            ["-has type","?:E_vol1","want","?:Cu19"],
+            ["-has actor","?:E_vol1","#:George 1","?:Cu19"],
+            ["-has content","?:E_vol1","?:E_vol2"],
+            ["-isa","activity","?:E_vol2"],
+            ["-has type","?:E_vol2","compose","?:Cu19"],
+            ["-has actor","?:E_vol2","#:George 1","?:Cu19"],
+            ["-volition","?:E_vol1"],
+            ["has actor","sk3_activity","#:George 1","?:Cu19"]
+           ],
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","activity","?:E_cap"],
+            ["-has type","?:E_cap","compose","?:Cu20"],
+            ["-has actor","?:E_cap","#:George 1","?:Cu20"],
+            ["-capability","?:E_cap"],
+            ["-isa","activity","?:E_vol1"],
+            ["-has type","?:E_vol1","want","?:Cu20"],
+            ["-has actor","?:E_vol1","#:George 1","?:Cu20"],
+            ["-has content","?:E_vol1","?:E_vol2"],
+            ["-isa","activity","?:E_vol2"],
+            ["-has type","?:E_vol2","compose","?:Cu20"],
+            ["-has actor","?:E_vol2","#:George 1","?:Cu20"],
+            ["-volition","?:E_vol1"],
+            ["has time","sk3_activity","future","in","?:Cu20"]
+           ],
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","activity","?:E_cap"],
+            ["-has type","?:E_cap","compose","?:Cu21"],
+            ["-has actor","?:E_cap","#:George 1","?:Cu21"],
+            ["-capability","?:E_cap"],
+            ["-isa","activity","?:E_vol1"],
+            ["-has type","?:E_vol1","want","?:Cu21"],
+            ["-has actor","?:E_vol1","#:George 1","?:Cu21"],
+            ["-has content","?:E_vol1","?:E_vol2"],
+            ["-isa","activity","?:E_vol2"],
+            ["-has type","?:E_vol2","compose","?:Cu21"],
+            ["-has actor","?:E_vol2","#:George 1","?:Cu21"],
+            ["-volition","?:E_vol1"],
+            ["actuality","sk3_activity"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If George 1 can compose and George 1 wants to compose, George 1 will compose."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:George 1"]],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2","like","#:George 1","music","none","?:Fv78","?:Cu23"],
+            ["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu23"],
+            ["isa","activity","sk4_activity"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2","like","#:George 1","music","none","?:Fv79","?:Cu24"],
+            ["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu24"],
+            ["has type","sk4_activity","compose","?:Cu24"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2","like","#:George 1","music","none","?:Fv80","?:Cu25"],
+            ["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu25"],
+            ["has actor","sk4_activity","#:George 1","?:Cu25"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2","like","#:George 1","music","none","?:Fv81","?:Cu26"],
+            ["-isa","program","?:Y"],
+            ["-is rel2","has access to","#:George 1","?:Y","?:Cu26"],
+            ["has time","sk4_activity","future","in","?:Cu26"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:George 1"],
+            ["has degree rel2","like","#:George 1","music","none","?:Fv82","?:Cu27"],
+            ["$defq0"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:George 1"], ["isa","program","sk5_program"], ["$defq0"]],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:George 1"],
+            ["is rel2","has access to","#:George 1","sk5_program","?:Cu29"],
+            ["$defq0"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:George 1"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","compose","?:Cu30"],
+            ["-has actor","?:E","#:George 1","?:Cu30"],
+            ["$defq0"]
+           ],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "If George 1 likes music and George 1 has access to a program, will George 1 compose?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","program","$some_program"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","program","$some_not_program"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S4","assumption",1], [["-isa","person","#:George 1"], ["$defq0"], ["-has type","?:X","compose","?:Y"], ["-has actor","?:X","#:George 1","?:Y"], ["-isa","activity","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","person","#:George 1"]]],
+          [3, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [4, ["mp",1,2,3,"fromga",1], [["-has type","?:X","compose","?:Y"], ["-has actor","?:X","#:George 1","?:Y"], ["-isa","activity","?:X"]]],
+          [5, ["in","sent_S1","assumption",1], [["-has degree rel2","like","#:George 1","music","none","?:X","?:Y"], ["has type","sk1_activity","compose","?:Y"]]],
+          [6, ["in","sent_S4","assumption",1], [["-isa","person","#:George 1"], ["$defq0"], ["has degree rel2","like","#:George 1","music","none","?:X","?:Y"]]],
+          [7, ["mp",6,2,3,"fromga",1], [["has degree rel2","like","#:George 1","music","none","?:X","?:Y"]]],
+          [8, ["mp",5,7,"fromga",1], [["has type","sk1_activity","compose","?:X"]]],
+          [9, ["in","sent_S1","assumption",1], [["-has degree rel2","like","#:George 1","music","none","?:X","?:Y"], ["has actor","sk1_activity","#:George 1","?:Y"]]],
+          [10, ["mp",9,7,"fromga",1], [["has actor","sk1_activity","#:George 1","?:X3"]]],
+          [11, ["in","sent_S1","assumption",1], [["isa","activity","sk1_activity"], ["-has degree rel2","like","#:George 1","music","none","?:X","?:Y"]]],
+          [12, ["mp", 7, [11,1], "fromga", 1], [["isa","activity","sk1_activity"]]],
+          [13, ["mp",4,8,10,12,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) If George likes music, he wants to compose.",
+"  (2) If George can compose and wants to compose, he will compose.",
+"  (3) If George likes music and has access to a program, he will compose?",
+"Proof steps (by contradiction):",
+"  (1) If George is a person and X is a compose event and George performs X and X is an activity then answer holds  [sentence 3]",
+"  (2) George is a person  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If X is a compose event and George performs X then X is not an activity  [from steps 1, 2, 3]",
+"  (5) If George is like of the music then the event act2 is a compose event  [sentence 1]",
+"  (6) If George is a person then answer holds or George is like of the music  [sentence 3]",
+"  (7) George is like of the music  [from steps 6, 2, 3]",
+"  (8) The event act2 is a compose event  [from steps 5, 7]",
+"  (9) If George is like of the music then George performs the event act2  [sentence 1]",
+"  (10) George performs the event act2  [from steps 9, 7]",
+"  (11) If George is like of the music then the event act2 is an activity  [sentence 1]",
+"  (12) The event act2 is an activity  [from steps 7, 11]",
+"  (13) Contradiction  [from steps 4, 8, 10, 12]"
+],
+  "timestamp": "2026-06-18T22:12:22Z"
+}

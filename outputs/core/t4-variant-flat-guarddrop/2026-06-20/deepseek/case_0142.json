@@ -1,0 +1,172 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 142,
+  "input_text": "A car had a dent. It was fast. What was fast?",
+  "expected_answer": "The car",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "The car.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A car had a dent.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A car 1 had a dent 2.",
+          "type": "situation",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"},
+            {"id": "dent 2", "type": "concrete", "text": "dent"}
+          ],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The dent 2 is the dent of the car 1.",
+          "type": "situation",
+          "entities": [{"id": "dent 2", "type": "concrete", "text": "dent"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "It was fast.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The car 1 was fast.",
+          "type": "situation",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["fast","none","car"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What was fast?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity was fast?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["fast","none","entity"]],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","car","car 1"], ["isa","dent","dent 2"], ["have","car 1","dent 2"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","car","car 1"], ["isa","dent","dent 2"], ["has part","car 1","dent 2"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","car","car 1"], ["has degree property","fast","car 1","none","car"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S4",
+      ["ask", "X", ["@time", "past", ["has degree property","fast","X","none","entity"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "A car 1 had a dent 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","dent","#:dent 2"],
+ "@nl": "A car 1 had a dent 2."},
+{"@name": "sent_S1",
+ "@logic": ["have", "#:car 1", "#:dent 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A car 1 had a dent 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The dent 2 is the dent of the car 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","dent","#:dent 2"],
+ "@nl": "The dent 2 is the dent of the car 1."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:car 1", "#:dent 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The dent 2 is the dent of the car 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The car 1 was fast."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "fast", "#:car 1", "none", "car", ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The car 1 was fast."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has degree property", "fast", "?:X", "none", "?:Fv11", ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity was fast?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "fast", "?:X", "none", "?:Fv12", ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was fast?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity was fast?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "fast", "?:Br1", "none", "?:Fv13", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree property", "fast", "?:Br1", "none", "?:Fv14", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "fast", "?:Br1", "none", "?:Fv15", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was fast?"},
+{"@name": "pop_what",
+ "@logic": ["isa","dent","$some_dent"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:car 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["has degree property", "fast", "#:car 1", "none", "car", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S4","assumption",1], [["-has degree property", "fast", "?:X", "none", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:car 1"]]],
+          [4, ["in","sent_S4","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","#:car 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) It was fast.",
+"  (2) What was fast?",
+"Proof steps:",
+"  (1) The car A is fast  [sentence 1]",
+"  (2) If some X is fast then X is the answer  [sentence 2]",
+"  (3) The car A is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) The fast car is an answer  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T09:37:53Z"
+}

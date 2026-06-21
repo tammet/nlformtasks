@@ -1,0 +1,297 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1285,
+  "input_text": "Bears ate berries in a forest which was seen by Mary. Mary saw the forest where the bears ate?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears ate berries in a forest which was seen by Mary.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears [set 1] ate berries in a forest 2.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "bear"},
+            {"id": "berries 2", "type": "concrete", "category": "plant"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {"target": "berries 2", "location": "forest 3", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 4 saw the forest 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 4", "type": "concrete", "category": "person"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "Mary 4", "target": "forest 3"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary saw the forest where the bears ate?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 4 see the forest 3 where the bears [set 1] ate?",
+          "type": "query",
+          "entities": [{"id": "Mary 4", "type": "concrete", "category": "person"},
+            {"id": "forest 3", "type": "concrete", "category": "place"},
+            {"id": "set 1", "type": "set", "category": "bear"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "Mary 4", "target": "forest 3"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","berry","berries 2"],
+            ["isa","forest","forest 3"],
+            ["forall","?:M",
+              ["implies",
+                ["member", "?:M", ["$setof", "?:X", "set 1", ["and", ["isa","bear","?:X"]]]],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","?:M"],
+                    ["has target","E","berries 2"],
+                    ["has location","E","forest 3","in"],
+                    ["has time","E","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Mary 4"],
+          ["isa","forest","forest 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","see"],
+              ["has actor","E","Mary 4"],
+              ["has target","E","forest 3"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","see"],
+            ["has actor","E","Mary 4"],
+            ["has target","E","forest 3"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","berries","#:berries 2"],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "entity_S2",
+ "@logic": ["isa","woman","#:Mary 4"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["isa", "activity", ["sk0","?:M"]]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has type", ["sk0","?:M"], "eat", "?:Cu6"]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has actor", ["sk0","?:M"], "?:M", "?:Cu7"]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has target", ["sk0","?:M"], "#:berries 2", "?:Cu8"]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has location", ["sk0","?:M"], "#:forest 3", "in", "?:Cu9"]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["has time", ["sk0","?:M"], "past", "in", "?:Cu10"]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:M", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+            ["actuality", ["sk0","?:M"]]
+           ],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Bears [set 1] ate berries in a forest 2."},
+{"@name": "sent_S1_exist",
+ "@logic": ["member", "$some_bear", ["$setof", "id", "#:set 1", ["$and", ["isa","bear","$arg1"]]]],
+ "@nl": "[generated: sent_S1_exist]"},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 4"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["has type","sk1_activity","show","?:Cu17"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["has recipient","sk1_activity","#:Mary 4","?:Cu18"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["has target","sk1_activity","#:forest 3","?:Cu19"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["has time","sk1_activity","past","in","?:Cu20"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk1_activity"],
+ "@nl": "Mary 4 saw the forest 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk2_activity"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk2_activity","show","?:Cu23"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has recipient","sk2_activity","#:Mary 4","?:Cu24"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has target","sk2_activity","#:forest 3","?:Cu25"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has time","sk2_activity","past","in","?:Cu26"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk2_activity"]],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","show","?:Cu28"],
+            ["-has recipient","?:E","#:Mary 4","?:Cu28"],
+            ["-has target","?:E","#:forest 3","?:Cu28"],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 4 see the forest 3 where the bears [set 1] ate?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:c","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:c","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:c","$arg1"]]]],
+            ["isa","?:c","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-has recipient","?:X","#:Mary 4","?:Y"], ["-has type","?:X","show","?:Y"], ["-has target","?:X","#:forest 3","?:Y"], ["-isa","activity","?:X"], ["-actuality","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has recipient","sk1_activity","#:Mary 4","?:X"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-isa","activity","sk1_activity"], ["-actuality","sk1_activity"], ["-has type","sk1_activity","show","?:X3"], ["-has target","sk1_activity","#:forest 3","?:X3"]]],
+          [5, ["in","sent_S2","assumption",1], [["isa","activity","sk1_activity"]]],
+          [6, ["in","sent_S2","assumption",1], [["actuality","sk1_activity"]]],
+          [7, ["simp",4,5,6,"fromga",1], [["-has type","sk1_activity","show","?:X"], ["-has target","sk1_activity","#:forest 3","?:X"]]],
+          [8, ["in","sent_S2","assumption",1], [["has type","sk1_activity","show","?:X"]]],
+          [9, ["mp",7,8,"fromga",1], [["-has target","sk1_activity","#:forest 3","?:X"]]],
+          [10, ["in","sent_S2","assumption",1], [["has target","sk1_activity","#:forest 3","?:X"]]],
+          [11, ["mp",9,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Bears ate berries in a forest which was seen by Mary.",
+"  (2) Mary saw the forest where the bears ate?",
+"Proof steps (by contradiction):",
+"  (1) If Mary is a recipient of X and X is a show event and X targets the forest C and X is an activity then answer holds  [sentence 2]",
+"  (2) Mary is the recipient of the event act1  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If the event act1 is an activity and the act1 is a show event then the act1 does not target the forest C  [from steps 1, 2, 3]",
+"  (5) The event act1 is an activity  [sentence 1]",
+"  (6)   [sentence 1]",
+"  (7) If the event act1 is a show event then the act1 does not target the forest C  [from steps 4, 5, 6]",
+"  (8) The event act1 is a show event  [sentence 1]",
+"  (9) The act1 does not target the forest C  [from steps 7, 8]",
+"  (10) The event act1 targets the forest C  [sentence 1]",
+"  (11) Contradiction  [from steps 9, 10]"
+],
+  "timestamp": "2026-06-19T02:42:47Z"
+}

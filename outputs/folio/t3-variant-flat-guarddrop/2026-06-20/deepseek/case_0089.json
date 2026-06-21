@@ -1,0 +1,455 @@
+{
+  "test_name": "folio_v2_prenorm_flat_guarddrop",
+  "case_id": 89,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. Harry is smarter than before?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Books contain tons of knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain a large amount of knowledge.",
+          "type": "strict_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, that person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, they become smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person becomes smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            },
+            {"root": "become", "mode": "habitual"}
+          ],
+          "adjectives": [["smart","high","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Harry reads the book 'Walden' by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 reads the book 'Walden' 2.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "Walden 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "present"
+        },
+        {
+          "unit_id": "S5",
+          "text": "Henry Thoreau 3 wrote Walden 2.",
+          "type": "real",
+          "entities": [{"id": "Henry Thoreau 3", "type": "concrete", "category": "person"},
+            {"id": "Walden 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "write",
+              "mode": "event",
+              "roles": {"actor": "Henry Thoreau 3", "target": "Walden 2"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Does Harry become smarter than before?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does Harry 1 become smarter than before?",
+          "type": "query",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["smart","high","person"]],
+          "actions": [{"root": "become", "mode": "event", "roles": {"actor": "Harry 1"}}],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["json-fail retry: Unterminated string starting at: line 30 column 87 (char 110"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","book","X"], ["is rel2","in","knowledge","X"]]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["isa","book","Y"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","read"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","Y"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ],
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","gain"],
+                    ["has actor","E2","X"],
+                    ["has target","E2","knowledge"],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","gain"],
+                    ["has actor","E1","X"],
+                    ["has target","E1","knowledge"],
+                    ["typical","E1"]
+                  ]
+                ]
+              ],
+              ["and",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","become"],
+                    ["has actor","E2","X"],
+                    ["typical","E2"]
+                  ]
+                ],
+                ["has degree rel2","smart","X","person","high","person"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Harry 1"],
+            ["isa","book","Walden 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","read"],
+                ["has actor","E","Harry 1"],
+                ["has target","E","Walden 2"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Henry Thoreau 3"],
+          ["isa","book","Walden 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","write"],
+              ["has actor","E","Henry Thoreau 3"],
+              ["has target","E","Walden 2"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","become"],
+            ["has actor","E","Harry 1"],
+            ["has degree rel2","smart","Harry 1","person","high","person"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "stage_2_retries": ["sanity #1: comparative_as_degree_property_nonmeasurable"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"],
+            ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Books contain a large amount of knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-is rel2", "read", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has property", "become", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has degree rel2", "stupid", "?:X", "person", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","$generic",2], ["$not", ["has degree rel2", "smart", "?:X", "person", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S4",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Harry 1 reads the book 'Walden' 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:Walden 2"],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2", "write", "#:Henry Thoreau 3", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Henry Thoreau 3 wrote Walden 2."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "become", "#:Harry 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "become", "#:Harry 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does Harry 1 become smarter than before?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "become", "$some_become", ["$ctxt","?:Fv27","?:Fv24","?:Fv25","?:Fv26"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "become", "$some_not_become", ["$ctxt","?:Fv31","?:Fv28","?:Fv29","?:Fv30"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.995195,
+        "positive proof": [[1, ["in","frm_93","axiom",1], [["-has property", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["has property", "?:X", "?:Y", ["$ctxt","past","?:W","?:U","?:V"]], ["-before","?:Z","?:W"]]],
+          [2, ["in","sent_S2","assumption",1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [3, ["in","sent_S3","assumption",1], [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [4, ["mp", [2,2], 3, "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [5, ["in","sent_S4","assumption",1], [["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [6, ["mp", [4,1], 5, "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-before","W0","?:Z"]]],
+          [8, ["in","frm_91","axiom",1], [["-next","?:X","?:Y"], ["before","?:X","?:Y"]]],
+          [9, ["in","sent_S4","assumption",1], [["next","W0","W1"]]],
+          [10, ["mp",8,9,"fromassumption",1], [["before","W0","W1"]]],
+          [11, ["mp", [7,2], 10, "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [12, ["in","sent_S6","assumption",0.99], [["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-has property", "become", "#:Harry 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["has property", "become", "#:Harry 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [13, ["mp", [11,1], [12,1], "fromassumption", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [14, ["in","sent_S6","assumption",1], [["$defq0"], ["-has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [15, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [16, ["mp", [13,2], [14,1], 15, "fromga", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [17, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [18, ["mp", [17,1], [6,1], "fromassumption", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","?:Z","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","?:Z","?:X","?:Y"]], ["-next","W0","?:Z"]]],
+          [19, ["mp", [18,3], 9, "fromassumption", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [20, ["mp", [19,2], [14,1], 15, "fromga", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [21, ["cumul",16,20,"fromga",0.992829], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [22, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [23, ["mp", [18,3], 22, "fromassumption", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [24, ["mp", [23,2], [14,1], 15, "fromga", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [25, ["cumul",21,24,"fromga",0.995195], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:Harry 1","W0"]],
+          ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.99165,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S4","assumption",1], [["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [6, ["in","sent_S2","assumption",1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [7, ["in","sent_S3","assumption",1], [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [8, ["mp", [6,2], 7, "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [9, ["mp", [5,1], [8,1], "fromassumption", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [10, ["in","sent_S6","assumption",1], [["$defq0"], ["-has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [11, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [12, ["mp", [9,2], [10,1], 11, "fromga", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [13, ["in","sent_S4","assumption",1], [["next","W0","W1"]]],
+          [14, ["mp", [3,2], 13, "fromassumption", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [15, ["mp", [14,1], [8,1], "fromassumption", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [16, ["mp", [15,2], [10,1], 11, "fromga", 0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [17, ["cumul",12,16,"fromga",0.99165], [["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]],
+          ["$block", 0, ["moved","#:Harry 1","W0"]],
+          ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.98442,
+        "positive proof": [[1, ["in","frm_96","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:2006","?:V","?:W"]], ["$block", 0, ["moved_between","?:Y","?:U","?:2006"]], ["$block", 0, ["moved","?:Y","?:U"]], ["-before","?:U","?:2006"]]],
+          [2, ["in","sent_S4","assumption",1], [["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["$block", 0, ["moved_between","#:Harry 1","W0","?:X"]], ["-before","W0","?:X"]]],
+          [4, ["in","frm_91","axiom",1], [["-next","?:X","?:Y"], ["before","?:X","?:Y"]]],
+          [5, ["in","sent_S4","assumption",1], [["next","W0","W1"]]],
+          [6, ["mp",4,5,"fromassumption",1], [["before","W0","W1"]]],
+          [7, ["mp", [3,3], 6, "fromassumption", 0.99], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [8, ["in","sent_S2","assumption",1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [9, ["in","sent_S3","assumption",1], [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [10, ["mp", [8,2], 9, "fromassumption", 1], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:W"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "become", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]],
+          [11, ["mp", [7,2], [10,1], "fromassumption", 0.99], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [12, ["in","sent_S6","assumption",0.99], [["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-has property", "become", "#:Harry 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["has property", "become", "#:Harry 1", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [13, ["mp", [11,3], [12,1], "fromassumption", 0.9801], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [14, ["in","sent_S6","assumption",1], [["$defq0"], ["-has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [15, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [16, ["mp", [13,4], [14,1], 15, "fromga", 0.9801], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [17, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [18, ["mp",4,17,"fromassumption",1], [["before","W0","W1"]]],
+          [19, ["mp", [3,3], 18, "fromassumption", 0.99], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["is rel2", "read", "#:Harry 1", ["eventprop","$target","#:Walden 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [20, ["mp", [19,2], [10,1], "fromassumption", 0.99], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [21, ["mp", [20,3], [12,1], "fromassumption", 0.9801], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [22, ["mp", [21,4], [14,1], 15, "fromga", 0.9801], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [23, ["cumul",16,22,"fromga",0.982538], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [24, ["mp",1,9,"fromassumption",0.99], [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["has property", "become", "?:X", ["$ctxt","present","?:V","?:Z","?:U"]], ["$block", 0, ["moved_between","?:X","?:V","?:Y"]], ["$block", 0, ["moved","?:X","?:V"]], ["-before","?:V","?:Y"]]],
+          [25, ["mp", [24,4], 6, "fromassumption", 0.99], [["is rel2", "loss", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:Y","?:Z"]], ["has property", "become", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["$block", 0, ["moved_between","?:X","W0","W1"]], ["$block", 0, ["moved","?:X","W0"]]]],
+          [26, ["mp", 25, [8,2], "fromassumption", 0.99], [["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "?:X", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:Y","?:Z"]]]], ["-is rel2", "read", "?:X", ["eventprop","$target","?:U"], ["$ctxt","past","W1","?:Y","?:Z"]], ["has property", "become", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["$block", 0, ["moved_between","?:X","W0","W1"]], ["$block", 0, ["moved","?:X","W0"]]]],
+          [27, ["mp", [26,1], [19,2], "fromassumption", 0.9801], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [28, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [29, ["mp", [27,3], [28,1], "fromassumption", 0.970299], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","?:Z","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","?:Z","?:X","?:Y"]], ["-next","W0","?:Z"]]],
+          [30, ["mp", [29,5], 17, "fromassumption", 0.970299], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]], ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [31, ["mp", [30,4], [14,1], 15, "fromga", 0.970299], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]],
+          [32, ["cumul",23,31,"fromga",0.98442], [["$block", 0, ["moved_between","#:Harry 1","W0","W1"]], ["$block", 0, ["moved","#:Harry 1","W0"]], ["$block", ["$","$generic",2], ["$not", ["is rel2", "gain", "#:Harry 1", ["eventprop","$target","knowledge"], ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "become", "#:Harry 1", ["$ctxt","present","W1","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) When a person reads a book, that person gains knowledge.",
+"  (2) If a person gains knowledge, they become smarter.",
+"  (3) Harry reads the book 'Walden' by Henry Thoreau.",
+"  (4) Does Harry become smarter than before?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) Harry reads Walden  [sentence 3]",
+"  (3) If the situation W0 is followed by a situation X then Harry reads Walden, except when Harry moved in the situation W0  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (5) Harry reads Walden, except when Harry moved in the situation W0  [from steps 3, 4, confidence 99%]",
+"  (6) If some X reads W then X is not loss of the knowledge, except when X is not gain of the knowledge  [sentence 1]",
+"  (7) Some X is loss of the knowledge or X is become  [sentence 2]",
+"  (8) If some X reads W then X is become, except when X is not gain of the knowledge  [from steps 6, 7]",
+"  (9) Harry is become, except when Harry moved in the situation W0 and Harry is not gain of the knowledge  [from steps 5, 8, confidence 99%]",
+"  (10) If Harry is become then answer holds  [sentence 4]",
+"  (11) assume for contradiction: the answer is no  [from question]",
+"  (12) Outstanding exception: Harry moved in the situation W0 and Harry is not gain of the knowledge  [from steps 9, 10, 11, confidence 99%]",
+"  (13) The situation W0 is followed by the situation W1  [sentence 3]",
+"  (14) Harry reads Walden, except when Harry moved in the situation W0  [from steps 3, 13, confidence 99%]",
+"  (15) Harry is become, except when Harry moved in the situation W0 and Harry is not gain of the knowledge  [from steps 14, 8, confidence 99%]",
+"  (16) Outstanding exception: Harry moved in the situation W0 and Harry is not gain of the knowledge  [from steps 15, 10, 11, confidence 99%]",
+"  (17) Outstanding exception: Harry moved in the situation W0 and Harry is not gain of the knowledge  [from steps 12, 16, confidence 99%]",
+"Exceptions checked and not holding:",
+"  Harry moved in W0",
+"  Harry is not gain of the knowledge"
+],
+  "timestamp": "2026-06-18T23:30:15Z"
+}

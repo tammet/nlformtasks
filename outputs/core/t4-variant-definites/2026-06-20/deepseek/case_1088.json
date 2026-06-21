@@ -1,0 +1,88 @@
+{
+  "test_name": "core_definites",
+  "case_id": 1088,
+  "input_text": "John likes tea and Mary coffee. Does Mary like tea?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John likes tea and Mary coffee.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 likes tea.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "tea", "type": "generic", "scope": "kind", "category": "substance"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 2 likes coffee.",
+          "type": "real",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "coffee", "type": "generic", "scope": "kind", "category": "substance"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Does Mary like tea?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does Mary 2 like tea?",
+          "type": "query",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "tea", "type": "generic", "scope": "kind", "category": "substance"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["is rel2","likes","John 1","tea"]]],
+    ["@id", "S2", ["holds", "W0", ["is rel2","likes","Mary 2","coffee"]]],
+    ["@id", "S3", ["question", ["is rel2","likes","Mary 2","tea"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 likes tea."},
+{"@name": "entity_S2",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "Mary 2 likes coffee."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "likes", "#:John 1", "tea", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 likes tea."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "likes", "#:Mary 2", "coffee", ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 2 likes coffee."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "likes", "#:Mary 2", "tea", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Does Mary 2 like tea?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "likes", "#:Mary 2", "tea", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Mary 2 like tea?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does Mary 2 like tea?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "likes", "#:Mary 2", "tea", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "likes", "#:Mary 2", "tea", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "likes", "#:Mary 2", "tea", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does Mary 2 like tea?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T07:46:25Z"
+}

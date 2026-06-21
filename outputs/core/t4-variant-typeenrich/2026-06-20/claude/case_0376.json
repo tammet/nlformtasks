@@ -1,0 +1,258 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 376,
+  "input_text": "John does not eat a carrot. Mike eats carrots. Who does not eat carrots?",
+  "expected_answer": "John",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John does not eat a carrot.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 does not eat a carrot.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "carrot"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike eats carrots.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 2 eats carrots.",
+          "type": "normal_rule",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "carrot", "type": "generic", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "carrot"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Who does not eat carrots?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity does not eat carrots?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "carrot", "type": "generic", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "carrot"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["normally",
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","John 1"],
+                    ["exists", "Y", ["and", ["isa","carrot","Y"], ["has target","E","Y"]]],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mike 2"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","Mike 2"],
+                  ["exists", "Y", ["and", ["isa","carrot","Y"], ["has target","E","Y"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","X"],
+              ["exists", "Y", ["and", ["isa","carrot","Y"], ["has target","E","Y"]]],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:Mike 2"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu4"],
+            ["-has actor","?:E","#:John 1","?:Cu4"],
+            ["-isa","carrot","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu4"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "John 1 does not eat a carrot."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": ["has type","sk0_activity","eat","?:Cu7"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": ["has actor","sk0_activity","#:Mike 2","?:Cu8"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": ["isa","carrot","sk1_carrot"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S2",
+ "@logic": ["has target","sk0_activity","sk1_carrot","?:Cu10"],
+ "@nl": "Mike 2 eats carrots."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu12"],
+            ["-has actor","?:E","?:X","?:Cu12"],
+            ["-isa","carrot","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu12"]
+           ],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa", "activity", ["sk2","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["has type", ["sk2","?:X"], "eat", "?:Cu14"], ["$defq0","?:X"]],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["has actor", ["sk2","?:X"], "?:X", "?:Cu15"], ["$defq0","?:X"]],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa", "carrot", ["sk3","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["has target", ["sk2","?:X"], ["sk3","?:X"], "?:Cu17"], ["$defq0","?:X"]],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": ["$defq0","?:X"],
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity does not eat carrots?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","carrot","$some_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","carrot","$some_not_carrot"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 1"]],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["-has type","?:X","eat","?:Y"], ["-has actor","?:X","#:John 1","?:Y"], ["-has target","?:X","?:Z","?:Y"], ["-isa","carrot","?:Z"], ["-isa","activity","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["has type", ["sk2","?:X"], "eat", "?:Y"], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.98], [["-has actor", ["sk2","?:X"], "#:John 1", "?:Y"], ["-has target", ["sk2","?:X"], "?:Z", "?:Y"], ["-isa", "activity", ["sk2","?:X"]], ["-isa","carrot","?:Z"], ["$defq0","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["has actor", ["sk2","?:X"], "?:X", "?:Y"], ["$defq0","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",0.98], [["-isa", "activity", ["sk2","#:John 1"]], ["$defq0","#:John 1"], ["-has target", ["sk2","#:John 1"], "?:X", "?:Y"], ["-isa","carrot","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["isa", "activity", ["sk2","?:X"]], ["$defq0","?:X"]]],
+          [7, ["mp",5,6,"fromassumption",0.98], [["$defq0","#:John 1"], ["-has target", ["sk2","#:John 1"], "?:X", "?:Y"], ["-isa","carrot","?:X"]]],
+          [8, ["in","sent_S3","assumption",1], [["has target", ["sk2","?:X"], ["sk3","?:X"], "?:Y"], ["$defq0","?:X"]]],
+          [9, ["mp", [7,1], 8, "fromassumption", 0.98], [["-isa", "carrot", ["sk3","#:John 1"]], ["$defq0","#:John 1"]]],
+          [10, ["in","sent_S3","assumption",1], [["isa", "carrot", ["sk3","?:X"]], ["$defq0","?:X"]]],
+          [11, ["mp",9,10,"fromassumption",0.98], [["$defq0","#:John 1"]]],
+          [12, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [13, ["mp",11,12,"fromga",0.98], [["$ans","#:John 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) John does not eat a carrot.",
+"  (2) Who does not eat carrots?",
+"Proof steps:",
+"  (1) If X is a eat event and John performs X and X targets some carrot Z then X is not an activity  [sentence 1, confidence 98%]",
+"  (2) sk2 of X is a eat event or X is the answer  [sentence 2]",
+"  (3) If John performs the eating event sk2 of X and sk2 of X targets some Z and sk2 of X is an activity and Z is a carrot then X is the answer  [from steps 1, 2, confidence 98%]",
+"  (4) Some X performs the eating event sk2 of X or X is the answer  [sentence 2]",
+"  (5) If the activity sk2 of John 1 is an activity and sk2 of John 1 targets some X and X is a carrot then John is the answer  [from steps 3, 4, confidence 98%]",
+"  (6) The eating event sk2 of X is an activity or X is the answer  [sentence 2]",
+"  (7) If the activity sk2 of John 1 targets some X and X is a carrot then John is the answer  [from steps 5, 6, confidence 98%]",
+"  (8) The eating event sk2 of X targets the carrot sk3 of X or X is the answer  [sentence 2]",
+"  (9) If the carrot sk3 of John 1 is a carrot then John is the answer  [from steps 7, 8, confidence 98%]",
+"  (10) The carrot sk3 of X is a carrot or X is the answer  [sentence 2]",
+"  (11) John is the answer  [from steps 9, 10, confidence 98%]",
+"  (12) technical answer unwrap step  [from question]",
+"  (13) John is an answer  [from steps 11, 12, confidence 98%]"
+],
+  "timestamp": "2026-06-19T02:39:27Z"
+}

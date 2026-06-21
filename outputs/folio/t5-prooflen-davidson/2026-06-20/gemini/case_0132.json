@@ -1,0 +1,332 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 132,
+  "input_text": "Some mammals have teeth. Platypuses have no teeth. Platypuses are mammals. Humans have teeth. Platypuses are mammals with no teeth?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some mammals have teeth.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some mammals have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses have no teeth.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Platypuses do not have teeth.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are mammals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Platypuses are mammals.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Humans have teeth.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Humans have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "humans", "type": "generic", "category": "person"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are mammals with no teeth?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Are all platypuses mammals and do platypuses not have teeth?",
+          "type": "query",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","mammal","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","tooth","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","platypus","X"],
+            ["not", ["exists", "Y", ["and", ["isa","tooth","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","mammal","X"]]]]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","human","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","tooth","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S4",0.99]
+      ]
+    ],
+    ["@id","S5",
+      ["question",
+        ["and",
+          ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","mammal","X"]]],
+          ["forall","X",
+            ["implies",
+              ["isa","platypus","X"],
+              ["normally",
+                ["not", ["exists", "Y", ["and", ["isa","tooth","Y"], ["has part","X","Y"]]]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","mammal","?:X"], ["isa", "tooth", ["sk0","?:X"]]],
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","mammal","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","mammal",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","platypus","?:X"],
+            ["-isa","tooth","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Platypuses do not have teeth."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","platypus","?:X"], ["isa","mammal","?:X"]],
+ "@nl": "Platypuses are mammals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","human","?:X"], ["isa", "tooth", ["sk1","?:X"]]],
+ "@nl": "Humans have teeth."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","human","?:X"],
+            ["has part", "?:X", ["sk1","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["$block", ["$","human",1], ["$not", ["has part", "?:X", ["sk1","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Humans have teeth."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","platypus","?:X"], ["isa","mammal","?:X"]],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","platypus","?:X"],
+            ["-isa","tooth","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa","platypus","sk2_platypus"], ["isa","platypus","sk3_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa","platypus","sk2_platypus"], ["isa","tooth","sk4_tooth"], ["$defq0"]],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa","platypus","sk2_platypus"],
+            ["has part", "sk3_platypus", "sk4_tooth", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","mammal","sk2_platypus"], ["isa","platypus","sk3_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","mammal","sk2_platypus"], ["isa","tooth","sk4_tooth"], ["$defq0"]],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","mammal","sk2_platypus"],
+            ["has part", "sk3_platypus", "sk4_tooth", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tooth","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Are all platypuses mammals and do platypuses not have teeth?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mammal","$some_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mammal","$some_not_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tooth","$some_tooth"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tooth","$some_not_tooth"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","platypus","$some_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","platypus","$some_not_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","human","$some_human"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","human","$some_not_human"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","tooth","?:Y"], ["-isa","platypus","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["isa","platypus","sk2_platypus"], ["$defq0"], ["has part", "sk3_platypus", "sk4_tooth", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [3, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,2], 3, "fromga", 1], [["-isa","platypus","sk3_platypus"], ["-isa","tooth","sk4_tooth"], ["isa","platypus","sk2_platypus"]]],
+          [5, ["in","sent_S5","assumption",1], [["isa","platypus","sk3_platypus"], ["isa","platypus","sk2_platypus"], ["$defq0"]]],
+          [6, ["in","sent_S3","assumption",1], [["-isa","platypus","?:X"], ["isa","mammal","?:X"]]],
+          [7, ["mp", [5,1], 6, 3, "fromga", 1], [["isa","platypus","sk3_platypus"], ["isa","mammal","sk2_platypus"]]],
+          [8, ["mp",4,7,"fromga",1], [["-isa","tooth","sk4_tooth"], ["isa","platypus","sk2_platypus"], ["isa","mammal","sk2_platypus"]]],
+          [9, ["in","sent_S5","assumption",1], [["isa","platypus","sk2_platypus"], ["isa","tooth","sk4_tooth"], ["$defq0"]]],
+          [10, ["mp", 8, [9,1], 3, "fromga", 1], [["isa","platypus","sk2_platypus"], ["isa","mammal","sk2_platypus"]]],
+          [11, ["mp",10,6,"fromga",1], [["isa","mammal","sk2_platypus"]]],
+          [12, ["in","sent_S5","assumption",1], [["-isa","mammal","sk2_platypus"], ["$defq0"], ["has part", "sk3_platypus", "sk4_tooth", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [13, ["mp",11,12,3,"fromga",1], [["has part", "sk3_platypus", "sk4_tooth", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [14, ["in","sent_S5","assumption",1], [["-isa","mammal","sk2_platypus"], ["isa","tooth","sk4_tooth"], ["$defq0"]]],
+          [15, ["mp",11,14,3,"fromga",1], [["isa","tooth","sk4_tooth"]]],
+          [16, ["in","sent_S5","assumption",1], [["-isa","mammal","sk2_platypus"], ["isa","platypus","sk3_platypus"], ["$defq0"]]],
+          [17, ["mp",11,16,3,"fromga",1], [["isa","platypus","sk3_platypus"]]],
+          [18, ["mp",13,1,15,17,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Platypuses have no teeth.",
+"  (2) Platypuses are mammals.",
+"  (3) Platypuses are mammals with no teeth?",
+"Proof steps (by contradiction):",
+"  (1) X does not have Y as a part  [sentence 1]",
+"  (2) Some platypus pla1 is a platypus or answer holds or some platypus pla2 has some tooth too1 as a part  [sentence 3]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If pla2 is a platypus and too1 is a tooth then pla1 is a platypus  [from steps 1, 2, 3]",
+"  (5) Pla2 is a platypus or pla1 is a platypus or answer holds  [sentence 3]",
+"  (6) If some X is a platypus then X is a mammal  [sentence 2]",
+"  (7) Pla2 is a platypus or pla1 is a mammal  [from steps 5, 6, 3]",
+"  (8) If too1 is a tooth then pla1 is a platypus or pla1 is a mammal  [from steps 4, 7]",
+"  (9) Pla1 is a platypus or too1 is a tooth or answer holds  [sentence 3]",
+"  (10) Pla1 is a platypus or pla1 is a mammal  [from steps 8, 9, 3]",
+"  (11) Pla1 is a mammal  [from steps 10, 6]",
+"  (12) If pla1 is a mammal then answer holds or pla2 has too1 as a part  [sentence 3]",
+"  (13) Pla2 has too1 as a part  [from steps 11, 12, 3]",
+"  (14) If pla1 is a mammal then too1 is a tooth or answer holds  [sentence 3]",
+"  (15) Too1 is a tooth  [from steps 11, 14, 3]",
+"  (16) If pla1 is a mammal then pla2 is a platypus or answer holds  [sentence 3]",
+"  (17) Pla2 is a platypus  [from steps 11, 16, 3]",
+"  (18) Contradiction  [from steps 13, 1, 15, 17]"
+],
+  "timestamp": "2026-06-20T12:47:59Z"
+}

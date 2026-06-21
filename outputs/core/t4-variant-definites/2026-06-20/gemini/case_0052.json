@@ -1,0 +1,307 @@
+{
+  "test_name": "core_definites",
+  "case_id": 52,
+  "input_text": "Frogs are small animals. John is a frog. John is small?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Frogs are small animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Frogs are animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "frogs", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        },
+        {
+          "unit_id": "S2",
+          "text": "Frogs are small.",
+          "type": "normal_rule",
+          "entities": [{"id": "frogs", "type": "generic", "category": "animal"}],
+          "adjectives": [["small","none","frog"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a frog.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a frog.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "frog", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is small?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 small?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["small","none","frog"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","frog","X"], ["isa","animal","X"]]]]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","frog","X"],
+              ["normally", ["has degree property","small","X","none","frog"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","person","John 1"], ["isa","frog","John 1"]]]],
+    ["@id","S4",
+      ["question",
+        ["and", ["isa","person","John 1"], ["has degree property","small","John 1","none","frog"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","frog","?:X"], ["isa","animal","?:X"]],
+ "@nl": "Frogs are animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","frog","?:X"],
+            ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Frogs are small."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a frog."},
+{"@name": "sent_S3",
+ "@logic": ["isa","frog","#:John 1"],
+ "@nl": "John 1 is a frog."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:Fv13","?:Fv11","?:Fv12"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 small?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","frog","$some_not_frog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "small", "$some_small_frog", "none", "frog", ["$ctxt","?:Fv42","?:Fv39","?:Fv40","?:Fv41"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","frog","$some_small_frog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "small", "$some_not_small_frog", "none", "frog", ["$ctxt","?:Fv50","?:Fv47","?:Fv48","?:Fv49"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has degree property","small","?:X","none","?:Fv51","?:Fv19"],
+            ["-has degree property","high","?:X","none","?:Fv52","?:Fv19"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["has degree property","high","?:X","none","?:Fv53","?:Fv20"],
+            ["has degree property","small","?:X","none","?:Fv54","?:Fv20"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "small", "?:X", "none", "?:Fv55", ["$ctxt","past","?:Fv21","?:Fv22","?:Fv23"]],
+            ["has degree property", "small", "?:X", "none", "?:Fv56", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]],
+            ["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Fv57", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "small", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv24","?:Fv25","?:Fv26"]],
+            ["has degree property", "small", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]],
+            ["$block", 0, ["$not", ["has degree property", "small", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","frog","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","frog","#:John 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S4","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,2], 5, "fromga", 0.9], [["-isa","person","#:John 1"], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [7, ["in","sent_S3","assumption",1], [["isa","person","#:John 1"]]],
+          [8, ["mp",6,7,"fromga",0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.882113,
+        "positive proof": [[1, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]], ["-has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]],
+          [2, ["in","frm_syn","assumption",0.9], [["has degree property","small","?:X","none","?:Y","?:Z"], ["has degree property","high","?:X","none","?:U","?:Z"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.855], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [4, ["in","frm_syn","assumption",0.9], [["-has degree property","small","?:X","none","?:Y","?:Z"], ["-has degree property","high","?:X","none","?:U","?:Z"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.7695], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "high", "?:X", "none", "?:W", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:2006", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [6, ["mp", [5,1], [2,1], "fromassumption", 0.69255], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "?:W", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:2006", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [7, ["in","sent_S2","assumption",0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","frog","?:X"]]],
+          [8, ["in","sent_S3","assumption",1], [["isa","frog","#:John 1"]]],
+          [9, ["mp", [7,2], 8, "fromassumption", 0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [10, ["mp", [9,1], 4, "fromassumption", 0.81], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-has degree property", "high", "#:John 1", "none", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [11, ["mp", [6,2], [10,1], "fromassumption", 0.560965], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "small", "#:John 1", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [12, ["in","sent_S4","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [13, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [14, ["mp", [11,2], [12,2], 13, "fromga", 0.560965], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["-isa","person","#:John 1"]]],
+          [15, ["in","sent_S3","assumption",1], [["isa","person","#:John 1"]]],
+          [16, ["simp",14,15,"fromga",0.560965], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [17, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "small", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "small", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [18, ["mp", [9,1], [17,1], "fromassumption", 0.855], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "small", "#:John 1", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [19, ["mp", [18,2], [12,2], 13, "fromga", 0.855], [["-isa","person","#:John 1"], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [20, ["mp",19,15,"fromga",0.855], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [21, ["cumul",16,20,"fromga",0.882113], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.749243,
+        "positive proof": [[1, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]], ["-has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]],
+          [2, ["in","frm_syn","assumption",0.9], [["has degree property","small","?:X","none","?:Y","?:Z"], ["has degree property","high","?:X","none","?:U","?:Z"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.855], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [4, ["in","sent_S4","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,2], 5, "fromga", 0.855], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["has degree property", "high", "#:John 1", "none", "?:U3", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [7, ["in","sent_S3","assumption",1], [["isa","person","#:John 1"]]],
+          [8, ["simp",6,7,"fromga",0.855], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "high", "#:John 1", "none", "?:U", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [9, ["in","sent_S2","assumption",0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","frog","?:X"]]],
+          [10, ["in","sent_S3","assumption",1], [["isa","frog","#:John 1"]]],
+          [11, ["mp", [9,2], 10, "fromassumption", 0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [12, ["in","frm_syn","assumption",0.9], [["-has degree property","small","?:X","none","?:Y","?:Z"], ["-has degree property","high","?:X","none","?:U","?:Z"]]],
+          [13, ["mp", [11,1], 12, "fromassumption", 0.81], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-has degree property", "high", "#:John 1", "none", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [14, ["mp", [8,1], [13,1], "fromga", 0.69255], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]]]],
+          [15, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [16, ["mp", [15,1], 2, "fromassumption", 0.891], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]], ["has degree property", "high", "#:John 1", "none", "?:U", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [17, ["mp", [16,1], [4,2], 5, "fromga", 0.891], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["has degree property", "high", "#:John 1", "none", "?:U3", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [18, ["simp",17,7,"fromga",0.891], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "high", "#:John 1", "none", "?:U", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [19, ["mp", [18,1], [13,1], "fromga", 0.72171], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]]]],
+          [20, ["cumul",14,19,"fromga",0.749243], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.899129,
+        "positive proof": [[1, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [2, ["in","frm_syn","assumption",0.9], [["has degree property","small","?:X","none","?:Y","?:Z"], ["has degree property","high","?:X","none","?:U","?:Z"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.891], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]], ["has degree property", "high", "#:John 1", "none", "?:U", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [4, ["in","sent_S4","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,2], 5, "fromga", 0.891], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["has degree property", "high", "#:John 1", "none", "?:U3", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          [7, ["in","sent_S3","assumption",1], [["isa","person","#:John 1"]]],
+          [8, ["simp",6,7,"fromga",0.891], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "high", "#:John 1", "none", "?:U", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [9, ["in","sent_S2","assumption",0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "frog", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","frog","?:X"]]],
+          [10, ["in","sent_S3","assumption",1], [["isa","frog","#:John 1"]]],
+          [11, ["mp", [9,2], 10, "fromassumption", 0.9], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [12, ["in","frm_syn","assumption",0.9], [["-has degree property","small","?:X","none","?:Y","?:Z"], ["-has degree property","high","?:X","none","?:U","?:Z"]]],
+          [13, ["mp", [11,1], 12, "fromassumption", 0.81], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["-has degree property", "high", "#:John 1", "none", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [14, ["mp", [8,1], [13,1], "fromga", 0.72171], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]]]],
+          [15, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "small", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]], ["has degree property", "small", "?:X", "none", "?:2006", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [16, ["mp", [11,1], [15,1], "fromassumption", 0.855], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has degree property", "small", "#:John 1", "none", "?:V", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [17, ["mp", [16,2], [4,2], 5, "fromga", 0.855], [["-isa","person","#:John 1"], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U", ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [18, ["mp",17,7,"fromga",0.855], [["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:U3", ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [19, ["in","frm_stable_persist","assumption",0.95], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]], ["-has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["has degree property", "small", "?:X", "?:Y", "?:Z", ["$ctxt","present","?:U","?:V","?:W"]]]],
+          [20, ["mp", [19,1], 2, "fromassumption", 0.855], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:W", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [21, ["mp", [20,1], 12, "fromassumption", 0.7695], [["$block", 0, ["$not", ["has degree property", "small", "?:X", "none", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has degree property", "high", "?:X", "none", "?:W", ["$ctxt","present","?:Z","?:U","?:V"]], ["has degree property", "high", "?:X", "none", "?:2006", ["$ctxt","past","?:Z","?:U","?:V"]]]],
+          [22, ["mp", [4,2], 2, 5, "fromga", 0.9], [["-isa","person","#:John 1"], ["has degree property", "high", "#:John 1", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]],
+          [23, ["simp",22,7,"fromga",0.9], [["has degree property", "high", "#:John 1", "none", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [24, ["mp", [21,1], 23, "fromga", 0.69255], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["has degree property", "high", "#:John 1", "none", "?:V", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [25, ["mp", [24,1], [13,1], "fromga", 0.560965], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:Y3","?:Z3","?:U3"]]]]]],
+          [26, ["cumul",18,25,"fromga",0.882113], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:Y3","?:Z3","?:U3"]]]]]],
+          [27, ["cumul",14,26,"fromga",0.899129], [["$block", 0, ["$not", ["has degree property", "small", "#:John 1", "none", "?:X3", ["$ctxt","present","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","frog",1], ["$not", ["has degree property", "small", "#:John 1", "none", "frog", ["$ctxt","past","?:Y3","?:Z3","?:U3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Frogs are small animals.",
+"  (2) John is a frog.",
+"  (3) John is small?",
+"Proof steps:",
+"  (1) If some X is a frog then normally X is a small frog  [sentence 1, confidence 90%]",
+"  (2) John is a frog  [sentence 2]",
+"  (3) Normally John is a small frog  [from steps 1, 2, confidence 90%]",
+"  (4) If John is a person and John is a small frog then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) John is not a person, except when John is not a small frog  [from steps 3, 4, 5, confidence 90%]",
+"  (7) John is a person  [sentence 2]",
+"  (8) Outstanding exception: John is not a small frog  [from steps 6, 7, confidence 90%]",
+"Exceptions checked and not holding:",
+"  John is not a small frog"
+],
+  "timestamp": "2026-06-19T05:45:10Z"
+}

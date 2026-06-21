@@ -1,0 +1,260 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1429,
+  "input_text": "Birds fly and eat. Baby birds do not fly. John is a baby bird. Mike is a bird.\n    John does not fly?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Birds fly and eat.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.99
+        },
+        {
+          "unit_id": "S2",
+          "text": "Birds eat.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "eat", "mode": "habitual"}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Baby birds do not fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Baby birds cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "baby birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 is a baby bird.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Mike 2 is a bird.",
+          "type": "real",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John does not fly?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does John 1 not fly?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "John 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","baby bird","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","baby bird","John 1"]]],
+    ["@id", "S5", ["holds", "W0", ["isa","bird","Mike 2"]]],
+    ["@id","S6",
+      ["question",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","John 1"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S4",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "entity_S5",
+ "@logic": ["isa","animal","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk0","?:X"], "fly", "?:Cu4"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu5"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["capability", ["sk0","?:X"]]],
+ "@confidence": 0.98,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk1","?:X"], "eat", "?:Cu8"]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk1","?:X"], "?:X", "?:Cu9"]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": ["-isa","bird","?:X"],
+ "@confidence": 0.98,
+ "@nl": "Birds eat."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","baby bird","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu11"],
+            ["-has actor","?:E","?:X","?:Cu11"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Baby birds cannot fly."},
+{"@name": "sent_S4",
+ "@logic": ["isa","baby bird","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S5",
+ "@logic": ["isa","bird","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu14"],
+            ["-has actor","?:E","#:John 1","?:Cu14"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","activity","sk2_activity"], ["$defq0"]],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has type","sk2_activity","fly","?:Cu16"], ["$defq0"]],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has actor","sk2_activity","#:John 1","?:Cu17"], ["$defq0"]],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["capability","sk2_activity"], ["$defq0"]],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 not fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bird","$some_not_baby_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bird","?:X"], ["isa","bird","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bird","?:X"], ["isa","baby bird","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv33"], ["has type","?:E","go","?:Fv33"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-19T04:42:16Z"
+}

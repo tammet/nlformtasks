@@ -1,0 +1,185 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 529,
+  "input_text": "Bears eat some boxers. Mike is a boxer. Bears eat Mike?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Bears eat some boxers.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat some boxers.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "boxers", "type": "generic", "category": "person"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "boxers"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a boxer.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Mike 1 is a boxer.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Bears eat Mike?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Do bears eat Mike 1?",
+          "type": "query",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "Mike 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"target": "Mike 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["forall","Y",
+                ["implies",
+                  ["isa","boxer","Y"],
+                  ["normally",
+                    ["exists","E",
+                      ["and",
+                        ["isa","activity","E"],
+                        ["has type","E","eat"],
+                        ["has actor","E","X"],
+                        ["has target","E","Y"],
+                        ["typical","E"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","boxer","Mike 1"]]],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","bear","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","X"],
+                ["has target","E","Mike 1"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","boxer","?:Y"],
+            ["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Bears eat some boxers."},
+{"@name": "sent_S2",
+ "@logic": ["isa","boxer","#:Mike 1"],
+ "@nl": "Mike 1 is a boxer."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","bear","sk0_bear"]],
+ "@nl": "Do bears eat Mike 1?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "eat", "sk0_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Do bears eat Mike 1?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","bear","?:X"],
+            ["-is rel2", "eat", "?:X", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Do bears eat Mike 1?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Do bears eat Mike 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","boxer","$some_not_boxer"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "$some_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["is rel2", "eat", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","boxer","?:Y"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","boxer","#:Mike 1"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "?:X", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["is rel2", "eat", "?:X", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bear","?:X"]]],
+          [4, ["in","sent_S1","assumption",1], [["isa","bear","$some_bear"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.98], [["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "$some_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["is rel2", "eat", "$some_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "eat", "?:X", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","bear","?:X"]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,1], 7, "fromga", 0.98], [["-isa","bear","$some_bear"], ["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "$some_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [9, ["simp",8,4,"fromga",0.98], [["$block", ["$","boxer",1], ["$not", ["is rel2", "eat", "$some_bear", ["eventprop","$target","#:Mike 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Bears eat some boxers.",
+"  (2) Mike is a boxer.",
+"  (3) Bears eat Mike?",
+"Proof steps:",
+"  (1) If some Y is a boxer and some X is a bear then normally X eats Y  [sentence 1, confidence 98%]",
+"  (2) Mike is a boxer  [sentence 2]",
+"  (3) If some X is a bear then normally X eats Mike  [from steps 1, 2, confidence 98%]",
+"  (4) A bear is a bear  [sentence 1]",
+"  (5) Normally a bear eats Mike  [from steps 3, 4, confidence 98%]",
+"  (6) If some X eats Mike and X is a bear then answer holds  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) A bear is not a bear, except when a bear does not eat Mike  [from steps 5, 6, 7, confidence 98%]",
+"  (9) Outstanding exception: a bear does not eat Mike  [from steps 8, 4, confidence 98%]",
+"Exceptions checked and not holding:",
+"  a bear does not eat Mike"
+],
+  "timestamp": "2026-06-19T07:53:59Z"
+}

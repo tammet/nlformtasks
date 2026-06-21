@@ -1,0 +1,136 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 551,
+  "input_text": "John is as tall as Bill. Is John taller than Bill?",
+  "expected_answer": false,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is as tall as Bill.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is as tall as Bill 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Bill 2", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["tall","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Is John taller than Bill?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is John 1 taller than Bill 2?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Bill 2", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["tall","high","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Bill 2"],
+          ["=", ["$measure_of","height","John 1","W0"], ["$measure_of","height","Bill 2","W0"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Bill 2"],
+          [">", ["$measure_of","height","John 1","W0"], ["$measure_of","height","Bill 2","W0"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is as tall as Bill 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Bill 2"],
+ "@nl": "John 1 is as tall as Bill 2."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$measure_of","height","#:John 1","W0"], ["$measure_of","height","#:Bill 2","W0"]],
+ "@nl": "John 1 is as tall as Bill 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Is John 1 taller than Bill 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Bill 2"]],
+ "@nl": "Is John 1 taller than Bill 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["less_measure", ["$measure_of","height","#:Bill 2","W0"], ["$measure_of","height","#:John 1","W0"]]
+           ],
+ "@nl": "Is John 1 taller than Bill 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","person","#:Bill 2"],
+            ["not",
+             ["less_measure", ["$measure_of","height","#:Bill 2","W0"], ["$measure_of","height","#:John 1","W0"]]
+            ],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 taller than Bill 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 taller than Bill 2?"},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","height","?:S","?:W"], ["$ctxt","?:T","?:W","?:L","?:K"]],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "height", ["$measure_of","height","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["=", ["$measure_of","height","#:John 1","W0"], ["$measure_of","height","#:Bill 2","W0"]]]],
+          [2, ["in","sent_S2","assumption",1], [["-$defq0"], ["less_measure", ["$measure_of","height","#:Bill 2","W0"], ["$measure_of","height","#:John 1","W0"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["=", 1, [2,1,5], 3, "fromga", 1], [["less_measure", ["$measure_of","height","#:Bill 2","W0"], ["$measure_of","height","#:Bill 2","W0"]]]],
+          [5, ["in","frm_17","axiom",1], [["-less_measure","?:X","?:Y"], ["-less_measure","?:Y","?:X"]]],
+          [6, ["merge", [5,0,1], "fromaxiom", 1], [["-less_measure","?:X","?:X"]]],
+          [7, ["mp",4,6,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John is as tall as Bill.",
+"  (2) Is John taller than Bill?",
+"Knowledge used:",
+"  If some X is less than some Y then Y is not less than X. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) The height of John equals the height of Bill  [sentence 1]",
+"  (2) If answer holds then the height of Bill is less than the height of John  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) The height of Bill is less than the height of Bill  [from steps 1, 2, 3]",
+"  (5) If some X is less than some Y then Y is not less than X  [background knowledge]",
+"  (6) X is not less than X  [from steps 5]",
+"  (7) Contradiction  [from steps 4, 6]"
+],
+  "timestamp": "2026-06-19T02:00:11Z"
+}

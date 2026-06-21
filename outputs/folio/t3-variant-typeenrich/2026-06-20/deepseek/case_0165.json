@@ -1,0 +1,529 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 165,
+  "input_text": "Some show airing at 8 pm on Monday gives out roses on TV. If a show gives out roses on TV, then the show is an episode of The Bachelor. The Bachelor portrays the lives of real people. All shows portraying the lives of real people are reality TV shows. Breaking Bad is a show. Breaking Bad is not a reality TV show. Breaking Bad is a TV show in which roses are given out on Monday at 8 pm?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some show that airs at 8 pm on Monday gives out roses on TV.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A show that airs at 8 pm on Monday gives out roses on TV.",
+          "type": "normal_rule",
+          "confidence": 0.99,
+          "entities": [{"id": "show", "type": "generic", "category": "abstract"},
+            {"id": "roses", "type": "generic", "category": "plant"},
+            {"id": "TV", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "air", "mode": "habitual", "roles": {"actor": "show"}},
+            {
+              "root": "give out",
+              "mode": "habitual",
+              "roles": {"actor": "show", "target": "roses", "location": "TV", "location_prep": "on"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a show gives out roses on TV, then the show is an episode of The Bachelor.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a show gives out roses on TV, then the show is an episode of The Bachelor.",
+          "type": "strict_rule",
+          "entities": [{"id": "show", "type": "generic"},
+            {"id": "roses", "type": "generic", "category": "plant"},
+            {"id": "TV", "type": "generic", "category": "artifact"},
+            {"id": "The Bachelor 1", "type": "concrete", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "give out",
+              "mode": "habitual",
+              "roles": {"actor": "show", "target": "roses", "location": "TV", "location_prep": "on"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The Bachelor portrays the lives of real people.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The Bachelor 1 portrays the lives of real people.",
+          "type": "real",
+          "entities": [{"id": "The Bachelor 1", "type": "concrete", "category": "abstract"},
+            {"id": "lives", "type": "generic", "category": "abstract"},
+            {"id": "real people", "type": "generic", "category": "person"}
+          ],
+          "actions": [{
+              "root": "portray",
+              "mode": "habitual",
+              "roles": {"actor": "The Bachelor 1", "target": "lives"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All shows that portray the lives of real people are reality TV shows.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All shows that portray the lives of real people are reality TV shows.",
+          "type": "strict_rule",
+          "entities": [{"id": "show", "type": "generic"},
+            {"id": "lives", "type": "generic", "category": "abstract"},
+            {"id": "real people", "type": "generic", "category": "person"},
+            {"id": "reality TV show", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is a show.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Breaking Bad 1 is a show.",
+          "type": "real",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "abstract"}]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is not a reality TV show.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Breaking Bad 1 is not a reality TV show.",
+          "type": "real",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "abstract"},
+            {"id": "reality TV show", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Breaking Bad is a show that airs at 8 pm on Monday and gives out roses on TV?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?",
+          "type": "query",
+          "entities": [{"id": "Breaking Bad 1", "type": "concrete", "category": "abstract"},
+            {"id": "show", "type": "generic"},
+            {"id": "roses", "type": "generic", "category": "plant"},
+            {"id": "TV", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "air", "mode": "habitual", "roles": {"actor": "Breaking Bad 1"}},
+            {
+              "root": "give out",
+              "mode": "habitual",
+              "roles": {
+                "actor": "Breaking Bad 1",
+                "target": "roses",
+                "location": "TV",
+                "location_prep": "on"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","show","X"],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","air"],
+                      ["has actor","E1","X"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ],
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","give out"],
+                    ["has actor","E2","X"],
+                    ["exists", "Y", ["and", ["isa","roses","Y"], ["has target","E2","Y"]]],
+                    ["exists", "Z", ["and", ["isa","TV","Z"], ["has location","E2","Z","on"]]],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","show","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","give out"],
+                  ["has actor","E","X"],
+                  ["exists", "Y", ["and", ["isa","roses","Y"], ["has target","E","Y"]]],
+                  ["exists", "Z", ["and", ["isa","TV","Z"], ["has location","E","Z","on"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ],
+            ["is rel2","is an episode of","X","The Bachelor 1"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","portray"],
+            ["has actor","E","The Bachelor 1"],
+            ["exists", "Y", ["and", ["isa","lives","Y"], ["has target","E","Y"]]],
+            ["typical","E"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","show","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","portray"],
+                  ["has actor","E","X"],
+                  ["exists", "Y", ["and", ["isa","lives","Y"], ["has target","E","Y"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ],
+            ["isa","reality TV show","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","show","Breaking Bad 1"]]],
+    ["@id", "S6", ["holds", "W0", ["not", ["isa","reality TV show","Breaking Bad 1"]]]],
+    ["@id","S7",
+      ["question",
+        ["and",
+          ["isa","show","Breaking Bad 1"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","air"],
+              ["has actor","E1","Breaking Bad 1"],
+              ["typical","E1"]
+            ]
+          ],
+          ["exists","E2",
+            ["and",
+              ["isa","activity","E2"],
+              ["has type","E2","give out"],
+              ["has actor","E2","Breaking Bad 1"],
+              ["exists", "Y", ["and", ["isa","roses","Y"], ["has target","E2","Y"]]],
+              ["exists", "Z", ["and", ["isa","TV","Z"], ["has location","E2","Z","on"]]],
+              ["typical","E2"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","abstract","#:The Bachelor 1"],
+ "@nl": "If a show gives out roses on TV, then the show is an episode of The Bachelor."},
+{"@name": "entity_S2",
+ "@logic": ["isa","the bachelor","#:The Bachelor 1"],
+ "@nl": "If a show gives out roses on TV, then the show is an episode of The Bachelor."},
+{"@name": "entity_S5",
+ "@logic": ["isa","breaking bad","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is a show."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu4"],
+            ["-has actor","?:E1","?:X","?:Cu4"],
+            ["isa", "activity", ["sk0","?:X"]]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu5"],
+            ["-has actor","?:E1","?:X","?:Cu5"],
+            ["has type", ["sk0","?:X"], "give out", "?:Cu5"]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu6"],
+            ["-has actor","?:E1","?:X","?:Cu6"],
+            ["has actor", ["sk0","?:X"], "?:X", "?:Cu6"]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu7"],
+            ["-has actor","?:E1","?:X","?:Cu7"],
+            ["isa", "roses", ["sk1","?:X"]]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu8"],
+            ["-has actor","?:E1","?:X","?:Cu8"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], "?:Cu8"]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu9"],
+            ["-has actor","?:E1","?:X","?:Cu9"],
+            ["isa", "tv", ["sk2","?:X"]]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu10"],
+            ["-has actor","?:E1","?:X","?:Cu10"],
+            ["has location", ["sk0","?:X"], ["sk2","?:X"], "on", "?:Cu10"]
+           ],
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu11"],
+            ["-has actor","?:E1","?:X","?:Cu11"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "A show that airs at 8 pm on Monday gives out roses on TV."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","give out","?:Cu12"],
+            ["-has actor","?:E","?:X","?:Cu12"],
+            ["-isa","roses","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu12"],
+            ["-isa","tv","?:Z"],
+            ["-has location","?:E","?:Z","on","?:Cu12"],
+            ["is rel2","is an episode of","?:X","#:The Bachelor 1","?:Cu12"]
+           ],
+ "@nl": "If a show gives out roses on TV, then the show is an episode of The Bachelor."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk3_activity"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["has type","sk3_activity","portray","?:Cu14"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["has actor","sk3_activity","#:The Bachelor 1","?:Cu15"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["isa","lives","sk4_lives"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S3",
+ "@logic": ["has target","sk3_activity","sk4_lives","?:Cu17"],
+ "@nl": "The Bachelor 1 portrays the lives of real people."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","show","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","portray","?:Cu19"],
+            ["-has actor","?:E","?:X","?:Cu19"],
+            ["-isa","lives","?:Y"],
+            ["-has target","?:E","?:Y","?:Cu19"],
+            ["isa","reality tv show","?:X"]
+           ],
+ "@nl": "All shows that portray the lives of real people are reality TV shows."},
+{"@name": "sent_S5",
+ "@logic": ["isa","show","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is a show."},
+{"@name": "sent_S6",
+ "@logic": ["-isa","reality tv show","#:Breaking Bad 1"],
+ "@nl": "Breaking Bad 1 is not a reality TV show."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","show","#:Breaking Bad 1"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk5_activity"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk5_activity","air","?:Cu24"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk5_activity","#:Breaking Bad 1","?:Cu25"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk6_activity"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk6_activity","give out","?:Cu28"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk6_activity","#:Breaking Bad 1","?:Cu29"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","roses","sk7_roses"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has target","sk6_activity","sk7_roses","?:Cu31"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","tv","sk8_tv"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has location","sk6_activity","sk8_tv","on","?:Cu33"]],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","show","#:Breaking Bad 1"],
+            ["-isa","activity","?:E1"],
+            ["-has type","?:E1","air","?:Cu35"],
+            ["-has actor","?:E1","#:Breaking Bad 1","?:Cu35"],
+            ["-isa","activity","?:E2"],
+            ["-has type","?:E2","give out","?:Cu35"],
+            ["-has actor","?:E2","#:Breaking Bad 1","?:Cu35"],
+            ["-isa","roses","?:Y"],
+            ["-has target","?:E2","?:Y","?:Cu35"],
+            ["-isa","tv","?:Z"],
+            ["-has location","?:E2","?:Z","on","?:Cu35"],
+            ["$defq0"]
+           ],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is Breaking Bad 1 a show that airs at 8 pm on Monday and gives out roses on TV?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","show","$some_not_show"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","roses","$some_roses"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","roses","$some_not_roses"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tv","$some_TV"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tv","$some_not_TV"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","lives","$some_lives"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","lives","$some_not_lives"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","reality tv show","$some_reality_TV_show"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","breaking bad","?:X"], ["-isa","good","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","breaking","?:X"], ["isa","good","?:X"], ["isa","breaking bad","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","reality tv show","?:X"], ["isa","show","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","reality tv","?:X"], ["-isa","show","?:X"], ["isa","reality tv show","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","the bachelor","?:X"], ["isa","bachelor","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","the","?:X"], ["-isa","bachelor","?:X"], ["isa","the bachelor","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_gender",
+ "@logic": [["-isa","bachelor","?:Xg"], ["isa","man","?:Xg"]],
+ "@nl": "[generated: frm_gender]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S7","assumption",1], [["-$defq0"]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["simp",1,2,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Breaking Bad is a show that airs at 8 pm on Monday and gives out roses on TV?",
+"Proof steps (by contradiction):",
+"  (1) assume for contradiction: the answer is no  [sentence 1]",
+"  (2) Answer holds  [assumption]",
+"  (3) Contradiction  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-18T22:33:41Z"
+}

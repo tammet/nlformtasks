@@ -1,0 +1,191 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1148,
+  "input_text": "Susan bought herself a new car. Who owns a new car?",
+  "expected_answer": "Susan.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Susan bought herself a new car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Susan 1 bought a new car 2.",
+          "type": "situation",
+          "entities": [{"id": "Susan 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "buy",
+              "mode": "event",
+              "roles": {"actor": "Susan 1", "target": "car 2", "recipient": "Susan 1"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 is new.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["new","none","car"]],
+          "pre_state": "W1"
+        }
+      ]
+    },
+    {
+      "raw": "Who owns a new car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity owns a new car?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "adjectives": [["new","none","car"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Susan 1"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","Susan 1"],
+                ["has target","E","car 2"],
+                ["has recipient","E","Susan 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W1",
+        ["and", ["isa","car","car 2"], ["has degree property","new","car 2","none","car"]]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","Y",
+          ["and",
+            ["isa","car","Y"],
+            ["has degree property","new","Y","none","car"],
+            ["have","X","Y"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Susan 1"],
+ "@nl": "Susan 1 bought a new car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Susan 1 bought a new car 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "buy", "#:Susan 1", ["eventprop","$recipient","#:Susan 1"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Susan 1 bought a new car 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Susan 1 bought a new car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 is new."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "new", "#:car 2", "none", "car", ["$ctxt","present","W1","?:Fv3","?:Fv4"]],
+ "@nl": "The car 2 is new."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "car", ["sk0","?:X"]]],
+ "@nl": "Which entity owns a new car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has degree property", "new", ["sk0","?:X"], "none", "car", ["$ctxt","?:Fv11","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity owns a new car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["have", "?:X", ["sk0","?:X"], ["$ctxt","present","?:Fv12","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity owns a new car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:Y"],
+            ["-has degree property", "new", "?:Y", "none", "car", ["$ctxt","?:Fv16","?:Fv15","?:Fv5","?:Fv6"]],
+            ["-have", "?:X", "?:Y", ["$ctxt","present","?:Fv17","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity owns a new car?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity owns a new car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["have", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity owns a new car?"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv18","?:Fv19","?:Fv21","?:Fv22"]],
+            ["-next","?:Fv19","?:Fv20"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv23","?:Fv24","?:Fv26","?:Fv27"]],
+            ["-next","?:Fv24","?:Fv25"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv25","?:Fv26","?:Fv27"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv28","?:Fv29","?:Fv31","?:Fv32"]],
+            ["-next","?:Fv29","?:Fv30"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "pop_what",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-19T07:56:19Z"
+}

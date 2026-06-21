@@ -1,0 +1,345 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1094,
+  "input_text": "John bought a book, and Bill said Peter did too. Did Bill say Peter bought a book?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John bought a book, and Bill said Peter did too.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 bought a book 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "book 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "John 1", "target": "book 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Bill 3 said that Peter 4 bought a book 5.",
+          "type": "situation",
+          "entities": [{"id": "Bill 3", "type": "concrete", "category": "person"},
+            {"id": "Peter 4", "type": "concrete", "category": "person"},
+            {"id": "book 5", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "say",
+              "mode": "speech_act",
+              "roles": {
+                "actor": "Bill 3",
+                "content": {"root": "buy", "mode": "event", "roles": {"actor": "Peter 4", "target": "book 5"}}
+              }
+            }
+          ],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did Bill say Peter bought a book?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Bill 3 say that Peter 4 bought a book 5?",
+          "type": "query",
+          "entities": [{"id": "Bill 3", "type": "concrete", "category": "person"},
+            {"id": "Peter 4", "type": "concrete", "category": "person"},
+            {"id": "book 5", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "say",
+              "mode": "speech_act",
+              "roles": {
+                "actor": "Bill 3",
+                "content": {"root": "buy", "mode": "event", "roles": {"actor": "Peter 4", "target": "book 5"}}
+              }
+            }
+          ],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","book","book 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["has actor","E","John 1"],
+                ["has target","E","book 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Bill 3"],
+            ["isa","person","Peter 4"],
+            ["isa","book","book 5"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","say"],
+                ["has actor","E1","Bill 3"],
+                ["has time","E1","past","in"],
+                ["exists","E2",
+                  ["and",
+                    ["has content","E1","E2"],
+                    ["isa","activity","E2"],
+                    ["has type","E2","buy"],
+                    ["has actor","E2","Peter 4"],
+                    ["has target","E2","book 5"],
+                    ["has time","E2","past","in"]
+                  ]
+                ],
+                ["speech_act","E1"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","Bill 3"],
+          ["isa","person","Peter 4"],
+          ["isa","book","book 5"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","say"],
+              ["has actor","E1","Bill 3"],
+              ["has time","E1","past","in"],
+              ["exists","E2",
+                ["and",
+                  ["has content","E1","E2"],
+                  ["isa","activity","E2"],
+                  ["has type","E2","buy"],
+                  ["has actor","E2","Peter 4"],
+                  ["has target","E2","book 5"],
+                  ["has time","E2","past","in"]
+                ]
+              ],
+              ["speech_act","E1"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time, inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 bought a book 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "John 1 bought a book 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "buy", "#:John 1", ["eventprop","$target","#:book 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 bought a book 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 bought a book 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Bill 3"],
+ "@nl": "Bill 3 said that Peter 4 bought a book 5."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Peter 4"],
+ "@nl": "Bill 3 said that Peter 4 bought a book 5."},
+{"@name": "sent_S2",
+ "@logic": ["isa","book","#:book 5"],
+ "@nl": "Bill 3 said that Peter 4 bought a book 5."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Bill 3 said that Peter 4 bought a book 5."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Bill 3 said that Peter 4 bought a book 5."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Bill 3"]],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Peter 4"]],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","book","#:book 5"]],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Bill 3"],
+            ["-isa","person","#:Peter 4"],
+            ["-isa","book","#:book 5"],
+            ["-is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Bill 3 say that Peter 4 bought a book 5?"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv20","?:Fv21","?:Fv23","?:Fv24"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv20","?:Fv21","?:Fv23","?:Fv24"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv20","?:Fv21","?:Fv23","?:Fv24"]],
+            ["-next","?:Fv21","?:Fv22"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv22","?:Fv23","?:Fv24"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv22","?:Fv23","?:Fv24"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv25","?:Fv26","?:Fv28","?:Fv29"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv25","?:Fv26","?:Fv28","?:Fv29"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv25","?:Fv26","?:Fv28","?:Fv29"]],
+            ["-next","?:Fv26","?:Fv27"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv30","?:Fv31","?:Fv33","?:Fv34"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv30","?:Fv31","?:Fv33","?:Fv34"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv30","?:Fv31","?:Fv33","?:Fv34"]],
+            ["-next","?:Fv31","?:Fv32"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv32","?:Fv33","?:Fv34"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:Bill 3","W1"]]],
+        "confidence": 0.991414,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:Bill 3","W1"]], ["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W1","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:Bill 3","W1"]], ["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-isa","book","#:book 5"], ["-isa","person","#:Bill 3"], ["-isa","person","#:Peter 4"], ["$defq0"], ["-is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [7, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,4], 7, "fromga", 0.99], [["-isa","book","#:book 5"], ["-isa","person","#:Bill 3"], ["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","book","#:book 5"]]],
+          [10, ["mp",8,9,"fromga",0.99], [["-isa","person","#:Bill 3"], ["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [11, ["in","sent_S2","assumption",1], [["isa","person","#:Bill 3"]]],
+          [12, ["mp",10,11,"fromga",0.99], [["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [13, ["in","sent_S2","assumption",1], [["isa","person","#:Peter 4"]]],
+          [14, ["mp",12,13,"fromga",0.99], [["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [15, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [16, ["mp", [3,2], 15, "fromassumption", 0.99], [["$block", 0, ["moved","#:Bill 3","W1"]], ["is rel2", "say", "#:Bill 3", ["eventprop","$target","buy"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [17, ["mp", [16,1], [6,4], 7, "fromga", 0.99], [["-isa","book","#:book 5"], ["-isa","person","#:Bill 3"], ["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [18, ["mp",17,9,"fromga",0.99], [["-isa","person","#:Bill 3"], ["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [19, ["mp",18,11,"fromga",0.99], [["-isa","person","#:Peter 4"], ["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [20, ["mp",19,13,"fromga",0.99], [["$block", 0, ["moved","#:Bill 3","W1"]]]],
+          [21, ["cumul",14,20,"fromga",0.991414], [["$block", 0, ["moved","#:Bill 3","W1"]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) John bought a book, and Bill said Peter did too.",
+"  (2) Did Bill say Peter bought a book?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) Bill is say of buy  [sentence 1]",
+"  (3) If the situation W1 is followed by a situation X then Bill is say of buy, except when Bill moved in the situation W1  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (5) Bill is say of buy, except when Bill moved in the situation W1  [from steps 3, 4, confidence 99%]",
+"  (6) If Bill is a person and Peter is a person and Bill is say of buy then answer holds  [sentence 2]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) If Bill is a person then Peter is not a person, except when Bill moved in the situation W1  [from steps 5, 6, 7, confidence 99%]",
+"  (9) The book 5 is a book  [sentence 1]",
+"  (10) If Bill is a person then Peter is not a person, except when Bill moved in the situation W1  [from steps 8, 9, confidence 99%]",
+"  (11) Bill is a person  [sentence 1]",
+"  (12) Peter is not a person, except when Bill moved in the situation W1  [from steps 10, 11, confidence 99%]",
+"  (13) Peter is a person  [sentence 1]",
+"  (14) Outstanding exception: Bill moved in the situation W1  [from steps 12, 13, confidence 99%]",
+"  (15) The situation W1 is followed by the situation W2  [sentence 1]",
+"  (16) Bill is say of buy, except when Bill moved in the situation W1  [from steps 3, 15, confidence 99%]",
+"  (17) If Bill is a person then Peter is not a person, except when Bill moved in the situation W1  [from steps 16, 6, 7, confidence 99%]",
+"  (18) If Bill is a person then Peter is not a person, except when Bill moved in the situation W1  [from steps 17, 9, confidence 99%]",
+"  (19) Peter is not a person, except when Bill moved in the situation W1  [from steps 18, 11, confidence 99%]",
+"  (20) Outstanding exception: Bill moved in the situation W1  [from steps 19, 13, confidence 99%]",
+"  (21) Outstanding exception: Bill moved in the situation W1  [from steps 14, 20, confidence 99%]",
+"Exceptions checked and not holding:",
+"  Bill moved in W1"
+],
+  "timestamp": "2026-06-19T22:37:08Z"
+}

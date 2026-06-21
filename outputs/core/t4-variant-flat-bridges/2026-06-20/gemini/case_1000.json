@@ -1,0 +1,219 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1000,
+  "input_text": "Mary called the boy in the kitchen. Mary called the boy?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary called the boy in the kitchen.",
+      "units": [{
+          "actions": [{"mode": "event", "roles": {"actor": "Mary 1", "target": "boy 2"}, "root": "call"}],
+          "entities": [{"category": "person", "id": "Mary 1", "type": "concrete"},
+            {"category": "person", "id": "boy 2", "type": "concrete"}
+          ],
+          "next_state": "W1",
+          "pre_state": "W0",
+          "text": "Mary 1 called the boy 2.",
+          "time": "past",
+          "type": "situation",
+          "unit_id": "S1"
+        },
+        {
+          "entities": [{"category": "person", "id": "boy 2", "type": "concrete"},
+            {"category": "place", "id": "kitchen 3", "type": "concrete"}
+          ],
+          "pre_state": "W0",
+          "text": "The boy 2 was in the kitchen 3.",
+          "time": "past",
+          "type": "situation",
+          "unit_id": "S2"
+        }
+      ]
+    },
+    {
+      "raw": "Mary called the boy?",
+      "units": [{
+          "actions": [{"mode": "event", "roles": {"actor": "Mary 1", "target": "boy 2"}, "root": "call"}],
+          "entities": [{"category": "person", "id": "Mary 1", "type": "concrete"},
+            {"category": "person", "id": "boy 2", "type": "concrete"}
+          ],
+          "pre_state": "W0",
+          "text": "Did Mary 1 call the boy 2?",
+          "time": "past",
+          "type": "query",
+          "unit_id": "S3"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","boy","boy 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","call"],
+                ["has actor","E","Mary 1"],
+                ["has target","E","boy 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","boy","boy 2"],
+            ["isa","kitchen","kitchen 3"],
+            ["is rel2","in","boy 2","kitchen 3"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","Mary 1"],
+          ["isa","boy","boy 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","call"],
+              ["has actor","E","Mary 1"],
+              ["has target","E","boy 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 called the boy 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","boy","#:boy 2"],
+ "@nl": "Mary 1 called the boy 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "call", "#:Mary 1", ["eventprop","$target","#:boy 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 called the boy 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","boy","#:boy 2"],
+ "@nl": "The boy 2 was in the kitchen 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","kitchen","#:kitchen 3"],
+ "@nl": "The boy 2 was in the kitchen 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The boy 2 was in the kitchen 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 1"]],
+ "@nl": "Did Mary 1 call the boy 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","boy","#:boy 2"]],
+ "@nl": "Did Mary 1 call the boy 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "call", "#:Mary 1", ["eventprop","$target","#:boy 2"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 1 call the boy 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 1"],
+            ["-isa","boy","#:boy 2"],
+            ["-is rel2", "call", "#:Mary 1", ["eventprop","$target","#:boy 2"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 1 call the boy 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 1 call the boy 2?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","person","#:Mary 1"], ["-isa","boy","#:boy 2"], ["$defq0"], ["-is rel2", "call", "#:Mary 1", ["eventprop","$target","#:boy 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "call", "#:Mary 1", ["eventprop","$target","#:boy 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","person","#:Mary 1"], ["-isa","boy","#:boy 2"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","person","#:Mary 1"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","boy","#:boy 2"]]],
+          [7, ["in","sent_S2","assumption",1], [["isa","boy","#:boy 2"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary called the boy in the kitchen.",
+"  (2) Mary called the boy?",
+"Proof steps (by contradiction):",
+"  (1) If Mary is a person and Mary is call of boy B then answer holds  [sentence 2]",
+"  (2) Mary is call of boy B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Mary is not a person  [from steps 1, 2, 3]",
+"  (5) Mary is a person  [sentence 1]",
+"  (6) The boy B is not a boy  [from steps 4, 5]",
+"  (7) The boy B is a boy  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-19T22:32:01Z"
+}

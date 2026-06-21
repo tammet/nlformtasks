@@ -1,0 +1,440 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 75,
+  "input_text": "All vehicle registration plates in Istanbul begin with the number 34. Plates that do not begin with the number 34 are not from Istanbul. Joe's vehicle registration plate is from Istanbul. Tom's license plate begins with the number 35. If a license plate begins with the number 35, then it does not begin with the number 34. Tom's license plate is from Istanbul?",
+  "expected_answer": "False.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All vehicle registration plates in Istanbul begin with the number 34.",
+      "units": [{
+          "actions": [{
+              "mode": "habitual",
+              "roles": {"location": "Istanbul 1", "target": "number 34"},
+              "root": "begin"
+            }
+          ],
+          "entities": [{"category": "artifact", "id": "license plate", "type": "generic"},
+            {
+              "category": "place",
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            },
+            {"category": "number", "id": "number 34", "type": "concrete"}
+          ],
+          "text": "All license plates in Istanbul 1 begin with the number 34.",
+          "type": "strict_rule",
+          "unit_id": "S1"
+        }
+      ]
+    },
+    {
+      "raw": "Plates that do not begin with the number 34 are not from Istanbul.",
+      "units": [{
+          "actions": [{"mode": "habitual", "negated": true, "roles": {"target": "number 34"}, "root": "begin"}],
+          "entities": [{"category": "artifact", "id": "license plate", "type": "generic"},
+            {"category": "number", "id": "number 34", "type": "concrete"},
+            {
+              "category": "place",
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "negated": true,
+          "text": "License plates that do not begin with the number 34 are not from Istanbul 1.",
+          "type": "strict_rule",
+          "unit_id": "S2"
+        }
+      ]
+    },
+    {
+      "raw": "Joe's vehicle registration plate is from Istanbul.",
+      "units": [{
+          "entities": [{"category": "person", "id": "Joe 2", "type": "concrete"},
+            {"category": "artifact", "id": "plate 3", "text": "plate", "type": "concrete"}
+          ],
+          "text": "Joe 2 owns a plate 3.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S3"
+        },
+        {
+          "entities": [{"category": "artifact", "id": "plate 3", "text": "plate", "type": "concrete"},
+            {
+              "category": "place",
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "text": "Plate 3 is from Istanbul 1.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S4"
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate begins with the number 35.",
+      "units": [{
+          "entities": [{"category": "person", "id": "Tom 4", "type": "concrete"},
+            {"category": "artifact", "id": "plate 5", "text": "plate", "type": "concrete"}
+          ],
+          "text": "Tom 4 owns a plate 5.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S5"
+        },
+        {
+          "actions": [{"mode": "habitual", "roles": {"target": "number 35"}, "root": "begin"}],
+          "entities": [{"category": "artifact", "id": "plate 5", "text": "plate", "type": "concrete"},
+            {"category": "number", "id": "number 35", "type": "concrete"}
+          ],
+          "text": "Plate 5 begins with the number 35.",
+          "time": "present",
+          "type": "situation",
+          "unit_id": "S6"
+        }
+      ]
+    },
+    {
+      "raw": "If a license plate begins with the number 35, then it does not begin with the number 34.",
+      "units": [{
+          "actions": [{"mode": "habitual", "roles": {"target": "number 35"}, "root": "begin"},
+            {"mode": "habitual", "negated": true, "roles": {"target": "number 34"}, "root": "begin"}
+          ],
+          "entities": [{"category": "artifact", "id": "license plate", "type": "generic"},
+            {"category": "number", "id": "number 35", "type": "concrete"},
+            {"category": "number", "id": "number 34", "type": "concrete"}
+          ],
+          "text": "If a license plate begins with the number 35, then the license plate does not begin with the number 34.",
+          "type": "strict_rule",
+          "unit_id": "S7"
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate is from Istanbul?",
+      "units": [{
+          "definites": [["plate of","plate 5","Tom 4"]],
+          "entities": [{"category": "person", "id": "Tom 4", "type": "concrete"},
+            {"category": "artifact", "id": "plate 5", "text": "plate", "type": "concrete"},
+            {
+              "category": "place",
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "text": "Is Tom 4's plate 5 from Istanbul 1?",
+          "type": "query",
+          "unit_id": "S8"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location, entity_used_as_location, entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","license plate","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","begin"],
+                ["has actor","E","X"],
+                ["has target","E","number 34"],
+                ["has location","E","https://en.wikipedia.org/wiki/Istanbul","in"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","license plate","X"],
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","begin"],
+                    ["has actor","E","X"],
+                    ["has target","E","number 34"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ],
+            ["not", ["is rel2","from","X","https://en.wikipedia.org/wiki/Istanbul"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","plate","plate 3"], ["have","Joe 2","plate 3"]]]],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","plate","plate 3"],
+          ["is rel2","from","plate 3","https://en.wikipedia.org/wiki/Istanbul"]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["and", ["isa","plate","plate 5"], ["have","Tom 4","plate 5"]]]],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","plate","plate 5"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","begin"],
+              ["has actor","E","plate 5"],
+              ["has target","E","number 35"],
+              ["has time","E","present","in"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","license plate","X"],
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","begin"],
+                  ["has actor","E1","X"],
+                  ["has target","E1","number 35"],
+                  ["typical","E1"]
+                ]
+              ]
+            ],
+            ["not",
+              ["exists","E2",
+                ["and",
+                  ["isa","activity","E2"],
+                  ["has type","E2","begin"],
+                  ["has actor","E2","X"],
+                  ["has target","E2","number 34"],
+                  ["typical","E2"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["question",
+        ["and",
+          ["isa","plate","plate 5"],
+          ["have","Tom 4","plate 5"],
+          ["is rel2","from","plate 5","https://en.wikipedia.org/wiki/Istanbul"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Istanbul 1"],
+ "@nl": "All license plates in Istanbul 1 begin with the number 34."},
+{"@name": "entity_S1",
+ "@logic": ["isa","number","#:number 34"],
+ "@nl": "All license plates in Istanbul 1 begin with the number 34."},
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:Joe 2"],
+ "@nl": "Joe 2 owns a plate 3."},
+{"@name": "entity_S3",
+ "@logic": ["isa","plate","#:plate 3"],
+ "@nl": "Joe 2 owns a plate 3."},
+{"@name": "entity_S5",
+ "@logic": ["isa","person","#:Tom 4"],
+ "@nl": "Tom 4 owns a plate 5."},
+{"@name": "entity_S6",
+ "@logic": ["isa","number","#:number 35"],
+ "@nl": "Plate 5 begins with the number 35."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","license plate","?:X"],
+            ["event", "begin", "?:X", "#:number 34", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All license plates in Istanbul 1 begin with the number 34."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","license plate","?:X"],
+            ["has location", ["sk0","?:X"], "https://en.wikipedia.org/wiki/Istanbul", "in", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All license plates in Istanbul 1 begin with the number 34."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","license plate","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All license plates in Istanbul 1 begin with the number 34."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","license plate","?:X"],
+            ["event", "begin", "?:X", "#:number 34", ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "from", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "License plates that do not begin with the number 34 are not from Istanbul 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","license plate","?:X"],
+            ["typical", ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "from", "?:X", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "License plates that do not begin with the number 34 are not from Istanbul 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa", "plate", ["$theof1", "plate", "#:Joe 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]]],
+ "@nl": "Joe 2 owns a plate 3."},
+{"@name": "sent_S3",
+ "@logic": ["have", "#:Joe 2", ["$theof1", "plate", "#:Joe 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "Joe 2 owns a plate 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa", "plate", ["$theof1", "plate", "#:Joe 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]]],
+ "@nl": "Plate 3 is from Istanbul 1."},
+{"@name": "sent_S4",
+ "@logic": ["is rel2", "from", ["$theof1", "plate", "#:Joe 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "Plate 3 is from Istanbul 1."},
+{"@name": "sent_S5",
+ "@logic": ["isa","plate","#:plate 5"],
+ "@nl": "Tom 4 owns a plate 5."},
+{"@name": "sent_S5",
+ "@logic": ["have", "#:Tom 4", "#:plate 5", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Tom 4 owns a plate 5."},
+{"@name": "sent_S6",
+ "@logic": ["isa","plate","#:plate 5"],
+ "@nl": "Plate 5 begins with the number 35."},
+{"@name": "sent_S6",
+ "@logic": ["event", "begin", "#:plate 5", "#:number 35", "sk2", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Plate 5 begins with the number 35."},
+{"@name": "sent_S6",
+ "@logic": ["has time", "sk2", "present", "in", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Plate 5 begins with the number 35."},
+{"@name": "sent_S6",
+ "@logic": ["typical", "sk2", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "Plate 5 begins with the number 35."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","license plate","?:X"],
+            ["-event", "begin", "?:X", "#:number 35", "?:E1", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-event", "begin", "?:X", "#:number 34", "?:E2", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-typical", "?:E2", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If a license plate begins with the number 35, then the license plate does not begin with the number 34."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","plate","#:plate 5"]],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["have", "#:Tom 4", "#:plate 5", ["$ctxt","present","?:Fv27","?:Fv21","?:Fv22"]]
+           ],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "from", "#:plate 5", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","?:Fv23","?:Fv21","?:Fv22"]]
+           ],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-isa","plate","#:plate 5"],
+            ["-have", "#:Tom 4", "#:plate 5", ["$ctxt","present","?:Fv30","?:Fv21","?:Fv22"]],
+            ["-is rel2", "from", "#:plate 5", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","?:Fv23","?:Fv21","?:Fv22"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "from", "#:plate 5", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "from", "#:plate 5", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "from", "#:plate 5", "https://en.wikipedia.org/wiki/Istanbul", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "#:Tom 4", "#:plate 5", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["have", "#:Tom 4", "#:plate 5", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "#:Tom 4", "#:plate 5", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is Tom 4's plate 5 from Istanbul 1?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Joe 2", ["$theof1", "plate", "#:Joe 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]], ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "plate of", ["$theof1","plate","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "plate", ["$theof1","plate","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","license plate","$some_license_plate"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","license plate","$some_not_license_plate"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","license plate","?:X"], ["isa","plate","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","license","?:X"], ["-isa","plate","?:X"], ["isa","license plate","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_carrier_lift",
+ "@logic": [["-isa","plate","?:X","?:Fv31"], ["isa","carrier","?:X","?:Fv31"]],
+ "@nl": "[generated: frm_carrier_lift]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:40:36Z"
+}

@@ -1,0 +1,511 @@
+{
+  "test_name": "folio_v2_ultracoarse2_base",
+  "case_id": 127,
+  "input_text": "All of Peter's pets that are mammals are also animals. All monkeys are mammals. Peter's pets are all either monkeys or birds. Peter's birds can fly. All animals that are Peter's pets can breathe. If Peter's pet can fly, then it has wings. Rock is Peter's pet. Rock can fly, or Rock is a bird, or Rock cannot breathe. Rock does not have wings?",
+  "expected_answer": "False.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All of Peter's pets that are mammals are also animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a pet of Peter 1 is a mammal, the pet is an animal.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pet", "type": "generic", "category": "animal"},
+            {"id": "mammal", "type": "generic", "category": "animal"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All monkeys are mammals.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All monkeys are mammals.",
+          "type": "strict_rule",
+          "entities": [{"id": "monkeys", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Peter's pets are all either monkeys or birds.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All pets of Peter 1 are either monkeys or birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pet", "type": "generic", "category": "animal"},
+            {"id": "monkeys", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Peter's birds can fly.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a bird is a pet of Peter 1, the bird can fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "bird"}}]
+        }
+      ]
+    },
+    {
+      "raw": "All animals that are Peter's pets can breathe.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If an animal is a pet of Peter 1, the animal can breathe.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "breathe", "mode": "capability", "roles": {"actor": "animal"}}]
+        }
+      ]
+    },
+    {
+      "raw": "If Peter's pet can fly, then Peter's pet has wings.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If a pet of Peter 1 can fly, the pet has wings.",
+          "type": "strict_rule",
+          "entities": [{"id": "Peter 1", "type": "concrete", "category": "person"},
+            {"id": "pet", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "pet"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Rock is Peter's pet.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Rock 2 is a pet of Peter 1.",
+          "type": "situation",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "Peter 1", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Rock can fly, or Rock is a bird, or Rock cannot breathe.",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Rock 2 can fly, or Rock 2 is a bird, or Rock 2 cannot breathe.",
+          "type": "situation",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "Rock 2"}},
+            {"root": "breathe", "mode": "capability", "roles": {"actor": "Rock 2"}}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Does Rock not have wings?",
+      "units": [{
+          "unit_id": "S9",
+          "text": "Does Rock 2 not have wings?",
+          "type": "query",
+          "entities": [{"id": "Rock 2", "type": "concrete", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","pet","X"], ["have","Peter 1","X"], ["isa","mammal","X"]],
+            ["isa","animal","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","monkey","X"], ["isa","mammal","X"]]]]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","pet","X"], ["have","Peter 1","X"]],
+            ["xor", ["isa","monkey","X"], ["isa","bird","X"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","bird","X"], ["have","Peter 1","X"]],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","fly"],
+                ["has actor","E","X"],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","animal","X"], ["have","Peter 1","X"]],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","breathe"],
+                ["has actor","E","X"],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","pet","X"],
+              ["have","Peter 1","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ],
+            ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","Rock 2"],
+          ["isa","person","Peter 1"],
+          ["isa","pet","Rock 2"],
+          ["have","Peter 1","Rock 2"]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["holds","W0",
+        ["or",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","Rock 2"],
+              ["capability","E"]
+            ]
+          ],
+          ["isa","bird","Rock 2"],
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","breathe"],
+                ["has actor","E","Rock 2"],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S9",
+      ["question", ["not", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","Rock 2","Y"]]]]]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: either_or_not_xor"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:Peter 1"],
+ "@nl": "If a pet of Peter 1 is a mammal, the pet is an animal."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu2"],
+            ["-isa","mammal","?:X"],
+            ["isa","animal","?:X"]
+           ],
+ "@nl": "If a pet of Peter 1 is a mammal, the pet is an animal."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","monkey","?:X"], ["isa","mammal","?:X"]],
+ "@nl": "All monkeys are mammals."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu4"],
+            ["isa","monkey","?:X"],
+            ["isa","bird","?:X"]
+           ],
+ "@nl": "All pets of Peter 1 are either monkeys or birds."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu5"],
+            ["-isa","monkey","?:X"],
+            ["-isa","bird","?:X"]
+           ],
+ "@nl": "All pets of Peter 1 are either monkeys or birds."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","bird","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu6"],
+            ["has property","fly","?:X","?:Cu6"]
+           ],
+ "@nl": "If a bird is a pet of Peter 1, the bird can fly."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","animal","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu7"],
+            ["has property","breathe","?:X","?:Cu7"]
+           ],
+ "@nl": "If an animal is a pet of Peter 1, the animal can breathe."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu8"],
+            ["-has property","fly","?:X","?:Cu8"],
+            ["isa", "wing", ["sk0","?:X"]]
+           ],
+ "@nl": "If a pet of Peter 1 can fly, the pet has wings."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","pet","?:X"],
+            ["-have","#:Peter 1","?:X","?:Cu9"],
+            ["-has property","fly","?:X","?:Cu9"],
+            ["has part", "?:X", ["sk0","?:X"], "?:Cu9"]
+           ],
+ "@nl": "If a pet of Peter 1 can fly, the pet has wings."},
+{"@name": "sent_S7",
+ "@logic": ["isa","animal","#:Rock 2"],
+ "@nl": "Rock 2 is a pet of Peter 1."},
+{"@name": "sent_S7",
+ "@logic": ["isa","person","#:Peter 1"],
+ "@nl": "Rock 2 is a pet of Peter 1."},
+{"@name": "sent_S7",
+ "@logic": ["isa","pet","#:Rock 2"],
+ "@nl": "Rock 2 is a pet of Peter 1."},
+{"@name": "sent_S7",
+ "@logic": ["have","#:Peter 1","#:Rock 2","?:Cu13"],
+ "@nl": "Rock 2 is a pet of Peter 1."},
+{"@name": "sent_S8",
+ "@logic": [["has property","fly","#:Rock 2","?:Cu14"],
+            ["isa","bird","#:Rock 2"],
+            ["-has property","breathe","#:Rock 2","?:Cu14"]
+           ],
+ "@nl": "Rock 2 can fly, or Rock 2 is a bird, or Rock 2 cannot breathe."},
+{"@name": "sent_S9",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","wing","?:Y"], ["-has part","#:Rock 2","?:Y","?:Cu15"]],
+ "@nl": "Does Rock 2 not have wings?"},
+{"@name": "sent_S9",
+ "@sourcetype": "question",
+ "@logic": [["isa","wing","sk1_wing"], ["$defq0"]],
+ "@nl": "Does Rock 2 not have wings?"},
+{"@name": "sent_S9",
+ "@sourcetype": "question",
+ "@logic": [["has part","#:Rock 2","sk1_wing","?:Cu17"], ["$defq0"]],
+ "@nl": "Does Rock 2 not have wings?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","wing","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S9",
+ "@question": ["$defq0"],
+ "@nl": "Does Rock 2 not have wings?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","pet","$some_not_pet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mammal","$some_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mammal","$some_not_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","monkey","$some_monkey"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","monkey","$some_not_monkey"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S6",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wing","$some_wing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S6",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","wing","$some_not_wing"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","fly","$some_not_fly","?:Cu29"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property","breathe","$some_breathe","?:Cu30"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv39"], ["has type","?:E","go","?:Fv39"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","bird","?:X"], ["-isa","mammal","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","bird","?:X"], ["-isa","mammal","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S5","assumption",1], [["-have","#:Peter 1","?:X","?:Y"], ["has property","breathe","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [2, ["in","sent_S7","assumption",1], [["have","#:Peter 1","#:Rock 2","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","animal","#:Rock 2"], ["has property","breathe","#:Rock 2","?:X3"]]],
+          [4, ["in","sent_S7","assumption",1], [["isa","animal","#:Rock 2"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["has property","breathe","#:Rock 2","?:X"]]],
+          [6, ["in","sent_S8","assumption",1], [["isa","bird","#:Rock 2"], ["-has property","breathe","#:Rock 2","?:X"], ["has property","fly","#:Rock 2","?:X"]]],
+          [7, ["mp", 5, [6,1], "fromassumption", 1], [["isa","bird","#:Rock 2"], ["has property","fly","#:Rock 2","?:X"]]],
+          [8, ["in","sent_S6","assumption",1], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["-has property","fly","?:X","?:Y"], ["-have","#:Peter 1","?:X","?:Y"], ["-isa","pet","?:X"]]],
+          [9, ["mp", [7,1], [8,1], "fromassumption", 1], [["-isa","pet","#:Rock 2"], ["isa","bird","#:Rock 2"], ["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X3"], ["-have","#:Peter 1","#:Rock 2","?:X3"]]],
+          [10, ["in","sent_S7","assumption",1], [["isa","pet","#:Rock 2"]]],
+          [11, ["simp",9,10,"fromassumption",1], [["isa","bird","#:Rock 2"], ["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X"], ["-have","#:Peter 1","#:Rock 2","?:X"]]],
+          [12, ["mp", [11,2], 2, "fromassumption", 1], [["isa","bird","#:Rock 2"], ["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X"]]],
+          [13, ["in","sent_S9","assumption",1], [["-$defq0"], ["-has part","#:Rock 2","?:X","?:Y"], ["-isa","wing","?:X"]]],
+          [14, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [15, ["mp", [12,1], [13,1], 14, "fromga", 1], [["-isa", "wing", ["sk0","#:Rock 2"]], ["isa","bird","#:Rock 2"]]],
+          [16, ["in","sent_S6","assumption",1], [["isa", "wing", ["sk0","?:X"]], ["-has property","fly","?:X","?:Y"], ["-have","#:Peter 1","?:X","?:Y"], ["-isa","pet","?:X"]]],
+          [17, ["mp", [7,1], [16,1], "fromassumption", 1], [["-isa","pet","#:Rock 2"], ["isa", "wing", ["sk0","#:Rock 2"]], ["isa","bird","#:Rock 2"], ["-have","#:Peter 1","#:Rock 2","?:X3"]]],
+          [18, ["simp",17,10,"fromassumption",1], [["isa", "wing", ["sk0","#:Rock 2"]], ["isa","bird","#:Rock 2"], ["-have","#:Peter 1","#:Rock 2","?:X"]]],
+          [19, ["mp", [18,2], 2, "fromassumption", 1], [["isa", "wing", ["sk0","#:Rock 2"]], ["isa","bird","#:Rock 2"]]],
+          [20, ["mp",15,19,"fromga",1], [["isa","bird","#:Rock 2"]]],
+          [21, ["in","sent_S4","assumption",1], [["-have","#:Peter 1","?:X","?:Y"], ["has property","fly","?:X","?:Y"], ["-isa","bird","?:X"]]],
+          [22, ["mp",21,2,"fromassumption",1], [["-isa","bird","#:Rock 2"], ["has property","fly","#:Rock 2","?:X"]]],
+          [23, ["mp",20,22,"fromga",1], [["has property","fly","#:Rock 2","?:X"]]],
+          [24, ["mp", 23, [8,1], "fromga", 1], [["-isa","pet","#:Rock 2"], ["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X3"], ["-have","#:Peter 1","#:Rock 2","?:X3"]]],
+          [25, ["simp",24,10,"fromga",1], [["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X"], ["-have","#:Peter 1","#:Rock 2","?:X"]]],
+          [26, ["mp", [25,1], 2, "fromga", 1], [["has part", "#:Rock 2", ["sk0","#:Rock 2"], "?:X"]]],
+          [27, ["mp", 23, [16,1], "fromga", 1], [["-isa","pet","#:Rock 2"], ["isa", "wing", ["sk0","#:Rock 2"]], ["-have","#:Peter 1","#:Rock 2","?:X3"]]],
+          [28, ["simp",27,10,"fromga",1], [["isa", "wing", ["sk0","#:Rock 2"]], ["-have","#:Peter 1","#:Rock 2","?:X"]]],
+          [29, ["mp", [28,1], 2, "fromga", 1], [["isa", "wing", ["sk0","#:Rock 2"]]]],
+          [30, ["mp", 26, [13,1], 14, 29, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Peter's birds can fly.",
+"  (2) All animals that are Peter's pets can breathe.",
+"  (3) If Peter's pet can fly, then Peter's pet has wings.",
+"  (4) Rock is Peter's pet.",
+"  (5) Rock can fly, or Rock is a bird, or Rock cannot breathe.",
+"  (6) Does Rock not have wings?",
+"Proof steps (by contradiction):",
+"  (1) If Peter has some X and X is an animal then X is breathe  [sentence 2]",
+"  (2) Peter has Rock  [sentence 4]",
+"  (3) If Rock is an animal then Rock is breathe  [from steps 1, 2]",
+"  (4) Rock is an animal  [sentence 4]",
+"  (5) Rock is breathe  [from steps 3, 4]",
+"  (6) If Rock is breathe then Rock is a bird or Rock is fly  [sentence 5]",
+"  (7) Rock is a bird or Rock is fly  [from steps 5, 6]",
+"  (8) If some X is fly and Peter has X and X is a pet then X has the wing sk0 of X as a part  [sentence 3]",
+"  (9) If Rock is a pet and Peter has Rock then Rock is a bird or Rock has the wing sk0 of Rock 2 as a part  [from steps 7, 8]",
+"  (10) Rock is a pet  [sentence 4]",
+"  (11) If Peter has Rock then Rock is a bird or Rock has the wing sk0 of Rock 2 as a part  [from steps 9, 10]",
+"  (12) Rock is a bird or Rock has the wing sk0 of Rock 2 as a part  [from steps 11, 2]",
+"  (13) If answer holds then Rock does not have X as a part  [sentence 6]",
+"  (14) Answer holds  [assumption]",
+"  (15) If the wing sk0 of Rock 2 is a wing then Rock is a bird  [from steps 12, 13, 14]",
+"  (16) If some X is fly and Peter has X and X is a pet then the wing sk0 of X is a wing  [sentence 3]",
+"  (17) If Rock is a pet and Peter has Rock then the wing sk0 of Rock 2 is a wing or Rock is a bird  [from steps 7, 16]",
+"  (18) If Peter has Rock then the wing sk0 of Rock 2 is a wing or Rock is a bird  [from steps 17, 10]",
+"  (19) The wing sk0 of Rock 2 is a wing or Rock is a bird  [from steps 18, 2]",
+"  (20) Rock is a bird  [from steps 15, 19]",
+"  (21) If Peter has some X and X is a bird then X is fly  [sentence 1]",
+"  (22) If Rock is a bird then Rock is fly  [from steps 21, 2]",
+"  (23) Rock is fly  [from steps 20, 22]",
+"  (24) If Rock is a pet and Peter has Rock then Rock has the wing sk0 of Rock 2 as a part  [from steps 23, 8]",
+"  (25) If Peter has Rock then Rock has the wing sk0 of Rock 2 as a part  [from steps 24, 10]",
+"  (26) Rock has the wing sk0 of Rock 2 as a part  [from steps 25, 2]",
+"  (27) If Rock is a pet and Peter has Rock then the wing sk0 of Rock 2 is a wing  [from steps 23, 16]",
+"  (28) If Peter has Rock then the wing sk0 of Rock 2 is a wing  [from steps 27, 10]",
+"  (29) The wing sk0 of Rock 2 is a wing  [from steps 28, 2]",
+"  (30) Contradiction  [from steps 26, 13, 14, 29]"
+],
+  "timestamp": "2026-06-20T04:48:29Z"
+}

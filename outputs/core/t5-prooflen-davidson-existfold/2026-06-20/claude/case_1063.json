@@ -1,0 +1,283 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1063,
+  "input_text": "John went to the shop to buy bread. John bought bread?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John went to the shop to buy bread.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 went to the shop 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "shop 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "go", "mode": "event", "roles": {"actor": "John 1", "destination": "shop 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "John 1 intended to buy bread.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bread", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "intend",
+              "mode": "intention",
+              "roles": {
+                "actor": "John 1",
+                "content": {"root": "buy", "mode": "event", "roles": {"actor": "John 1", "target": "bread"}}
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John bought bread?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 buy bread?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bread", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{"root": "buy", "mode": "event", "roles": {"actor": "John 1", "target": "bread"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","shop","shop 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","go"],
+                ["has actor","E","John 1"],
+                ["has destination","E","shop 2","at"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["exists","E1",
+            ["and",
+              ["isa","activity","E1"],
+              ["has type","E1","intend"],
+              ["has actor","E1","John 1"],
+              ["has time","E1","past","in"],
+              ["exists","E2",
+                ["and",
+                  ["has content","E1","E2"],
+                  ["isa","activity","E2"],
+                  ["has type","E2","buy"],
+                  ["has actor","E2","John 1"],
+                  ["has target","E2","bread"],
+                  ["has time","E2","past","in"]
+                ]
+              ],
+              ["intention","E1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","buy"],
+            ["has actor","E","John 1"],
+            ["has target","E","bread"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","shop","#:shop 2"],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["event", "go", "#:John 1", "sk1", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["has destination", "sk0", "#:shop 2", "at", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 went to the shop 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["event", "intend", "#:John 1", "buy", "sk2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk2", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has content","sk2","sk3_activity"],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk3_activity"],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has type", "sk3_activity", "buy", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has actor", "sk3_activity", "#:John 1", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bread","sk4_bread"],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has target", "sk3_activity", "sk4_bread", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk3_activity", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S2",
+ "@logic": ["intention","sk2"],
+ "@nl": "John 1 intended to buy bread."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "buy", "#:John 1", "bread", "sk5", ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 buy bread?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk5", "past", "in", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 buy bread?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk5"]],
+ "@nl": "Did John 1 buy bread?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "buy", "#:John 1", "bread", "?:E", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 buy bread?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 buy bread?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","pass","?:Fv16"], ["has type","?:E","go","?:Fv16"]],
+ "@confidence": 0.89,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv17","?:Fv18","?:Fv20","?:Fv21"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv17","?:Fv18","?:Fv20","?:Fv21"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv17","?:Fv18","?:Fv20","?:Fv21"]],
+            ["-next","?:Fv18","?:Fv19"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv19","?:Fv20","?:Fv21"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv19","?:Fv20","?:Fv21"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv22","?:Fv23","?:Fv25","?:Fv26"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv22","?:Fv23","?:Fv25","?:Fv26"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv22","?:Fv23","?:Fv25","?:Fv26"]],
+            ["-next","?:Fv23","?:Fv24"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv27","?:Fv28","?:Fv30","?:Fv31"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv27","?:Fv28","?:Fv30","?:Fv31"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv27","?:Fv28","?:Fv30","?:Fv31"]],
+            ["-next","?:Fv28","?:Fv29"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv29","?:Fv30","?:Fv31"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:43:08Z"
+}

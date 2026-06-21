@@ -1,0 +1,207 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1381,
+  "input_text": "If an animal or bird has a tail, it is cute. John is an animal. John has a tail. John is cute?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If an animal or bird has a tail, it is cute.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If an animal or bird has a tail, the animal or bird is cute.",
+          "type": "normal_rule",
+          "entities": [{"id": "animal or bird", "type": "generic", "category": "animal"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["cute","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is an animal.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an animal.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a tail.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is cute?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 cute?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["cute","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["or", ["isa","animal","X"], ["isa","bird","X"]],
+                  ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","X","Y"]]]
+                ],
+                ["has degree property","cute","X","none","entity"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","animal","John 1"]]],
+    ["@id","S3",
+      ["holds", "W0", ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","John 1","Y"]]]]
+    ],
+    ["@id", "S4", ["question", ["has degree property","cute","John 1","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","tail","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu1"],
+            ["has degree property","cute","?:X","none","?:Fv45","?:Cu1"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "If an animal or bird has a tail, the animal or bird is cute."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["-isa","tail","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu2"],
+            ["has degree property","cute","?:X","none","?:Fv47","?:Cu2"]
+           ],
+ "@confidence": 0.9487,
+ "@nl": "If an animal or bird has a tail, the animal or bird is cute."},
+{"@name": "sent_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is an animal."},
+{"@name": "sent_S3",
+ "@logic": ["isa","tail","sk0_tail"],
+ "@nl": "John 1 has a tail."},
+{"@name": "sent_S3",
+ "@logic": ["has part","#:John 1","sk0_tail","?:Cu5"],
+ "@nl": "John 1 has a tail."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","cute","#:John 1","none","?:Fv49","?:Cu6"]],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","cute","#:John 1","none","?:Fv50","?:Cu7"], ["$defq0"]],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tail","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","cute","#:John 1","none","?:Fv51","?:Cu9"],
+            ["has degree property","cute","#:John 1","none","?:Fv52","?:Cu9"]
+           ],
+ "@nl": "Is John 1 cute?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tail","$some_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","cute","$some_cute_entity","none","?:Fv54","?:Cu15"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","cute","$some_not_cute_entity","none","?:Fv55","?:Cu16"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9487,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9487], [["has degree property","cute","?:X","none","?:Y","?:Z"], ["-has part","?:X","?:U","?:Z"], ["-isa","tail","?:U"], ["-isa","animal","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","tail","sk0_tail"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.9487], [["has degree property","cute","?:X","none","?:Y","?:Z"], ["-has part","?:X","sk0_tail","?:Z"], ["-isa","animal","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["has part","#:John 1","sk0_tail","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.9487], [["-isa","animal","#:John 1"], ["has degree property","cute","#:John 1","none","?:X3","?:Y3"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","animal","#:John 1"]]],
+          [7, ["simp",5,6,"fromassumption",0.9487], [["has degree property","cute","#:John 1","none","?:X","?:Y"]]],
+          [8, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","cute","#:John 1","none","?:X","?:Y"]]],
+          [9, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [10, ["mp", 7, [8,1], 9, "fromga", 0.9487], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) If an animal or bird has a tail, it is cute.",
+"  (2) John is an animal.",
+"  (3) John has a tail.",
+"  (4) John is cute?",
+"Proof steps (by contradiction):",
+"  (1) If some X has some U as a part and U is a tail and X is an animal then X is cute  [sentence 1, confidence 95%]",
+"  (2) Some tail tai1 is a tail  [sentence 3]",
+"  (3) If some X has tai1 as a part and X is an animal then X is cute  [from steps 1, 2, confidence 95%]",
+"  (4) John has tai1 as a part  [sentence 3]",
+"  (5) If John is an animal then John is cute  [from steps 3, 4, confidence 95%]",
+"  (6) John is an animal  [sentence 2]",
+"  (7) John is cute  [from steps 5, 6, confidence 95%]",
+"  (8) If John is cute then answer holds  [sentence 4]",
+"  (9) assume for contradiction: the answer is no  [from question]",
+"  (10) Contradiction  [from steps 7, 8, 9, confidence 95%]"
+],
+  "timestamp": "2026-06-19T02:50:56Z"
+}

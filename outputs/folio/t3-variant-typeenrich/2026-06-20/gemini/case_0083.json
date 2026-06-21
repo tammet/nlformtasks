@@ -1,0 +1,368 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 83,
+  "input_text": "No baked sweets are spicy. All cupcakes are baked sweets. All mala hotpots are spicy. All products from Baked by Melissa are cupcakes. Dried Thai chilies are spicy or mala hotpots or not baked sweets. Dried Thai chilies are cupcakes and products of Baked by Melissa?",
+  "expected_answer": "False.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "No baked sweets are spicy.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No baked sweets are spicy.",
+          "type": "strict_rule",
+          "entities": [{"id": "baked sweets", "type": "generic", "category": "artifact"}],
+          "adjectives": [["spicy","none","baked sweet"]]
+        }
+      ]
+    },
+    {
+      "raw": "All cupcakes are baked sweets.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All cupcakes are baked sweets.",
+          "type": "strict_rule",
+          "entities": [{"id": "cupcakes", "type": "generic", "category": "artifact"},
+            {"id": "baked sweets", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All mala hotpots are spicy.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All mala hotpots are spicy.",
+          "type": "strict_rule",
+          "entities": [{"id": "mala hotpots", "type": "generic", "category": "food"}],
+          "adjectives": [["spicy","none","mala hotpot"]]
+        }
+      ]
+    },
+    {
+      "raw": "All products from Baked by Melissa are cupcakes.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All products from Baked by Melissa 1 are cupcakes.",
+          "type": "strict_rule",
+          "entities": [{
+              "id": "products from Baked by Melissa",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            },
+            {"id": "Baked by Melissa 1", "type": "concrete", "category": "organization"},
+            {"id": "cupcakes", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Dried Thai chilies are spicy or mala hotpots or not baked sweets.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Dried Thai chilies are spicy or mala hotpots or not baked sweets.",
+          "type": "normal_rule",
+          "entities": [{"id": "Dried Thai chilies", "type": "generic", "category": "plant"},
+            {"id": "mala hotpots", "type": "generic", "category": "food"},
+            {"id": "baked sweets", "type": "generic", "category": "artifact"}
+          ],
+          "adjectives": [["spicy","none","Dried Thai chili"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Dried Thai chilies are cupcakes and products from Baked by Melissa?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?",
+          "type": "query",
+          "entities": [{"id": "Dried Thai chilies", "type": "generic", "category": "plant"},
+            {"id": "cupcakes", "type": "generic", "category": "artifact"},
+            {
+              "id": "products from Baked by Melissa",
+              "type": "generic",
+              "subtype": "compound",
+              "category": "artifact"
+            },
+            {"id": "Baked by Melissa 1", "type": "concrete", "category": "organization"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","baked sweet","X"],
+            ["not", ["has degree property","spicy","X","none","baked sweet"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","cupcake","X"], ["isa","baked sweet","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","mala hotpot","X"],
+            ["has degree property","spicy","X","none","mala hotpot"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","product from Baked by Melissa","X"],
+              ["is rel2","from","X","Baked by Melissa 1"]
+            ],
+            ["isa","cupcake","X"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","Dried Thai chili","X"],
+              ["normally",
+                ["or",
+                  ["has degree property","spicy","X","none","Dried Thai chili"],
+                  ["isa","mala hotpot","X"],
+                  ["not", ["isa","baked sweet","X"]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S5",0.95]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","Dried Thai chili","X"],
+            ["and",
+              ["isa","cupcake","X"],
+              ["and",
+                ["isa","product from Baked by Melissa","X"],
+                ["is rel2","from","X","Baked by Melissa 1"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S4",
+ "@logic": ["isa","organization","#:Baked by Melissa 1"],
+ "@nl": "All products from Baked by Melissa 1 are cupcakes."},
+{"@name": "entity_S4",
+ "@logic": ["isa","baked by melissa","#:Baked by Melissa 1"],
+ "@nl": "All products from Baked by Melissa 1 are cupcakes."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","baked sweet","?:X"],
+            ["-has degree property","spicy","?:X","none","baked sweet","?:Cu3"]
+           ],
+ "@nl": "No baked sweets are spicy."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","cupcake","?:X"], ["isa","baked sweet","?:X"]],
+ "@nl": "All cupcakes are baked sweets."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","mala hotpot","?:X"],
+            ["has degree property","spicy","?:X","none","mala hotpot","?:Cu5"]
+           ],
+ "@nl": "All mala hotpots are spicy."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","product from baked by melissa","?:X"],
+            ["-is rel2","from","?:X","#:Baked by Melissa 1","?:Cu6"],
+            ["isa","cupcake","?:X"]
+           ],
+ "@nl": "All products from Baked by Melissa 1 are cupcakes."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","dried thai chili","?:X"],
+            ["-isa","baked sweet","?:X"],
+            ["has degree property","spicy","?:X","none","Dried Thai chili","?:Cu7"],
+            ["isa","mala hotpot","?:X"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Dried Thai chilies are spicy or mala hotpots or not baked sweets."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","dried thai chili","?:X"], ["isa","cupcake","?:X"]],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","dried thai chili","?:X"],
+            ["isa","product from baked by melissa","?:X"]
+           ],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","dried thai chili","?:X"],
+            ["is rel2","from","?:X","#:Baked by Melissa 1","?:Cu10"]
+           ],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","dried thai chili","sk0_dried thai chili"], ["$defq0"]],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","cupcake","sk0_dried thai chili"],
+            ["-isa","product from baked by melissa","sk0_dried thai chili"],
+            ["-is rel2","from","sk0_dried thai chili","#:Baked by Melissa 1","?:Cu12"],
+            ["$defq0"]
+           ],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Are all Dried Thai chilies cupcakes and products from Baked by Melissa 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","baked sweet","$some_baked_sweet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baked sweet","$some_not_baked_sweet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","cupcake","$some_cupcake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","cupcake","$some_not_cupcake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mala hotpot","$some_mala_hotpot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mala hotpot","$some_not_mala_hotpot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","product from baked by melissa","$some_product_from_Baked_by_Melissa"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","product from baked by melissa","$some_not_product_from_Baked_by_Melissa"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","dried thai chili","$some_Dried_Thai_chili"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","dried thai chili","$some_not_Dried_Thai_chili"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","spicy","$some_spicy_baked_sweet","none","baked sweet","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","baked sweet","$some_spicy_baked_sweet"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","spicy","$some_not_spicy_baked_sweet","none","baked sweet","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","spicy","$some_spicy_mala_hotpot","none","mala hotpot","?:Cu26"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mala hotpot","$some_spicy_mala_hotpot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","spicy","$some_not_spicy_mala_hotpot","none","mala hotpot","?:Cu28"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","spicy","$some_spicy_Dried_Thai_chili","none","Dried Thai chili","?:Cu29"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","dried thai chili","$some_spicy_Dried_Thai_chili"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","spicy","$some_not_spicy_Dried_Thai_chili","none","Dried Thai chili","?:Cu31"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","product from baked by melissa","$some_product_from_Baked_by_Melissa_from_Baked by Melissa"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2","from","$some_product_from_Baked_by_Melissa_from_Baked by Melissa","#:Baked by Melissa 1","?:Cu33"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","dried thai chili","?:X"], ["isa","chili","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","dried thai","?:X"], ["-isa","chili","?:X"], ["isa","dried thai chili","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baked by melissa","?:X"], ["isa","melissa","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baked by","?:X"], ["-isa","melissa","?:X"], ["isa","baked by melissa","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baked sweet","?:X"], ["isa","sweet","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baked","?:X"], ["-isa","sweet","?:X"], ["isa","baked sweet","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","mala hotpot","?:X"], ["isa","hotpot","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","mala","?:X"], ["-isa","hotpot","?:X"], ["isa","mala hotpot","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","product from baked by melissa","?:X"], ["isa","melissa","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","product from baked by melissa","?:X"], ["isa","baked by melissa","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","product from baked by","?:X"],
+            ["-isa","melissa","?:X"],
+            ["isa","product from baked by melissa","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T22:07:59Z"
+}

@@ -1,0 +1,282 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1014,
+  "input_text": "An apple was eaten. John ate a pear. What was eaten?",
+  "expected_answer": ["The apple and the pear.","An apple and a pear.","An apple.","A pear."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The apple and the pear.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "An apple was eaten.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An apple 1 was eaten.",
+          "type": "situation",
+          "entities": [{"id": "apple 1", "type": "concrete", "category": "plant"}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John ate a pear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 ate a pear 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "pear 2", "type": "concrete", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "John 1", "target": "pear 2"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What was eaten?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity was eaten?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","apple","apple 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has target","E","apple 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","pear","pear 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","pear 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has target","E","X"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","apple","#:apple 1"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["event", "eat", "sk1", "#:apple 1", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pear","#:pear 2"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["event", "eat", "#:John 1", "#:pear 2", "sk2", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk2", "past", "in", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk2"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["event", "eat", ["sk4","?:X"], "?:X", ["sk3","?:X"], ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has time", ["sk3","?:X"], "past", "in", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["actuality", ["sk3","?:X"]]],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "eat", "?:Dava2", "?:X", "?:E", ["$ctxt","past","?:Fv12","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity was eaten?"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "pop_what",
+ "@logic": ["isa","pear","$some_pear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","apple","$some_apple"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:apple 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-event", "eat", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["-actuality","?:Z"], ["$defq0","?:Y"]]],
+          [2, ["in","sent_S1","assumption",1], [["event", "eat", "sk1", "#:apple 1", "sk0", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-actuality","sk0"], ["$defq0","#:apple 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["actuality","sk0"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:apple 1"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:apple 1"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:pear 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-event", "eat", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:U","?:V","?:W"]], ["-actuality","?:Z"], ["$defq0","?:Y"]]],
+          [2, ["in","sent_S2","assumption",1], [["event", "eat", "#:John 1", "#:pear 2", "sk2", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-actuality","sk2"], ["$defq0","#:pear 2"]]],
+          [4, ["in","sent_S2","assumption",1], [["actuality","sk2"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:pear 2"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:pear 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"the apple:",
+"Sentences used:",
+"  (1) An apple was eaten.",
+"  (2) What was eaten?",
+"Proof steps:",
+"  (1) If some X eats some Y then Y is the answer  [sentence 2]",
+"  (2) sk1 eats the apple A  [sentence 1]",
+"  (3) The apple A is the answer  [from steps 1, 2]",
+"  (4)   [sentence 1]",
+"  (5) The apple A is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The apple is an answer  [from steps 5, 6]",
+"",
+"the pear:",
+"Sentences used:",
+"  (1) John ate a pear.",
+"  (2) What was eaten?",
+"Proof steps:",
+"  (1) If some X eats some Y then Y is the answer  [sentence 2]",
+"  (2) John eats the pear B  [sentence 1]",
+"  (3) The pear B is the answer  [from steps 1, 2]",
+"  (4)   [sentence 1]",
+"  (5) The pear B is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The pear is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-20T12:42:56Z"
+}

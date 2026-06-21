@@ -1,0 +1,291 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 275,
+  "input_text": "Elephant's head is green. John is an elephant. John has a head. John has a green head?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephant's head is green.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An elephant's head is green.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephant", "type": "generic", "category": "animal"},
+            {"id": "head", "type": "generic", "text": "head", "scope": "dependent"}
+          ],
+          "adjectives": [["green","none","entity"]],
+          "definites": [["head of","head","elephant"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The head is the head of an elephant.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephant", "type": "generic", "category": "animal"},
+            {"id": "head", "type": "generic", "text": "head", "scope": "dependent"}
+          ],
+          "definites": [["head of","head","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is an elephant.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John has a head.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 has a head 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "head 2", "type": "concrete", "text": "head"}
+          ]
+        },
+        {
+          "unit_id": "S5",
+          "text": "Head 2 is the head of John 1.",
+          "type": "situation",
+          "entities": [{"id": "head 2", "type": "concrete", "text": "head"},
+            {"id": "John 1", "type": "concrete", "category": "animal"}
+          ],
+          "definites": [["head of","head 2","John 1"]]
+        }
+      ]
+    },
+    {
+      "raw": "John has a green head?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does John 1 have a green head?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "head", "type": "generic", "text": "head", "scope": "dependent"}
+          ],
+          "adjectives": [["green","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["exists","Y",
+                  ["and",
+                    ["isa","head","Y"],
+                    ["has part","X","Y"],
+                    ["has degree property","green","Y","none","entity"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","head of","elephant","head"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","head","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@definite","S2","W0","head of","elephant","head"]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id","S4",
+      ["holds","W0",
+        ["and", ["isa","animal","John 1"], ["isa","head","head 2"], ["has part","John 1","head 2"]]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","animal","John 1"],
+            ["isa","head","head 2"],
+            ["has part","John 1","head 2"]
+          ]
+        ],
+        ["@definite","S5","W0","head of","John 1","head 2"]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["exists","Y",
+          ["and",
+            ["isa","head","Y"],
+            ["has part","John 1","Y"],
+            ["has degree property","green","Y","none","entity"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "head", ["$theof1","head","?:X","?:Cu1"]]],
+ "@nl": "An elephant's head is green."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has part", "?:X", ["$theof1","head","?:X","?:Cu2"], "?:Cu2"]
+           ],
+ "@nl": "An elephant's head is green."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has property", "green", ["$theof1","head","?:X","?:Cu3"], "?:Cu3"]
+           ],
+ "@nl": "An elephant's head is green."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "head", ["sk1","?:X"]]],
+ "@nl": "The head is the head of an elephant."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["has part", "?:X", ["sk1","?:X"], "?:Cu5"]],
+ "@nl": "The head is the head of an elephant."},
+{"@name": "sent_S3",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S4",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 has a head 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "John 1 has a head 2."},
+{"@name": "sent_S4",
+ "@logic": ["has part","#:John 1","#:head 2","?:Cu9"],
+ "@nl": "John 1 has a head 2."},
+{"@name": "sent_S5",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "Head 2 is the head of John 1."},
+{"@name": "sent_S5",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "Head 2 is the head of John 1."},
+{"@name": "sent_S5",
+ "@logic": ["has part","#:John 1","#:head 2","?:Cu12"],
+ "@nl": "Head 2 is the head of John 1."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","head","sk2_head"]],
+ "@nl": "Does John 1 have a green head?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:John 1","sk2_head","?:Cu14"]],
+ "@nl": "Does John 1 have a green head?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","green","sk2_head","?:Cu15"]],
+ "@nl": "Does John 1 have a green head?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","head","?:Y"],
+            ["-has part","#:John 1","?:Y","?:Cu16"],
+            ["-has property","green","?:Y","?:Cu16"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a green head?"},
+{"@name": "frm_theof",
+ "@logic": ["has part", "?:X", ["$theof1","head","?:X","?:Cu17"], "?:Cu17"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","head","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a green head?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:X", ["$theof1","head","?:X","?:Cu20"], "?:Cu20"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:X", ["$theof1","head","?:X","?:Cu21"], "?:Cu21"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:X", ["$theof1","head","?:X","?:Cu22"], "?:Cu22"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "head of", ["$theof1","head","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "head", ["$theof1","head","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","head","$some_not_head"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","green","$some_green_entity","?:Cu27"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","green","$some_not_green_entity","?:Cu28"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has property", "green", ["$theof1","head","?:X","?:Y"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["has property", "green", ["$theof1","head","#:John 1","?:X"], "?:X"]]],
+          [4, ["in","sent_S6","assumption",1], [["$defq0"], ["-has property","green","?:X","?:Y"], ["-has part","#:John 1","?:X","?:Y"], ["-isa","head","?:X"]]],
+          [5, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 1], [["-has part", "#:John 1", ["$theof1","head","#:John 1","?:X3"], "?:X3"], ["-isa", "head", ["$theof1","head","#:John 1","?:X3"]]]],
+          [7, ["in","sent_S1","assumption",1], [["has part", "?:X", ["$theof1","head","?:X","?:Y"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [8, ["mp", [7,1], 2, "fromassumption", 1], [["has part", "#:John 1", ["$theof1","head","#:John 1","?:X3"], "?:X3"]]],
+          [9, ["in","sent_S1","assumption",1], [["isa", "head", ["$theof1","head","?:X","?:Y"]], ["-isa","elephant","?:X"]]],
+          [10, ["mp", [9,1], 2, "fromassumption", 1], [["isa", "head", ["$theof1","head","#:John 1","?:X3"]]]],
+          [11, ["simp",6,8,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Elephant's head is green.",
+"  (2) John is an elephant.",
+"  (3) John has a green head?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then X's head is green  [sentence 1]",
+"  (2) John is an elephant  [sentence 2]",
+"  (3) John's head is green  [from steps 1, 2]",
+"  (4) If some X is green and John has X as a part and X is a head then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If John has John's head as a part then John's head is not a head  [from steps 3, 4, 5]",
+"  (7) If some X is an elephant then X has X's head as a part  [sentence 1]",
+"  (8) John has John's head as a part  [from steps 7, 2]",
+"  (9) If some X is an elephant then X's head is a head  [sentence 1]",
+"  (10) John's head is a head  [from steps 9, 2]",
+"  (11) Contradiction  [from steps 6, 8, 10]"
+],
+  "timestamp": "2026-06-19T04:37:11Z"
+}

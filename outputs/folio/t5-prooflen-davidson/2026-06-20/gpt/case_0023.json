@@ -1,0 +1,549 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 23,
+  "input_text": "\"Stranger Things\" is a popular Netflix show. If a Netflix show is popular, Karen will binge-watch it. If and only if Karen binge-watches a Netflix show, she will download it. Karen does not download \"Black Mirror.\" \"Black Mirror\" is a Netflix show. If Karen binge-watches a Netflix show, she will share it with Lisa. \"Black Mirror\" is popular?",
+  "expected_answer": "False.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Likely false.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "\"Stranger Things\" is a popular Netflix show.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "\"Stranger Things\" 1 is a popular Netflix show.",
+          "type": "real",
+          "entities": [{"id": "\"Stranger Things\" 1", "type": "concrete", "category": "abstract"},
+            {"id": "Netflix", "type": "generic", "category": "organization"},
+            {"id": "show", "type": "generic", "category": "event"}
+          ],
+          "adjectives": [["popular","none","entity"]]
+        }
+      ]
+    },
+    {
+      "raw": "If a Netflix show is popular, Karen will binge-watch it.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a Netflix show is popular, Karen 2 will binge-watch the Netflix show.",
+          "type": "normal_rule",
+          "entities": [{"id": "Netflix", "type": "generic", "category": "organization"},
+            {"id": "show", "type": "generic", "category": "event"},
+            {"id": "Karen 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "binge-watch",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "show"}
+            }
+          ],
+          "adjectives": [["popular","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If and only if Karen binge-watches a Netflix show, she will download it.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If and only if Karen 2 binge-watches a Netflix show, Karen 2 will download the Netflix show.",
+          "type": "strict_rule",
+          "entities": [{"id": "Karen 2", "type": "concrete", "category": "person"},
+            {"id": "Netflix", "type": "generic", "category": "organization"},
+            {"id": "show", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "binge-watch",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "show"}
+            },
+            {
+              "root": "download",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "show"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Karen does not download \"Black Mirror.\"",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Karen 2 does not download \"Black Mirror\" 3.",
+          "type": "situation",
+          "entities": [{"id": "Karen 2", "type": "concrete", "category": "person"},
+            {"id": "\"Black Mirror\" 3", "type": "concrete", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "download",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "\"Black Mirror\" 3"}
+            }
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "\"Black Mirror\" is a Netflix show.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "\"Black Mirror\" 3 is a Netflix show.",
+          "type": "real",
+          "entities": [{"id": "\"Black Mirror\" 3", "type": "concrete", "category": "abstract"},
+            {"id": "Netflix", "type": "generic", "category": "organization"},
+            {"id": "show", "type": "generic", "category": "event"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If Karen binge-watches a Netflix show, she will share it with Lisa.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4.",
+          "type": "normal_rule",
+          "entities": [{"id": "Karen 2", "type": "concrete", "category": "person"},
+            {"id": "Netflix", "type": "generic", "category": "organization"},
+            {"id": "show", "type": "generic", "category": "event"},
+            {"id": "Lisa 4", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "binge-watch",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "show"}
+            },
+            {
+              "root": "share",
+              "mode": "necessity",
+              "roles": {"actor": "Karen 2", "target": "show", "recipient": "Lisa 4"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "\"Black Mirror\" is popular?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is \"Black Mirror\" 3 popular?",
+          "type": "query",
+          "entities": [{"id": "\"Black Mirror\" 3", "type": "concrete", "category": "abstract"}],
+          "adjectives": [["popular","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","show","\"Stranger Things\" 1"],
+          ["is rel2","from","\"Stranger Things\" 1","Netflix"],
+          ["has degree property","popular","\"Stranger Things\" 1","none","entity"]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","show","X"],
+                ["is rel2","from","X","Netflix"],
+                ["has degree property","popular","X","none","entity"]
+              ],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","binge-watch"],
+                    ["has actor","E","Karen 2"],
+                    ["has target","E","X"],
+                    ["necessity","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","show","X"], ["is rel2","from","X","Netflix"]],
+              ["and",
+                ["implies",
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","binge-watch"],
+                      ["has actor","E1","Karen 2"],
+                      ["has target","E1","X"],
+                      ["necessity","E1"]
+                    ]
+                  ],
+                  ["exists","E2",
+                    ["and",
+                      ["isa","activity","E2"],
+                      ["has type","E2","download"],
+                      ["has actor","E2","Karen 2"],
+                      ["has target","E2","X"],
+                      ["necessity","E2"]
+                    ]
+                  ]
+                ],
+                ["implies",
+                  ["exists","E2",
+                    ["and",
+                      ["isa","activity","E2"],
+                      ["has type","E2","download"],
+                      ["has actor","E2","Karen 2"],
+                      ["has target","E2","X"],
+                      ["necessity","E2"]
+                    ]
+                  ],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","binge-watch"],
+                      ["has actor","E1","Karen 2"],
+                      ["has target","E1","X"],
+                      ["necessity","E1"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Karen 2"],
+          ["isa","show","\"Black Mirror\" 3"],
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","download"],
+                ["has actor","E","Karen 2"],
+                ["has target","E","\"Black Mirror\" 3"],
+                ["necessity","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","show","\"Black Mirror\" 3"],
+          ["is rel2","from","\"Black Mirror\" 3","Netflix"]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","show","X"], ["is rel2","from","X","Netflix"]],
+              ["normally",
+                ["and",
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","binge-watch"],
+                      ["has actor","E1","Karen 2"],
+                      ["has target","E1","X"],
+                      ["necessity","E1"]
+                    ]
+                  ],
+                  ["exists","E2",
+                    ["and",
+                      ["isa","activity","E2"],
+                      ["has type","E2","share"],
+                      ["has actor","E2","Karen 2"],
+                      ["has target","E2","X"],
+                      ["has recipient","E2","Lisa 4"],
+                      ["necessity","E2"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S6",0.95]
+      ]
+    ],
+    ["@id","S7",
+      ["question",
+        ["and",
+          ["isa","show","\"Black Mirror\" 3"],
+          ["has degree property","popular","\"Black Mirror\" 3","none","entity"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S6",
+ "@logic": ["isa","person","#:Lisa 4"],
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S1",
+ "@logic": ["isa","show","\"Stranger Things\" 1"],
+ "@nl": "\"Stranger Things\" 1 is a popular Netflix show."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "from", "\"Stranger Things\" 1", "Netflix", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "\"Stranger Things\" 1 is a popular Netflix show."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "popular", "\"Stranger Things\" 1", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "\"Stranger Things\" 1 is a popular Netflix show."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["-has property", "popular", "?:X", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["event", "binge-watch", "#:Karen 2", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "If a Netflix show is popular, Karen 2 will binge-watch the Netflix show."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["-has property", "popular", "?:X", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]],
+            ["necessity", ["sk0","?:X"]],
+            ["$block", ["$","show",3], ["$not", ["necessity", ["sk0","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a Netflix show is popular, Karen 2 will binge-watch the Netflix show."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-event", "binge-watch", "#:Karen 2", "?:X", "?:E1", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-necessity","?:E1"],
+            ["event", "download", "#:Karen 2", "?:X", ["sk1","?:X"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@confidence": 0.974,
+ "@nl": "If and only if Karen 2 binge-watches a Netflix show, Karen 2 will download the Netflix show."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-event", "binge-watch", "#:Karen 2", "?:X", "?:E1", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-necessity","?:E1"],
+            ["necessity", ["sk1","?:X"]]
+           ],
+ "@confidence": 0.974,
+ "@nl": "If and only if Karen 2 binge-watches a Netflix show, Karen 2 will download the Netflix show."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-event", "download", "#:Karen 2", "?:X", "?:E2", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-necessity","?:E2"],
+            ["event", "binge-watch", "#:Karen 2", "?:X", ["sk2","?:X"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@confidence": 0.974,
+ "@nl": "If and only if Karen 2 binge-watches a Netflix show, Karen 2 will download the Netflix show."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-event", "download", "#:Karen 2", "?:X", "?:E2", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-necessity","?:E2"],
+            ["necessity", ["sk2","?:X"]]
+           ],
+ "@confidence": 0.974,
+ "@nl": "If and only if Karen 2 binge-watches a Netflix show, Karen 2 will download the Netflix show."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Karen 2"],
+ "@nl": "Karen 2 does not download \"Black Mirror\" 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","show","\"Black Mirror\" 3"],
+ "@nl": "Karen 2 does not download \"Black Mirror\" 3."},
+{"@name": "sent_S4",
+ "@logic": [["-event", "download", "#:Karen 2", "\"Black Mirror\" 3", "?:E", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+            ["-necessity","?:E"]
+           ],
+ "@nl": "Karen 2 does not download \"Black Mirror\" 3."},
+{"@name": "sent_S5",
+ "@logic": ["isa","show","\"Black Mirror\" 3"],
+ "@nl": "\"Black Mirror\" 3 is a Netflix show."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2", "from", "\"Black Mirror\" 3", "Netflix", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "\"Black Mirror\" 3 is a Netflix show."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["event", "binge-watch", "#:Karen 2", "?:X", ["sk3","?:X"], ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["necessity", ["sk3","?:X"]]
+           ],
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["event", "share", "#:Karen 2", "?:X", ["sk4","?:X"], ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["has recipient", ["sk4","?:X"], "#:Lisa 4", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","show","?:X"],
+            ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["necessity", ["sk4","?:X"]],
+            ["$block", ["$","show",2], ["$not", ["necessity", ["sk4","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If Karen 2 binge-watches a Netflix show, Karen 2 will share the Netflix show with Lisa 4."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","show","\"Black Mirror\" 3"]],
+ "@nl": "Is \"Black Mirror\" 3 popular?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "popular", "\"Black Mirror\" 3", ["$ctxt","present","?:Fv21","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Is \"Black Mirror\" 3 popular?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","show","\"Black Mirror\" 3"],
+            ["-has property", "popular", "\"Black Mirror\" 3", ["$ctxt","present","?:Fv21","?:Fv19","?:Fv20"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is \"Black Mirror\" 3 popular?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is \"Black Mirror\" 3 popular?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "popular", "\"Black Mirror\" 3", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "popular", "\"Black Mirror\" 3", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "popular", "\"Black Mirror\" 3", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is \"Black Mirror\" 3 popular?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","show","$some_not_show"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "popular", "$some_not_popular_entity", ["$ctxt","?:Fv34","?:Fv31","?:Fv32","?:Fv33"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","show","$some_show_from_Netflix"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "from", "$some_show_from_Netflix", "Netflix", ["$ctxt","?:Fv42","?:Fv39","?:Fv40","?:Fv41"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.948676,
+        "negative proof": [[1, ["in","sent_S3","assumption",0.974], [["event", "download", "#:Karen 2", "?:X", ["sk1","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-event", "binge-watch", "#:Karen 2", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","show","?:X"], ["-necessity","?:W"]]],
+          [2, ["in","sent_S6","assumption",1], [["event", "binge-watch", "#:Karen 2", "?:X", ["sk3","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","show","?:X"]]],
+          [3, ["in","sent_S5","assumption",1], [["is rel2", "from", "\"Black Mirror\" 3", "Netflix", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [4, ["in","sent_S7","assumption",1], [["-$defq0"], ["isa","show","\"Black Mirror\" 3"]]],
+          [5, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [6, ["mp",4,5,"fromga",1], [["isa","show","\"Black Mirror\" 3"]]],
+          [7, ["mp", [2,1], 3, 6, "fromga", 1], [["event", "binge-watch", "#:Karen 2", "\"Black Mirror\" 3", ["sk3","\"Black Mirror\" 3"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [8, ["in","sent_S6","assumption",1], [["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["necessity", ["sk3","?:X"]], ["-isa","show","?:X"]]],
+          [9, ["mp",8,3,6,"fromga",1], [["necessity", ["sk3","\"Black Mirror\" 3"]]]],
+          [10, ["mp", [1,1], 7, 6, 9, "fromga", 0.974], [["event", "download", "#:Karen 2", "\"Black Mirror\" 3", ["sk1","\"Black Mirror\" 3"], ["$ctxt","present","W0","?:X","?:Y"]], ["-is rel2", "from", "\"Black Mirror\" 3", "Netflix", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [11, ["mp", [10,1], 3, "fromga", 0.974], [["event", "download", "#:Karen 2", "\"Black Mirror\" 3", ["sk1","\"Black Mirror\" 3"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [12, ["in","sent_S4","assumption",1], [["-event", "download", "#:Karen 2", "\"Black Mirror\" 3", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-necessity","?:X"]]],
+          [13, ["mp",11,12,"fromga",0.974], [["-necessity", ["sk1","\"Black Mirror\" 3"]]]],
+          [14, ["in","sent_S3","assumption",0.974], [["-event", "binge-watch", "#:Karen 2", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-is rel2", "from", "?:X", "Netflix", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["necessity", ["sk1","?:X"]], ["-isa","show","?:X"], ["-necessity","?:Y"]]],
+          [15, ["mp",14,7,6,9,"fromga",0.974], [["necessity", ["sk1","\"Black Mirror\" 3"]], ["-is rel2", "from", "\"Black Mirror\" 3", "Netflix", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [16, ["mp", [15,1], 3, "fromga", 0.974], [["necessity", ["sk1","\"Black Mirror\" 3"]]]],
+          [17, ["simp",13,16,"fromga",0.948676], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) If and only if Karen binge-watches a Netflix show, she will download it.",
+"  (2) Karen does not download \"Black Mirror.\"",
+"  (3) \"Black Mirror\" is a Netflix show.",
+"  (4) If Karen binge-watches a Netflix show, she will share it with Lisa.",
+"  (5) \"Black Mirror\" is popular?",
+"Proof steps (by contradiction):",
+"  (1) If Karen binge-watch some X and X is from the popular Netflix and X is a show and an event W is necessary then Karen download X  [sentence 1, confidence 97%]",
+"  (2) If some X is from the popular Netflix and X is a show then Karen binge-watch X  [sentence 4]",
+"  (3) The popular \"Black Mirror\" is from the popular Netflix  [sentence 3]",
+"  (4) If answer holds then the popular \"Black Mirror\" is a show  [sentence 5]",
+"  (5) Answer holds  [assumption]",
+"  (6) The popular \"Black Mirror\" is a show  [from steps 4, 5]",
+"  (7) Karen binge-watch the popular \"Black Mirror\"  [from steps 2, 3, 6]",
+"  (8) If some X is from the popular Netflix and X is a show then the event sk3 of X is necessary  [sentence 4]",
+"  (9) The event sk3 of \"Black Mirror\" 3 is necessary  [from steps 8, 3, 6]",
+"  (10) If the popular \"Black Mirror\" is from the popular Netflix then Karen download the popular \"Black Mirror\"  [from steps 1, 7, 6, 9, confidence 97%]",
+"  (11) Karen download the popular \"Black Mirror\"  [from steps 10, 3, confidence 97%]",
+"  (12) If Karen download the popular \"Black Mirror\" then X is not necessary  [sentence 2]",
+"  (13) sk1 of \"Black Mirror\" 3 is not necessary  [from steps 11, 12, confidence 97%]",
+"  (14) If Karen binge-watch some X and X is from the popular Netflix and X is a show and an event Y is necessary then the event sk1 of X is necessary  [sentence 1, confidence 97%]",
+"  (15) If the popular \"Black Mirror\" is from the popular Netflix then the event sk1 of \"Black Mirror\" 3 is necessary  [from steps 14, 7, 6, 9, confidence 97%]",
+"  (16) The event sk1 of \"Black Mirror\" 3 is necessary  [from steps 15, 3, confidence 97%]",
+"  (17) Contradiction  [from steps 13, 16, confidence 95%]"
+],
+  "timestamp": "2026-06-20T12:32:59Z"
+}

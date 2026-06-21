@@ -1,0 +1,263 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 725,
+  "input_text": "Nice bears who have tails are strong. John is a nice bear. John has a tail. John is strong?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Nice bears who have tails are strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears that are nice and have tails are strong.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "tails", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["nice","none","bear"], ["strong","none","bear"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a nice bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a nice bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 has a tail 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail 2", "type": "concrete"}
+          ]
+        },
+        {
+          "unit_id": "S4",
+          "text": "The tail 2 is the tail of John 1.",
+          "type": "situation",
+          "entities": [{"id": "tail 2", "type": "concrete"},
+            {"id": "John 1", "type": "concrete", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is strong?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is John 1 strong?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["strong","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["implies",
+                  ["and",
+                    ["has degree property","nice","X","none","bear"],
+                    ["exists", "Y", ["and", ["isa","tail","Y"], ["has part","X","Y"]]]
+                  ],
+                  ["has degree property","strong","X","none","bear"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and", ["isa","bear","John 1"], ["has degree property","nice","John 1","none","bear"]]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and", ["isa","bear","John 1"], ["isa","tail","tail 2"], ["has part","John 1","tail 2"]]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","bear","John 1"], ["isa","tail","tail 2"], ["has part","John 1","tail 2"]]
+        ],
+        ["@definite","S4","W0","tail of","John 1","tail 2"]
+      ]
+    ],
+    ["@id", "S5", ["question", ["has degree property","strong","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","tail","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has degree property", "strong", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Bears that are nice and have tails are strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a nice bear."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "John 1 is a nice bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","tail","#:tail 2"],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S3",
+ "@logic": ["has part", "#:John 1", "#:tail 2", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 has a tail 2."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "The tail 2 is the tail of John 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","tail","#:tail 2"],
+ "@nl": "The tail 2 is the tail of John 1."},
+{"@name": "sent_S4",
+ "@logic": ["has part", "#:John 1", "#:tail 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "The tail 2 is the tail of John 1."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","?:Fv13","?:Fv11","?:Fv12"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tail","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 strong?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_bear", "none", "bear", ["$ctxt","?:Fv32","?:Fv29","?:Fv30","?:Fv31"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "strong", "$some_strong_bear", "none", "bear", ["$ctxt","?:Fv36","?:Fv33","?:Fv34","?:Fv35"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_strong_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "strong", "$some_not_strong_bear", "none", "bear", ["$ctxt","?:Fv44","?:Fv41","?:Fv42","?:Fv43"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "none", "?:Fv45", ["$ctxt","past","?:Fv15","?:Fv16","?:Fv17"]],
+            ["has degree property", "strong", "?:X", "none", "?:Fv46", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "none", "?:Fv47", ["$ctxt","present","?:Fv15","?:Fv16","?:Fv17"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv18","?:Fv19","?:Fv20"]],
+            ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv18","?:Fv19","?:Fv20"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has degree property", "strong", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has part", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","tail","?:W"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["-isa","bear","#:John 1"], ["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-has part", "#:John 1", "?:Z3", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-isa","tail","?:Z3"]]],
+          [4, ["in","sent_S4","assumption",1], [["isa","bear","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",0.98], [["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]], ["-has part", "#:John 1", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","tail","?:Z"]]],
+          [6, ["in","sent_S4","assumption",1], [["has part", "#:John 1", "#:tail 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [7, ["mp", [5,2], 6, "fromassumption", 0.98], [["-isa","tail","#:tail 2"], ["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [8, ["in","sent_S4","assumption",1], [["isa","tail","#:tail 2"]]],
+          [9, ["simp",7,8,"fromassumption",0.98], [["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]], ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [10, ["in","sent_S5","assumption",1], [["$defq0"], ["-has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [11, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [12, ["mp", [9,1], [10,1], 11, "fromga", 0.98], [["$block", ["$","tail",3], ["$not", ["has degree property", "strong", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Nice bears who have tails are strong.",
+"  (2) John is a nice bear.",
+"  (3) John has a tail.",
+"  (4) John is strong?",
+"Proof steps:",
+"  (1) If some X is a good bear and X has some W as a part and W is a tail and X is a bear then normally X is a strong bear  [sentence 1, confidence 98%]",
+"  (2) John is a good bear  [sentence 2]",
+"  (3) If John is a bear and John has some Z3 as a part and Z3 is a tail then normally John is a strong bear  [from steps 1, 2, confidence 98%]",
+"  (4) John is a bear  [sentence 3]",
+"  (5) If John has some Z as a part and Z is a tail then normally John is a strong bear  [from steps 3, 4, confidence 98%]",
+"  (6) John has the tail B as a part  [sentence 3]",
+"  (7) Normally John is a strong bear  [from steps 5, 6, confidence 98%]",
+"  (8) The tail B is a tail  [sentence 3]",
+"  (9) Normally John is a strong bear  [from steps 7, 8, confidence 98%]",
+"  (10) If John is a strong bear then answer holds  [sentence 4]",
+"  (11) assume for contradiction: the answer is no  [from question]",
+"  (12) Outstanding exception: John is not a strong bear  [from steps 9, 10, 11, confidence 98%]",
+"Exceptions checked and not holding:",
+"  John is not a strong bear"
+],
+  "timestamp": "2026-06-19T02:00:51Z"
+}

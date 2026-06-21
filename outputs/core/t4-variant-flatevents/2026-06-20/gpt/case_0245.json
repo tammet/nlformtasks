@@ -1,0 +1,164 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 245,
+  "input_text": "John saw the mother of the boy. John saw a boy's mother?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John saw the mother of the boy.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw the mother 2 of the boy 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "mother 2", "type": "concrete", "text": "mother", "category": "person"},
+            {"id": "boy 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "mother 2"}}],
+          "definites": [["mother of","mother 2","boy 3"]],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The mother 2 is the mother of the boy 3.",
+          "type": "situation",
+          "entities": [{"id": "mother 2", "type": "concrete", "text": "mother", "category": "person"},
+            {"id": "boy 3", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["mother of","mother 2","boy 3"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John saw a boy's mother?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 see a boy's mother?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "boy", "type": "generic", "category": "person"},
+            {"id": "mother", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","mother","mother 2"],
+            ["isa","boy","boy 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","mother 2"]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","mother of","boy 3","mother 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds", "W0", ["and", ["isa","mother","mother 2"], ["isa","boy","boy 3"]]],
+        ["@definite","S2","W0","mother of","boy 3","mother 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","boy","X"],
+            ["exists","Y",
+              ["and",
+                ["isa","mother","Y"],
+                ["is rel2","mother of","Y","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","see"],
+                    ["has actor","E","John 1"],
+                    ["has target","E","Y"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","mother","#:mother 2"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","boy","#:boy 3"],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop","$target","#:mother 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw the mother 2 of the boy 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","mother","#:mother 2"],
+ "@nl": "The mother 2 is the mother of the boy 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","boy","#:boy 3"],
+ "@nl": "The mother 2 is the mother of the boy 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","boy","sk0_boy"]],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa", "mother", ["$theof1", "mother", "sk0_boy", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "mother", "sk0_boy", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]], ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","boy","?:X"],
+            ["-isa","mother","?:Y"],
+            ["-is rel2", "mother of", "?:Y", "?:X", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:Y"], ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see a boy's mother?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "sk0_boy", ["$theof1", "mother", "sk0_boy", ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]], ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:Br2", ["$theof1", "mother", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]], ["$ctxt","present","?:W","?:L","?:K"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "mother of", ["$theof1","mother","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "mother", ["$theof1","mother","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T15:37:15Z"
+}

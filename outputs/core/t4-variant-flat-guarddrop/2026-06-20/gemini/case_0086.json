@@ -1,0 +1,252 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 86,
+  "input_text": "A nice elephant was strong. A mouse was white. The white animal lifted the stone. Who lifted the stone?",
+  "expected_answer": "The mouse",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The white mouse.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A nice elephant was strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An elephant 1 was nice and strong.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"], ["strong","none","elephant"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "A mouse was white.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "A mouse 2 was white.",
+          "type": "situation",
+          "entities": [{"id": "mouse 2", "type": "concrete", "category": "animal"}],
+          "adjectives": [["white","none","mouse"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The white animal lifted the stone.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The mouse 2 lifted a stone 3.",
+          "type": "situation",
+          "entities": [{"id": "mouse 2", "type": "concrete", "category": "animal"},
+            {"id": "stone 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"actor": "mouse 2", "target": "stone 3"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who lifted the stone?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity lifted the stone 3?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "stone 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"actor": "entity", "target": "stone 3"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["has degree property","nice","elephant 1","none","elephant"],
+            ["has degree property","strong","elephant 1","none","elephant"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","mouse","mouse 2"],
+            ["has degree property","white","mouse 2","none","mouse"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","mouse","mouse 2"],
+            ["isa","stone","stone 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lift"],
+                ["has actor","E","mouse 2"],
+                ["has target","E","stone 3"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S4",
+      ["ask","X",
+        ["and",
+          ["isa","stone","stone 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","lift"],
+              ["has actor","E","X"],
+              ["has target","E","stone 3"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "An elephant 1 was nice and strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "good", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An elephant 1 was nice and strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "strong", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An elephant 1 was nice and strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","mouse","#:mouse 2"],
+ "@nl": "A mouse 2 was white."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "white", "#:mouse 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "A mouse 2 was white."},
+{"@name": "sent_S3",
+ "@logic": ["isa","mouse","#:mouse 2"],
+ "@nl": "The mouse 2 lifted a stone 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","stone","#:stone 3"],
+ "@nl": "The mouse 2 lifted a stone 3."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "lift", "#:mouse 2", ["eventprop","$target","#:stone 3"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The mouse 2 lifted a stone 3."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The mouse 2 lifted a stone 3."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","stone","#:stone 3"]],
+ "@nl": "Which entity lifted the stone 3?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "lift", "?:X", ["eventprop","$target","#:stone 3"], ["$ctxt","past","W0","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity lifted the stone 3?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","stone","#:stone 3"],
+            ["-is rel2", "lift", "?:X", ["eventprop","$target","#:stone 3"], ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity lifted the stone 3?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity lifted the stone 3?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "none", "?:Fv26", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has degree property", "strong", "?:X", "none", "?:Fv27", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "none", "?:Fv28", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv17","?:Fv18","?:Fv19"]],
+            ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv17","?:Fv18","?:Fv19"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "white", "?:X", ["$ctxt","past","?:Fv20","?:Fv21","?:Fv22"]],
+            ["has property", "white", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]],
+            ["$block", 0, ["$not", ["has property", "white", "?:X", ["$ctxt","present","?:Fv20","?:Fv21","?:Fv22"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "white", "?:X", ["$ctxt","past","?:Fv23","?:Fv24","?:Fv25"]],
+            ["has property", "white", "?:X", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]],
+            ["$block", 0, ["$not", ["has property", "white", "?:X", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","mouse","$some_mouse"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","stone","$some_stone"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:mouse 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S4","assumption",1], [["-isa","stone","#:stone 3"], ["-is rel2", "lift", "?:X", ["eventprop","$target","#:stone 3"], ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["is rel2", "lift", "#:mouse 2", ["eventprop","$target","#:stone 3"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","stone","#:stone 3"], ["$defq0","#:mouse 2"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","stone","#:stone 3"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:mouse 2"]]],
+          [6, ["in","sent_S4","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:mouse 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The white animal lifted the stone.",
+"  (2) Who lifted the stone?",
+"Proof steps:",
+"  (1) If some X is lift of stone C then X is the answer  [sentence 2]",
+"  (2) The mouse B is lift of stone C  [sentence 1]",
+"  (3) The mouse B is the answer  [from steps 1, 2]",
+"  (4) The stone C is a stone  [sentence 1]",
+"  (5) The mouse B is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The white mouse is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T08:13:11Z"
+}

@@ -1,0 +1,740 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 130,
+  "input_text": "All people who make wedding plans are people who are engaged. All people who invite others to come to their ceremony make wedding plans. Anyone who has a well-attended wedding invites others to come to their ceremony. Some people that have well-attended weddings have larger families. If John is engaged, then John does not invite friends to their ceremony and make wedding plans. If John has a larger family, then either John has a well-attended wedding or invites friends to their ceremony. John is engaged?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Error: error in formula nr 30 sent_S6: first argument of exists connective not a variable list",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All people who make wedding plans are people who are engaged.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a person makes wedding plans, then the person is engaged.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "wedding plans", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{
+              "root": "make",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "wedding plans"}
+            }
+          ],
+          "adjectives": [["engaged","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "All people who invite others to come to their wedding make wedding plans.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person invites others to come to their wedding, then the person makes wedding plans.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "others", "type": "generic", "category": "person", "scope": "dependent"},
+            {"id": "wedding", "type": "generic", "scope": "dependent"},
+            {"id": "wedding plans", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{
+              "root": "invite",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "others", "destination": "wedding"}
+            },
+            {
+              "root": "make",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "wedding plans"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Anyone who has a well-attended wedding invites others to come to their wedding.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person has a well-attended wedding, then the person invites others to come to their wedding.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "wedding", "type": "generic", "scope": "dependent"},
+            {"id": "others", "type": "generic", "category": "person", "scope": "dependent"}
+          ],
+          "actions": [{
+              "root": "invite",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "others", "destination": "wedding"}
+            }
+          ],
+          "adjectives": [["well-attended","none","wedding"]]
+        }
+      ]
+    },
+    {
+      "raw": "Some people that have well-attended weddings have larger families.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Some people have well-attended weddings and have larger families.",
+          "type": "normal_rule",
+          "confidence": 0.99,
+          "entities": [{"id": "people", "type": "generic", "category": "person"},
+            {"id": "wedding", "type": "generic", "scope": "dependent"},
+            {"id": "families", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["well-attended","none","wedding"], ["large","high","family"]]
+        }
+      ]
+    },
+    {
+      "raw": "If John is engaged, then John does not invite friends to their wedding and make wedding plans.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "friends", "type": "generic", "scope": "dependent"},
+            {"id": "wedding", "type": "generic", "scope": "dependent"},
+            {"id": "wedding plans", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["engaged","none","person"]],
+          "actions": [{
+              "root": "invite",
+              "mode": "habitual",
+              "roles": {"actor": "John 1", "target": "friends", "destination": "wedding"}
+            },
+            {
+              "root": "make",
+              "mode": "habitual",
+              "roles": {"actor": "John 1", "target": "wedding plans"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If John has a larger family, then either John has a well-attended wedding or invites friends to their wedding.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If John 1 has a larger family, then either John 1 has a well-attended wedding or John 1 invites friends to John 1's wedding.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "family", "type": "generic", "scope": "dependent"},
+            {"id": "wedding", "type": "generic", "scope": "dependent"},
+            {"id": "friends", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["large","high","family"], ["well-attended","none","wedding"]],
+          "actions": [{
+              "root": "invite",
+              "mode": "habitual",
+              "roles": {"actor": "John 1", "target": "friends", "destination": "wedding"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is engaged?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is John 1 engaged?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["engaged","none","person"]]
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["json-fail retry: Unterminated string starting at: line 117 column 13 (char 39"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","make"],
+                  ["has actor","E","X"],
+                  ["exists", "Y", ["and", ["isa","wedding plans","Y"], ["has target","E","Y"]]],
+                  ["typical","E"]
+                ]
+              ]
+            ],
+            ["has degree property","engaged","X","none","person"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["exists","E1",
+                ["and",
+                  ["isa","activity","E1"],
+                  ["has type","E1","invite"],
+                  ["has actor","E1","X"],
+                  ["exists", "Y", ["and", ["isa","others","Y"], ["has target","E1","Y"]]],
+                  ["exists", "Z", ["and", ["isa","wedding","Z"], ["has destination","E1","Z","to"]]],
+                  ["typical","E1"]
+                ]
+              ]
+            ],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","make"],
+                ["has actor","E2","X"],
+                ["exists", "W", ["and", ["isa","wedding plans","W"], ["has target","E2","W"]]],
+                ["typical","E2"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["isa","wedding","Y"],
+                ["have","X","Y"],
+                ["has degree property","well-attended","Y","none","wedding"]
+              ],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","invite"],
+                  ["has actor","E","X"],
+                  ["exists", "Z", ["and", ["isa","others","Z"], ["has target","E","Z"]]],
+                  ["has destination","E","Y","to"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","person","X"],
+              ["exists","Y",
+                ["and",
+                  ["isa","wedding","Y"],
+                  ["have","X","Y"],
+                  ["has degree property","well-attended","Y","none","wedding"]
+                ]
+              ],
+              ["exists","Z",
+                ["and",
+                  ["isa","family","Z"],
+                  ["have","X","Z"],
+                  ["has degree property","large","Z","high","family"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.99]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["implies",
+              ["has degree property","engaged","John 1","none","person"],
+              ["and",
+                ["not",
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","invite"],
+                      ["has actor","E1","John 1"],
+                      ["exists", "F", ["and", ["isa","friends","F"], ["has target","E1","F"]]],
+                      ["exists","W1",
+                        ["and", ["isa","wedding","W1"], ["has destination","E1","W1","to"]]
+                      ],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ],
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","make"],
+                    ["has actor","E2","John 1"],
+                    ["exists", "P", ["and", ["isa","wedding plans","P"], ["has target","E2","P"]]],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["implies",
+              ["exists","Y",
+                ["and",
+                  ["isa","family","Y"],
+                  ["have","John 1","Y"],
+                  ["has degree property","large","Y","high","family"]
+                ]
+              ],
+              ["xor",
+                ["exists","Z",
+                  ["and",
+                    ["isa","wedding","Z"],
+                    ["have","John 1","Z"],
+                    ["has degree property","well-attended","Z","none","wedding"]
+                  ]
+                ],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","invite"],
+                    ["has actor","E","John 1"],
+                    ["exists", "F", ["and", ["isa","friends","F"], ["has target","E","F"]]],
+                    ["exists","W2",
+                      ["and", ["isa","wedding","W2"], ["has destination","E","W2","to"]]
+                    ],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S7", ["question", ["has degree property","engaged","John 1","none","person"]]]
+  ],
+  "stage_2_retries": ["sanity #1: free_variable, either_or_not_xor"],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "make", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","wedding plan","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has property", "busy", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "If a person makes wedding plans, then the person is engaged."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["isa", "activity", ["sk0","?:X"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has type", ["sk0","?:X"], "make", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["isa", "wedding plan", ["sk1","?:X"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-has actor", "?:E1", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","different","?:Y"],
+            ["-has target", "?:E1", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","wedding","?:Z"],
+            ["-has destination", "?:E1", "?:Z", "to", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person invites others to come to their wedding, then the person makes wedding plans."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa", "activity", ["sk2","?:X","?:Y"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has type", ["sk2","?:X","?:Y"], "invite", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has actor", ["sk2","?:X","?:Y"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa", "different", ["sk3","?:X","?:Y"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has target", ["sk2","?:X","?:Y"], ["sk3","?:X","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has destination", ["sk2","?:X","?:Y"], "?:Y", "to", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","wedding","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has property", "well-attended", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["typical", ["sk2","?:X","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person has a well-attended wedding, then the person invites others to come to their wedding."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","sk4_person"],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["isa","wedding","sk5_wedding"],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["have", "sk4_person", "sk5_wedding", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["has property", "well-attended", "sk5_wedding", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["isa","family","sk6_family"],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["have", "sk4_person", "sk6_family", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S4",
+ "@logic": ["-has degree property", "small", "sk6_family", "high", "family", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@confidence": 0.9971,
+ "@nl": "Some people have well-attended weddings and have larger families."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-isa","activity","?:E1"],
+            ["-has type", "?:E1", "invite", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-has actor", "?:E1", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-isa","friend","?:F"],
+            ["-has target", "?:E1", "?:F", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-isa","wedding","?:W1"],
+            ["-has destination", "?:E1", "?:W1", "to", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-typical", "?:E1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["isa","activity","sk7_activity"]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["has type", "sk7_activity", "make", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["has actor", "sk7_activity", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["isa","wedding plan","sk8_wedding plans"]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["has target", "sk7_activity", "sk8_wedding plans", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S5",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["typical", "sk7_activity", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["$block", ["$","$generic",2], ["$not", ["typical", "sk7_activity", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]]]
+           ],
+ "@nl": "If John 1 is engaged, then John 1 does not invite friends to John 1's wedding and John 1 makes wedding plans."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","family","?:Y"],
+            ["-have", "#:John 1", "?:Y", ["$ctxt","?:Fv22","?:Fv21","?:Fv19","?:Fv20"]],
+            ["has degree property", "small", "?:Y", "high", "family", ["$ctxt","?:Fv22","?:Fv21","?:Fv19","?:Fv20"]],
+            ["and",
+             ["or",
+              ["exists",
+               "Z",
+               ["and",
+                ["isa","wedding","Z"],
+                ["have","#:John 1","Z"],
+                ["has property","well-attended","Z"]
+               ]
+              ],
+              ["exists",
+               "E",
+               ["and",
+                ["isa","activity","E"],
+                ["has type","E","invite"],
+                ["has actor","E","#:John 1"],
+                ["exists", "F", ["and", ["isa","friend","F"], ["has target","E","F"]]],
+                ["exists", "W2", ["and", ["isa","wedding","W2"], ["has destination","E","W2","to"]]],
+                ["typical","E"]
+               ]
+              ]
+             ],
+             ["normally",
+              ["or",
+               ["forall",
+                "Z",
+                ["or",
+                 ["-isa","wedding","Z"],
+                 ["-have","#:John 1","Z"],
+                 ["-has property","well-attended","Z"]
+                ]
+               ],
+               ["forall",
+                "E",
+                ["or",
+                 ["-isa","activity","E"],
+                 ["-has type","E","invite"],
+                 ["-has actor","E","#:John 1"],
+                 ["forall", "F", ["or", ["-isa","friend","F"], ["-has target","E","F"]]],
+                 ["forall",
+                  "W2",
+                  ["or", ["-isa","wedding","W2"], ["-has destination","E","W2","to"]]
+                 ],
+                 ["-typical","E"]
+                ]
+               ]
+              ]
+             ]
+            ]
+           ],
+ "@nl": "If John 1 has a larger family, then either John 1 has a well-attended wedding or John 1 invites friends to John 1's wedding."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "busy", "#:John 1", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Is John 1 engaged?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 engaged?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 engaged?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "busy", "#:John 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "busy", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "busy", "#:John 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is John 1 engaged?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wedding plan","$some_wedding_plans"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","wedding plan","$some_not_wedding_plans"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","different","$some_others"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","different","$some_not_others"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","family","$some_family"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","family","$some_not_family"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","friend","$some_friends"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","friend","$some_not_friends"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "busy", "$some_not_engaged_person", ["$ctxt","?:Fv84","?:Fv81","?:Fv82","?:Fv83"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "well-attended", "$some_well-attended_wedding", ["$ctxt","?:Fv88","?:Fv85","?:Fv86","?:Fv87"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wedding","$some_well-attended_wedding"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "well-attended", "$some_not_well-attended_wedding", ["$ctxt","?:Fv96","?:Fv93","?:Fv94","?:Fv95"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "small", "$some_large_family", "none", "family", ["$ctxt","?:Fv100","?:Fv97","?:Fv98","?:Fv99"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","family","$some_large_family"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "small", "$some_not_large_family", "none", "family", ["$ctxt","?:Fv108","?:Fv105","?:Fv106","?:Fv107"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wedding","$some_well-attended_wedding"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "well-attended", "$some_well-attended_wedding", ["$ctxt","?:Fv116","?:Fv113","?:Fv114","?:Fv115"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","wedding plan","?:X"], ["isa","plan","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","wedding","?:X"], ["-isa","plan","?:X"], ["isa","wedding plan","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "small", "?:X", "none", "?:Fv125", ["$ctxt","past","?:Fv27","?:Fv28","?:Fv29"]],
+            ["-has degree property", "small", "?:X", "none", "?:Fv126", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]],
+            ["$block", 0, ["$not", ["has degree property", "large", "?:X", "none", "?:Fv127", ["$ctxt","present","?:Fv27","?:Fv28","?:Fv29"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "small", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv30","?:Fv31","?:Fv32"]],
+            ["-has degree property", "small", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]],
+            ["$block", 0, ["$not", ["has degree property", "large", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv30","?:Fv31","?:Fv32"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "error": "error in formula nr 30 sent_S6: first argument of exists connective not a variable list"
+  },
+  "timestamp": "2026-06-18T21:55:35Z"
+}

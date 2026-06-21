@@ -1,0 +1,177 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 1585,
+  "input_text": "All the boxes are red except for the small one. Is the small box red?",
+  "expected_answer": false,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All the boxes are red except for the small one.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All boxes in set 1 except the small box 2 are red.",
+          "type": "situation",
+          "entities": [{"id": "set 1", "type": "set", "category": "box"},
+            {"id": "small box 2", "type": "concrete", "category": "artifact"}
+          ],
+          "adjectives": [["red","none","box"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The small box 2 is not red.",
+          "type": "situation",
+          "entities": [{"id": "small box 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","box"]]
+        }
+      ]
+    },
+    {
+      "raw": "Is the small box red?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is the small box 2 red?",
+          "type": "query",
+          "entities": [{"id": "small box 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","box"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","box","small box 2"],
+          ["member", "small box 2", ["$setof", "?:X", "set 1", ["isa","box","?:X"]]],
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["member", "X", ["$setof", "?:X", "set 1", ["isa","box","?:X"]]],
+                ["not", ["=","X","small box 2"]]
+              ],
+              ["has degree property","red","X","none","box"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","box","small box 2"],
+          ["not", ["has degree property","red","small box 2","none","box"]]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["question", ["has degree property","red","small box 2","none","box"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","small box","#:small box 2"],
+ "@nl": "All boxes in set 1 except the small box 2 are red."},
+{"@name": "sent_S1",
+ "@logic": ["isa","box","#:small box 2"],
+ "@nl": "All boxes in set 1 except the small box 2 are red."},
+{"@name": "sent_S1",
+ "@logic": ["member", "#:small box 2", ["$setof", "id", "#:set 1", ["$and", ["isa","box","$arg1"]]]],
+ "@nl": "All boxes in set 1 except the small box 2 are red."},
+{"@name": "sent_S1",
+ "@logic": [["-member", "?:X", ["$setof", "id", "#:set 1", ["$and", ["isa","box","$arg1"]]]],
+            ["=","?:X","#:small box 2"],
+            ["has property", "red", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All boxes in set 1 except the small box 2 are red."},
+{"@name": "sent_S2",
+ "@logic": ["isa","box","#:small box 2"],
+ "@nl": "The small box 2 is not red."},
+{"@name": "sent_S2",
+ "@logic": ["-has property", "red", "#:small box 2", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The small box 2 is not red."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has property", "red", "#:small box 2", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Is the small box 2 red?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "red", "#:small box 2", ["$ctxt","present","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is the small box 2 red?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is the small box 2 red?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "red", "#:small box 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "red", "#:small box 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "red", "#:small box 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is the small box 2 red?"},
+{"@name": "frm_set",
+ "@logic": [["-isa","?:C","?:M"],
+            ["member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "frm_set",
+ "@logic": [["-member", "?:M", ["$setof", "id", "?:S", ["$and", ["isa","?:C","$arg1"]]]],
+            ["isa","?:C","?:M"]
+           ],
+ "@nl": "[generated: frm_set]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "red", "$some_red_box", ["$ctxt","?:Fv20","?:Fv17","?:Fv18","?:Fv19"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","box","$some_red_box"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv11","?:Fv12","?:Fv13"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv14","?:Fv15","?:Fv16"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv14","?:Fv15","?:Fv16"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-has property", "red", "#:small box 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-$defq0"], ["has property", "red", "#:small box 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["has property", "red", "#:small box 2", ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [5, ["mp",1,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All the boxes are red except for the small one.",
+"  (2) Is the small box red?",
+"Proof steps (by contradiction):",
+"  (1) The small box B is not red  [sentence 1]",
+"  (2) If answer holds then the small box B is red  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) The small box B is red  [from steps 2, 3]",
+"  (5) Contradiction  [from steps 1, 4]"
+],
+  "timestamp": "2026-06-19T02:38:15Z"
+}

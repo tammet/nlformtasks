@@ -1,0 +1,136 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 180,
+  "input_text": "No elephants have wings. All elephants do not have wings?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "No elephants have wings.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No elephants have wings.",
+          "type": "strict_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All elephants do not have wings?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Do all elephants not have wings?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["not", ["exists", "Y", ["and", ["isa","wings","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["not", ["exists", "Y", ["and", ["isa","wings","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["-isa","wing","?:Y"], ["-have","?:X","?:Y","?:Cu1"]],
+ "@nl": "No elephants have wings."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","elephant","?:X"],
+            ["-isa","wing","?:Y"],
+            ["-have","?:X","?:Y","?:Cu2"]
+           ],
+ "@nl": "Do all elephants not have wings?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","elephant","sk0_elephant"], ["$defq0"]],
+ "@nl": "Do all elephants not have wings?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["isa","wing","sk1_wings"], ["$defq0"]],
+ "@nl": "Do all elephants not have wings?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["have","sk0_elephant","sk1_wings","?:Cu5"], ["$defq0"]],
+ "@nl": "Do all elephants not have wings?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Do all elephants not have wings?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","wing","$some_wings"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","wing","$some_not_wings"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-have","?:X","?:Y","?:Z"], ["-isa","wing","?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","wing","sk1_wings"], ["$defq0"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], [["-have","?:X","sk1_wings","?:Y"], ["-isa","elephant","?:X"]]],
+          [5, ["in","sent_S2","assumption",1], [["$defq0"], ["have","sk0_elephant","sk1_wings","?:X"]]],
+          [6, ["mp", 4, [5,1], 3, "fromga", 1], [["-isa","elephant","sk0_elephant"]]],
+          [7, ["in","sent_S2","assumption",1], [["isa","elephant","sk0_elephant"], ["$defq0"]]],
+          [8, ["mp",6,7,3,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) No elephants have wings.",
+"  (2) All elephants do not have wings?",
+"Proof steps (by contradiction):",
+"  (1) X does not have Y  [sentence 1]",
+"  (2) Some wing win1 is a wing or answer holds  [sentence 2]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) X does not have win1  [from steps 1, 2, 3]",
+"  (5) Answer holds or some elephant ele1 has win1  [sentence 2]",
+"  (6) Ele1 is not an elephant  [from steps 4, 5, 3]",
+"  (7) Ele1 is an elephant or answer holds  [sentence 2]",
+"  (8) Contradiction  [from steps 6, 7, 3]"
+],
+  "timestamp": "2026-06-19T04:36:55Z"
+}

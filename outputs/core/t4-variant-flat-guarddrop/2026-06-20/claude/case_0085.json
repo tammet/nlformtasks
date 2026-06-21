@@ -1,0 +1,225 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 85,
+  "input_text": "A nice elephant was strong. The nice animal lifted a stone. Who lifted the stone?",
+  "expected_answer": "The nice elephant",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The nice elephant.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "A nice elephant was strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "A nice elephant 1 was strong.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","elephant"], ["strong","none","elephant"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The nice animal lifted a stone.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The nice elephant 1 lifted a stone 2.",
+          "type": "situation",
+          "entities": [{"id": "elephant 1", "type": "concrete", "category": "animal"},
+            {"id": "stone 2", "type": "concrete"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"target": "stone 2"}}],
+          "adjectives": [["nice","none","elephant"]],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Who lifted the stone?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity lifted the stone 2?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "stone 2", "type": "concrete"}
+          ],
+          "actions": [{"root": "lift", "mode": "event", "roles": {"target": "stone 2"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["has degree property","nice","elephant 1","none","elephant"],
+            ["has degree property","strong","elephant 1","none","elephant"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","elephant","elephant 1"],
+            ["isa","stone","stone 2"],
+            ["has degree property","nice","elephant 1","none","elephant"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","lift"],
+                ["has actor","E","elephant 1"],
+                ["has target","E","stone 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","lift"],
+            ["has actor","E","X"],
+            ["has target","E","stone 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "A nice elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "good", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A nice elephant 1 was strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property", "strong", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "A nice elephant 1 was strong."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 1"],
+ "@nl": "The nice elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","stone","#:stone 2"],
+ "@nl": "The nice elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property", "good", "#:elephant 1", "none", "elephant", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The nice elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The nice elephant 1 lifted a stone 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The nice elephant 1 lifted a stone 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "lift", "?:X", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "lift", "?:X", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity lifted the stone 2?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "none", "?:Fv14", ["$ctxt","past","?:Fv8","?:Fv9","?:Fv10"]],
+            ["has degree property", "strong", "?:X", "none", "?:Fv15", ["$ctxt","present","?:Fv8","?:Fv9","?:Fv10"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "none", "?:Fv16", ["$ctxt","present","?:Fv8","?:Fv9","?:Fv10"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv11","?:Fv12","?:Fv13"]],
+            ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]],
+            ["$block", 0, ["$not", ["has degree property", "strong", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv11","?:Fv12","?:Fv13"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","stone","$some_stone"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:elephant 1"]],
+        "blockers": [["$block", 0, ["moved","#:elephant 1","W0"]]],
+        "confidence": 0.992475,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-is rel2", "lift", "?:X", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["$defq0","#:elephant 1"]]],
+          [8, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [9, ["mp", [7,1], 8, "fromga", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["$ans","#:elephant 1"]]],
+          [10, ["in","sent_S2","assumption",1], [["next","W0","W1"]]],
+          [11, ["mp", [3,2], 10, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["is rel2", "lift", "#:elephant 1", ["eventprop","$target","#:stone 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [12, ["mp", [11,1], 6, "fromassumption", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["$defq0","#:elephant 1"]]],
+          [13, ["mp", [12,1], 8, "fromga", 0.99], [["$block", 0, ["moved","#:elephant 1","W0"]], ["$ans","#:elephant 1"]]],
+          [14, ["cumul",9,13,"fromga",0.992475], [["$block", 0, ["moved","#:elephant 1","W0"]], ["$ans","#:elephant 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) The nice animal lifted a stone.",
+"  (2) Who lifted the stone?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) The elephant A is lift of stone B  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then the elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (5) The elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 3, 4, confidence 99%]",
+"  (6) If some X is lift of stone B then X is the answer  [sentence 2]",
+"  (7) The elephant A is the answer, except when the elephant A moved in the situation W0  [from steps 5, 6, confidence 99%]",
+"  (8) technical answer unwrap step  [from question]",
+"  (9) The nice elephant is an answer, except when the elephant A moved in the situation W0  [from steps 7, 8, confidence 99%]",
+"  (10) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (11) The elephant A is lift of stone B, except when the elephant A moved in the situation W0  [from steps 3, 10, confidence 99%]",
+"  (12) The elephant A is the answer, except when the elephant A moved in the situation W0  [from steps 11, 6, confidence 99%]",
+"  (13) The nice elephant is an answer, except when the elephant A moved in the situation W0  [from steps 12, 8, confidence 99%]",
+"  (14) The nice elephant is an answer, except when the elephant A moved in the situation W0  [from steps 9, 13, confidence 99%]",
+"Exceptions checked and not holding:",
+"  elephant A moved in W0"
+],
+  "timestamp": "2026-06-19T07:52:41Z"
+}

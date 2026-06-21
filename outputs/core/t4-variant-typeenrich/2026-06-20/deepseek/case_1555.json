@@ -1,0 +1,141 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1555,
+  "input_text": "John smokes with a probability 0.1. John smokes?",
+  "expected_answer": "Likely false",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John smokes with a probability 0.1.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 smokes.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "smoke", "mode": "habitual"}],
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "raw": "John smokes?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Does John 1 smoke?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "smoke", "mode": "habitual"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","smoke"],
+                ["has actor","E","John 1"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.1]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","smoke"],
+              ["has actor","E","John 1"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 smokes."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 smokes."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","smoke","?:Cu3"],
+            ["-has actor","?:E","#:John 1","?:Cu3"]
+           ],
+ "@confidence": 0.8,
+ "@nl": "John 1 smokes."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk0_activity"]],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk0_activity","smoke","?:Cu5"]],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk0_activity","#:John 1","?:Cu6"]],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","smoke","?:Cu8"],
+            ["-has actor","?:E","#:John 1","?:Cu8"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 smoke?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-$defq0"]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["simp",1,2,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John smokes?",
+"Proof steps (by contradiction):",
+"  (1) assume for contradiction: the answer is no  [sentence 1]",
+"  (2) Answer holds  [assumption]",
+"  (3) Contradiction  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T04:42:51Z"
+}

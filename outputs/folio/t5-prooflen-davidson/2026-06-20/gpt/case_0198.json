@@ -1,0 +1,401 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 198,
+  "input_text": "Jane does not like any animals that bark. All dogs are animals that bark. Jane likes all animals that jump. If an animal has legs, then it jumps. If an animal is terricolous, then it has legs. KiKi is an animal. If KiKi neither jumps nor has legs, then KiKi is terricolous or has legs. KiKi does not bark and he is not a dog?",
+  "expected_answer": "True.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Jane does not like any animals that bark.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Jane 1 does not like any animals that bark.",
+          "type": "strict_rule",
+          "entities": [{"id": "Jane 1", "type": "concrete", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All dogs are animals that bark.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All dogs are animals that bark.",
+          "type": "strict_rule",
+          "entities": [{"id": "dogs", "type": "generic", "category": "animal"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Jane likes all animals that jump.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Jane 1 likes all animals that jump.",
+          "type": "strict_rule",
+          "entities": [{"id": "Jane 1", "type": "concrete", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If an animal has legs, then it jumps.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If an animal has legs, then the animal jumps.",
+          "type": "strict_rule",
+          "entities": [{"id": "animal", "type": "generic", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{"root": "jump", "mode": "habitual", "roles": {"actor": "animal"}}]
+        }
+      ]
+    },
+    {
+      "raw": "If an animal is terricolous, then it has legs.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "If an animal is terricolous, then the animal has legs.",
+          "type": "strict_rule",
+          "entities": [{"id": "animal", "type": "generic", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["terricolous","none","animal"]]
+        }
+      ]
+    },
+    {
+      "raw": "KiKi is an animal.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "KiKi 2 is an animal.",
+          "type": "situation",
+          "entities": [{"id": "KiKi 2", "type": "concrete", "category": "animal"},
+            {"id": "animal", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If KiKi neither jumps nor has legs, then KiKi is terricolous or has legs.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "If KiKi 2 neither jumps nor has legs, then KiKi 2 is terricolous or has legs.",
+          "type": "strict_rule",
+          "entities": [{"id": "KiKi 2", "type": "concrete", "category": "animal"},
+            {"id": "legs", "type": "generic", "scope": "dependent"}
+          ],
+          "actions": [{"root": "jump", "mode": "habitual", "roles": {"actor": "KiKi 2"}}],
+          "adjectives": [["terricolous","none","KiKi 2"]]
+        }
+      ]
+    },
+    {
+      "raw": "KiKi does not bark and he is not a dog?",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Does KiKi 2 not bark and is KiKi 2 not a dog?",
+          "type": "query",
+          "entities": [{"id": "KiKi 2", "type": "concrete", "category": "animal"},
+            {"id": "dog", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Jane 1"],
+          ["forall","X",
+            ["implies",
+              ["isa","animal","X"],
+              ["implies",
+                ["is rel2","bark","X","X"],
+                ["not", ["has degree rel2","like","Jane 1","X","none","person"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","dog","X"], ["and", ["isa","animal","X"], ["is rel2","bark","X","X"]]]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Jane 1"],
+          ["forall","X",
+            ["implies",
+              ["isa","animal","X"],
+              ["implies",
+                ["is rel2","jump","X","X"],
+                ["has degree rel2","like","Jane 1","X","none","person"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","animal","X"],
+            ["implies",
+              ["exists", "Y", ["and", ["isa","leg","Y"], ["has part","X","Y"]]],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","jump"],
+                  ["has actor","E","X"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","animal","X"], ["has degree property","terricolous","X","none","animal"]],
+            ["exists", "Y", ["and", ["isa","leg","Y"], ["has part","X","Y"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S6", ["holds", "W0", ["isa","animal","KiKi 2"]]],
+    ["@id","S7",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","KiKi 2"],
+          ["forall","Y",
+            ["implies",
+              ["isa","leg","Y"],
+              ["implies",
+                ["and",
+                  ["not",
+                    ["exists","E1",
+                      ["and",
+                        ["isa","activity","E1"],
+                        ["has type","E1","jump"],
+                        ["has actor","E1","KiKi 2"],
+                        ["typical","E1"]
+                      ]
+                    ]
+                  ],
+                  ["not", ["has part","KiKi 2","Y"]]
+                ],
+                ["or",
+                  ["has degree property","terricolous","KiKi 2","none","KiKi 2"],
+                  ["has part","KiKi 2","Y"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["question",
+        ["and", ["not", ["is rel2","bark","KiKi 2","KiKi 2"]], ["not", ["isa","dog","KiKi 2"]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Jane 1"],
+ "@nl": "Jane 1 does not like any animals that bark."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","animal","?:X"],
+            ["-is rel2", "bark", "?:X", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has degree rel2", "like", "#:Jane 1", "?:X", "none", "person", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Jane 1 does not like any animals that bark."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","dog","?:X"], ["isa","animal","?:X"]],
+ "@nl": "All dogs are animals that bark."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","dog","?:X"],
+            ["is rel2", "bark", "?:X", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "All dogs are animals that bark."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Jane 1"],
+ "@nl": "Jane 1 likes all animals that jump."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","animal","?:X"],
+            ["-is rel2", "jump", "?:X", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has degree rel2", "like", "#:Jane 1", "?:X", "none", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Jane 1 likes all animals that jump."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","leg","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["event", "jump", "?:X", ["sk1","?:X"], ["sk0","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "If an animal has legs, then the animal jumps."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","leg","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "If an animal has legs, then the animal jumps."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","animal","?:X"],
+            ["-has property", "terricolous", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["isa", "leg", ["sk2","?:X"]]
+           ],
+ "@nl": "If an animal is terricolous, then the animal has legs."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","animal","?:X"],
+            ["-has property", "terricolous", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["has part", "?:X", ["sk2","?:X"], ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If an animal is terricolous, then the animal has legs."},
+{"@name": "sent_S6",
+ "@logic": ["isa","animal","#:KiKi 2"],
+ "@nl": "KiKi 2 is an animal."},
+{"@name": "sent_S7",
+ "@logic": ["isa","animal","#:KiKi 2"],
+ "@nl": "If KiKi 2 neither jumps nor has legs, then KiKi 2 is terricolous or has legs."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","leg","?:Y"],
+            ["event", "jump", "#:KiKi 2", ["sk4","?:Y"], ["sk3","?:Y"], ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has part", "#:KiKi 2", "?:Y", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has property", "terricolous", "#:KiKi 2", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has part", "#:KiKi 2", "?:Y", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "If KiKi 2 neither jumps nor has legs, then KiKi 2 is terricolous or has legs."},
+{"@name": "sent_S7",
+ "@logic": [["-isa","leg","?:Y"],
+            ["typical", ["sk3","?:Y"], ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has part", "#:KiKi 2", "?:Y", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has property", "terricolous", "#:KiKi 2", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has part", "#:KiKi 2", "?:Y", ["$ctxt","?:Fv26","?:Fv25","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "If KiKi 2 neither jumps nor has legs, then KiKi 2 is terricolous or has legs."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-is rel2", "bark", "#:KiKi 2", "#:KiKi 2", ["$ctxt","present","?:Fv29","?:Fv27","?:Fv28"]]
+           ],
+ "@nl": "Does KiKi 2 not bark and is KiKi 2 not a dog?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","dog","#:KiKi 2"]],
+ "@nl": "Does KiKi 2 not bark and is KiKi 2 not a dog?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["is rel2", "bark", "#:KiKi 2", "#:KiKi 2", ["$ctxt","present","?:Fv29","?:Fv27","?:Fv28"]],
+            ["isa","dog","#:KiKi 2"],
+            ["$defq0"]
+           ],
+ "@nl": "Does KiKi 2 not bark and is KiKi 2 not a dog?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","leg","?:Y"], ["-have","?:X","?:Y","?:Ctxt"], ["has part","?:X","?:Y","?:Ctxt"]],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "Does KiKi 2 not bark and is KiKi 2 not a dog?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "bark", "#:KiKi 2", "#:KiKi 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "bark", "#:KiKi 2", "#:KiKi 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "bark", "#:KiKi 2", "#:KiKi 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does KiKi 2 not bark and is KiKi 2 not a dog?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","dog","$some_dog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","dog","$some_not_dog"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","leg","$some_leg"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","leg","$some_not_leg"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "terricolous", "$some_terricolous_animal", ["$ctxt","?:Fv58","?:Fv55","?:Fv56","?:Fv57"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_terricolous_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "terricolous", "$some_not_terricolous_animal", ["$ctxt","?:Fv66","?:Fv63","?:Fv64","?:Fv65"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_terricolous_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "terricolous", "$some_terricolous_animal", ["$ctxt","?:Fv74","?:Fv71","?:Fv72","?:Fv73"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:33:56Z"
+}

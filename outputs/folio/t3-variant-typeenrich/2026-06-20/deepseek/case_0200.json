@@ -1,0 +1,369 @@
+{
+  "test_name": "folio_v2_prenorm_typeenrich",
+  "case_id": 200,
+  "input_text": "Ailton Silva, born in 1995, is commonly known as Ailton. Ailton is a football player who was loaned out to Braga. Ailton Silva is a Brazilian footballer who plays for Náutico. Náutico is a football club along with Braga. Fluminense is a football club. Ailton Silva does not play for a football club?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Ailton Silva, born in 1995, is commonly known as Ailton.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Ailton Silva 1 was born in 1995.",
+          "type": "real",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"}],
+          "time": "1995",
+          "time_prep": "in",
+          "state_tense": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Ailton Silva 1 is commonly known as Ailton.",
+          "type": "real",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Ailton Silva is a football player who was loaned out to Braga.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Ailton Silva 1 is a football player.",
+          "type": "real",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"}]
+        },
+        {
+          "unit_id": "S4",
+          "text": "Ailton Silva 1 was loaned out to Braga 1.",
+          "type": "situation",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"},
+            {"id": "Braga 1", "type": "concrete", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "loan",
+              "mode": "event",
+              "roles": {"target": "Ailton Silva 1", "recipient": "Braga 1"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Ailton Silva is a Brazilian footballer who plays for Nautico.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Ailton Silva 1 is a Brazilian footballer.",
+          "type": "real",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["Brazilian","none","person"]]
+        },
+        {
+          "unit_id": "S6",
+          "text": "Ailton Silva 1 plays for Nautico 2.",
+          "type": "real",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"},
+            {"id": "Nautico 2", "type": "concrete", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "play",
+              "mode": "habitual",
+              "roles": {"actor": "Ailton Silva 1", "target": "Nautico 2"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Nautico is a football club, and Braga is a football club.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Nautico 2 is a football club.",
+          "type": "real",
+          "entities": [{"id": "Nautico 2", "type": "concrete", "category": "organization"}]
+        },
+        {
+          "unit_id": "S8",
+          "text": "Braga 1 is a football club.",
+          "type": "real",
+          "entities": [{"id": "Braga 1", "type": "concrete", "category": "organization"}]
+        }
+      ]
+    },
+    {
+      "raw": "Fluminense is a football club.",
+      "units": [{
+          "unit_id": "S9",
+          "text": "Fluminense 3 is a football club.",
+          "type": "real",
+          "entities": [{"id": "Fluminense 3", "type": "concrete", "category": "organization"}]
+        }
+      ]
+    },
+    {
+      "raw": "Ailton Silva does not play for a football club?",
+      "units": [{
+          "unit_id": "S10",
+          "text": "Does Ailton Silva 1 not play for a football club?",
+          "type": "query",
+          "entities": [{"id": "Ailton Silva 1", "type": "concrete", "category": "person"},
+            {"id": "football club", "type": "generic", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "play",
+              "mode": "habitual",
+              "roles": {"actor": "Ailton Silva 1", "target": "football club"}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","person","Ailton Silva 1"], ["is rel2","born in","Ailton Silva 1","1995"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["is rel2","known as","Ailton Silva 1","Ailton"]]],
+    ["@id", "S3", ["holds", "W0", ["isa","football player","Ailton Silva 1"]]],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Ailton Silva 1"],
+            ["isa","organization","Braga 1"],
+            ["exists","X",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","loan"],
+                  ["has actor","E","X"],
+                  ["has target","E","Ailton Silva 1"],
+                  ["has recipient","E","Braga 1"],
+                  ["has time","E","past","in"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","footballer","Ailton Silva 1"],
+          ["has degree property","Brazilian","Ailton Silva 1","none","person"]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Ailton Silva 1"],
+          ["isa","organization","Nautico 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","play"],
+              ["has actor","E","Ailton Silva 1"],
+              ["has target","E","Nautico 2"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S7", ["holds", "W0", ["isa","football club","Nautico 2"]]],
+    ["@id", "S8", ["holds", "W0", ["isa","football club","Braga 1"]]],
+    ["@id", "S9", ["holds", "W0", ["isa","football club","Fluminense 3"]]],
+    ["@id","S10",
+      ["question",
+        ["not",
+          ["exists","X",
+            ["and",
+              ["isa","football club","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","play"],
+                  ["has actor","E","Ailton Silva 1"],
+                  ["has target","E","X"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","ailton silva","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 was born in 1995."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 was born in 1995."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2","born in","#:Ailton Silva 1","1995","?:Cu3"],
+ "@nl": "Ailton Silva 1 was born in 1995."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv3"], ["$datetime",1995]],
+ "@nl": "Ailton Silva 1 was born in 1995."},
+{"@name": "sent_S1",
+ "@logic": ["is_past_world","W0"],
+ "@nl": "Ailton Silva 1 was born in 1995."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2","known as","#:Ailton Silva 1","Ailton","?:Cu6"],
+ "@nl": "Ailton Silva 1 is commonly known as Ailton."},
+{"@name": "sent_S3",
+ "@logic": ["isa","football player","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 is a football player."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","organization","#:Braga 1"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["has type","sk1_activity","loan","?:Cu11"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["has actor","sk1_activity","sk0","?:Cu12"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["has target","sk1_activity","#:Ailton Silva 1","?:Cu13"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["has recipient","sk1_activity","#:Braga 1","?:Cu14"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["has time","sk1_activity","past","in","?:Cu15"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S4",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Ailton Silva 1 was loaned out to Braga 1."},
+{"@name": "sent_S5",
+ "@logic": ["isa","footballer","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 is a Brazilian footballer."},
+{"@name": "sent_S5",
+ "@logic": ["has property","Brazilian","#:Ailton Silva 1","?:Cu18"],
+ "@nl": "Ailton Silva 1 is a Brazilian footballer."},
+{"@name": "sent_S6",
+ "@logic": ["isa","person","#:Ailton Silva 1"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S6",
+ "@logic": ["isa","organization","#:Nautico 2"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S6",
+ "@logic": ["isa","activity","sk2_activity"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S6",
+ "@logic": ["has type","sk2_activity","play","?:Cu22"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S6",
+ "@logic": ["has actor","sk2_activity","#:Ailton Silva 1","?:Cu23"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S6",
+ "@logic": ["has target","sk2_activity","#:Nautico 2","?:Cu24"],
+ "@nl": "Ailton Silva 1 plays for Nautico 2."},
+{"@name": "sent_S7",
+ "@logic": ["isa","football club","#:Nautico 2"],
+ "@nl": "Nautico 2 is a football club."},
+{"@name": "sent_S8",
+ "@logic": ["isa","football club","#:Braga 1"],
+ "@nl": "Braga 1 is a football club."},
+{"@name": "sent_S9",
+ "@logic": ["isa","football club","#:Fluminense 3"],
+ "@nl": "Fluminense 3 is a football club."},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","football club","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","play","?:Cu29"],
+            ["-has actor","?:E","#:Ailton Silva 1","?:Cu29"],
+            ["-has target","?:E","?:X","?:Cu29"]
+           ],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["isa","football club","sk3_football club"], ["$defq0"]],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["isa","activity","sk4_activity"], ["$defq0"]],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["has type","sk4_activity","play","?:Cu32"], ["$defq0"]],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["has actor","sk4_activity","#:Ailton Silva 1","?:Cu33"], ["$defq0"]],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": [["has target","sk4_activity","sk3_football club","?:Cu34"], ["$defq0"]],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@sourcetype": "question",
+ "@logic": ["$defq0"],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S10",
+ "@question": ["$defq0"],
+ "@nl": "Does Ailton Silva 1 not play for a football club?"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S7",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","football club","$some_not_football_club"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","ailton silva","?:X"], ["isa","silva","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","ailton","?:X"], ["-isa","silva","?:X"], ["isa","ailton silva","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","football club","?:X"], ["isa","club","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","football","?:X"], ["-isa","club","?:X"], ["isa","football club","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","football player","?:X"], ["isa","player","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","football","?:X"], ["-isa","player","?:X"], ["isa","football player","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-18T22:33:47Z"
+}

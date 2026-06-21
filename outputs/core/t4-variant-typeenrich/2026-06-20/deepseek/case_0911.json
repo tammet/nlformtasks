@@ -1,0 +1,127 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 911,
+  "input_text": "The big bear is strong. Who is strong?",
+  "expected_answer": "The big bear",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "The big bear.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The big bear is strong.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The big bear 1 is strong.",
+          "type": "situation",
+          "entities": [{"id": "bear 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","bear"], ["strong","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "Who is strong?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity is strong?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["strong","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","bear","bear 1"],
+          ["has degree property","big","bear 1","none","bear"],
+          ["has degree property","strong","bear 1","none","bear"]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["ask", "X", ["has degree property","strong","X","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","animal","#:bear 1"],
+ "@nl": "The big bear 1 is strong."},
+{"@name": "sent_S1",
+ "@logic": ["isa","bear","#:bear 1"],
+ "@nl": "The big bear 1 is strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property","big","#:bear 1","none","bear","?:Cu3"],
+ "@nl": "The big bear 1 is strong."},
+{"@name": "sent_S1",
+ "@logic": ["has degree property","strong","#:bear 1","none","bear","?:Cu4"],
+ "@nl": "The big bear 1 is strong."},
+{"@name": "sent_S2",
+ "@question": ["has degree property","strong","?:X","none","?:Fv19","?:Cu5"],
+ "@askvars": 1,
+ "@nl": "Which entity is strong?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","strong","?:Br1","none","?:Fv20","?:Cu6"],
+            ["has degree property","strong","?:Br1","none","?:Fv21","?:Cu6"]
+           ],
+ "@nl": "Which entity is strong?"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv23","?:Cu7"],
+            ["has degree property","big","?:X","none","?:Fv24","?:Cu7"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","strong","?:X","none","?:Fv26","?:Cu9"],
+            ["has degree property","strong","?:X","none","?:Fv27","?:Cu9"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:bear 1","bear","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property","strong","#:bear 1","none","bear","?:X"]]],
+          [2, ["in","sent_S2","goal",1], [["-has degree property","strong","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","#:bear 1","bear","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:bear 1","?:X3","?:Y3"]],
+        "confidence": 0.99475,
+        "positive proof": [[1, ["in","frm_stable_persist","assumption",0.95], [["-has degree property","strong","?:X","none","?:Y","?:Z"], ["has degree property","strong","?:X","none","?:U","?:Z"]]],
+          [2, ["in","sent_S1","assumption",1], [["has degree property","strong","#:bear 1","none","bear","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.95], [["has degree property","strong","#:bear 1","none","?:X","?:Y"]]],
+          [4, ["in","sent_S2","goal",1], [["-has degree property","strong","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [5, ["mp",3,4,"fromga",0.95], [["$ans","#:bear 1","?:X3","?:Y3"]]],
+          [6, ["in","sent_S2","assumption",0.99], [["-has degree property","strong","?:X","none","?:Y","?:Z"], ["has degree property","strong","?:X","none","?:U","?:Z"]]],
+          [7, ["mp",6,2,"fromassumption",0.99], [["has degree property","strong","#:bear 1","none","?:X","?:Y"]]],
+          [8, ["mp",7,4,"fromga",0.99], [["$ans","#:bear 1","?:X3","?:Y3"]]],
+          [9, ["cumul",5,8,"fromga",0.99475], [["$ans","#:bear 1","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The big bear is strong.",
+"  (2) Who is strong?",
+"Proof steps:",
+"  (1) The bear A is strong  [sentence 1]",
+"  (2) If some X is strong then X is an answer  [from question]",
+"  (3) [The big bear, bear] is an answer  [from steps 1, 2]"
+],
+  "timestamp": "2026-06-19T04:39:12Z"
+}

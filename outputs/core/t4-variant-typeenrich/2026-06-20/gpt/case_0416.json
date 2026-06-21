@@ -1,0 +1,138 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 416,
+  "input_text": "The car's length is 80 kilometers. The length of the car is 90 kilometers?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The car's length is 80 kilometers.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The length 1 of the car 2 is 80 kilometers.",
+          "type": "situation",
+          "entities": [{"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "80 kilometers", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["length of","length 1","car 2"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The length 1 is the length of the car 2.",
+          "type": "situation",
+          "entities": [{"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["length of","length 1","car 2"]]
+        }
+      ]
+    },
+    {
+      "raw": "The length of the car is 90 kilometers?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is the length 1 of the car 2 90 kilometers?",
+          "type": "query",
+          "entities": [{"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "90 kilometers", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["length of","length 1","car 2"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 2"],
+          ["=", ["$measure_of","length","car 2","W0"], ["$measure",80,"kilometer"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","car","car 2"],
+            ["=", ["$measure_of","length","car 2","W0"], ["$measure",80,"kilometer"]]
+          ]
+        ],
+        ["@definite","S2","W0","length of","car 2","length 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question", ["=", ["$measure_of","length","car 2","W0"], ["$measure",90,"kilometer"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","measure","80 kilometers"],
+ "@nl": "The length 1 of the car 2 is 80 kilometers."},
+{"@name": "entity_S3",
+ "@logic": ["isa","measure","90 kilometers"],
+ "@nl": "Is the length 1 of the car 2 90 kilometers?"},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The length 1 of the car 2 is 80 kilometers."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$measure_of","length","#:car 2","W0"], ["$list",80000,"#:meter"]],
+ "@nl": "The length 1 of the car 2 is 80 kilometers."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The length 1 is the length of the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["=", ["$measure_of","length","#:car 2","W0"], ["$list",80000,"#:meter"]],
+ "@nl": "The length 1 is the length of the car 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["=", ["$measure_of","length","#:car 2","W0"], ["$list",90000,"#:meter"]]],
+ "@nl": "Is the length 1 of the car 2 90 kilometers?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-=", ["$measure_of","length","#:car 2","W0"], ["$list",90000,"#:meter"]], ["$defq0"]],
+ "@nl": "Is the length 1 of the car 2 90 kilometers?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is the length 1 of the car 2 90 kilometers?"},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","length","?:S","?:W"], "?:Cu9"],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "length", ["$measure_of","length","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S3","assumption",1], [["-$defq0"], ["=", ["$measure_of","length","#:car 2","W0"], ["$list",90000,"#:meter"]]]],
+          [2, ["in","sent_S1","assumption",1], [["=", ["$measure_of","length","#:car 2","W0"], ["$list",80000,"#:meter"]]]],
+          [3, ["simp",1,2,"fromassumption",1], [["-$defq0"]]],
+          [4, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [5, ["mp",3,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The car's length is 80 kilometers.",
+"  (2) The length of the car is 90 kilometers?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds then the length of car B equals 90000 meters  [sentence 2]",
+"  (2) The length of car B equals 80000 meters  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from steps 1, 2]",
+"  (4) Answer holds  [assumption]",
+"  (5) Contradiction  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T02:46:23Z"
+}

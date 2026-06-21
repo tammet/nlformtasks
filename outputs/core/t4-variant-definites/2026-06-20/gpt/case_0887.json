@@ -1,0 +1,166 @@
+{
+  "test_name": "core_definites",
+  "case_id": 887,
+  "input_text": "John is a man Mary liked. Mary liked the man?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John is a man Mary liked.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is a man that Mary 2 liked.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "man", "type": "generic", "category": "person"},
+            {"id": "Mary 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "like", "mode": "event", "roles": {"actor": "Mary 2", "target": "John 1"}}]
+        }
+      ]
+    },
+    {
+      "raw": "Mary liked the man?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did Mary 2 like John 1?",
+          "type": "query",
+          "entities": [{"id": "Mary 2", "type": "concrete", "category": "person"},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "like", "mode": "event", "roles": {"actor": "Mary 2", "target": "John 1"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Mary 2"],
+          ["isa","man","John 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","like"],
+              ["has actor","E","Mary 2"],
+              ["has target","E","John 1"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","Mary 2"],
+          ["isa","person","John 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","like"],
+              ["has actor","E","Mary 2"],
+              ["has target","E","John 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a man that Mary 2 liked."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 2"],
+ "@nl": "John 1 is a man that Mary 2 liked."},
+{"@name": "sent_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a man that Mary 2 liked."},
+{"@name": "sent_S1",
+ "@logic": ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv15", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 is a man that Mary 2 liked."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mary 2"]],
+ "@nl": "Did Mary 2 like John 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Did Mary 2 like John 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv21", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did Mary 2 like John 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Mary 2"],
+            ["-isa","person","#:John 1"],
+            ["-has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv22", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 2 like John 1?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 2 like John 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv18", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv19", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:Fv20", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Mary 2 like John 1?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X3", ["$ctxt","past","W0","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.95,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]]]],
+          [2, ["in","sent_S2","assumption",0.95], [["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]], ["-has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:V", ["$ctxt","present","?:Y","?:Z","?:U"]], ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:W", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [3, ["mp", 1, [2,1], "fromassumption", 0.95], [["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]], ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:U", ["$ctxt","past","W0","?:Y","?:Z"]]]],
+          [4, ["in","sent_S2","assumption",1], [["-isa","person","#:Mary 2"], ["-isa","person","#:John 1"], ["$defq0"], ["-has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]],
+          [5, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], [4,3], 5, "fromga", 0.95], [["-isa","person","#:Mary 2"], ["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]]]],
+          [7, ["in","sent_S1","assumption",1], [["isa","person","#:Mary 2"]]],
+          [8, ["mp",6,7,"fromga",0.95], [["-isa","person","#:John 1"], ["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]]]],
+          [9, ["in","sent_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [10, ["mp",8,9,"fromga",0.95], [["$block", 0, ["$not", ["has degree rel2", "like", "#:Mary 2", "#:John 1", "none", "?:X3", ["$ctxt","past","W0","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) John is a man Mary liked.",
+"  (2) Mary liked the man?",
+"Proof steps:",
+"  (1) Mary is like of John  [sentence 1]",
+"  (2) If Mary is like of John then Mary is like of John, except when Mary is not like of John  [sentence 2, confidence 95%]",
+"  (3) Mary is like of John, except when Mary is not like of John  [from steps 1, 2, confidence 95%]",
+"  (4) If Mary is a person and John is a person and Mary is like of John then answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If Mary is a person then John is not a person, except when Mary is not like of John  [from steps 3, 4, 5, confidence 95%]",
+"  (7) Mary is a person  [sentence 1]",
+"  (8) John is not a person, except when Mary is not like of John  [from steps 6, 7, confidence 95%]",
+"  (9) John is a person  [sentence 1]",
+"  (10) Outstanding exception: Mary is not like of John  [from steps 8, 9, confidence 95%]",
+"Exceptions checked and not holding:",
+"  Mary is not like of John"
+],
+  "timestamp": "2026-06-19T04:56:30Z"
+}

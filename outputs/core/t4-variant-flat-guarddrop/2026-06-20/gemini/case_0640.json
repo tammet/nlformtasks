@@ -1,0 +1,220 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 640,
+  "input_text": "Sara, the sister of Mike, left. Sara is the brother of Mike?",
+  "expected_answer": false,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Sara, the sister of Mike, left.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Sara 1 left.",
+          "type": "situation",
+          "entities": [{"id": "Sara 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "leave", "mode": "event", "roles": {"actor": "Sara 1"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Sara 1 is the sister of Mike 2.",
+          "type": "situation",
+          "entities": [{"id": "Sara 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["sister of","Sara 1","Mike 2"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Sara is the brother of Mike?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is Sara 1 the brother of Mike 2?",
+          "type": "query",
+          "entities": [{"id": "Sara 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["brother of","Sara 1","Mike 2"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Sara 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leave"],
+                ["has actor","E","Sara 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","past"],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Sara 1"],
+            ["isa","person","Mike 2"],
+            ["is rel2","sister of","Sara 1","Mike 2"]
+          ]
+        ],
+        ["state time","W0","past"],
+        ["@definite","S2","W0","sister of","Mike 2","Sara 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["question",
+          ["and",
+            ["isa","person","Sara 1"],
+            ["isa","person","Mike 2"],
+            ["is rel2","brother of","Sara 1","Mike 2"]
+          ]
+        ],
+        ["@definite","S3","W1","brother of","Mike 2","Sara 1"]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa", "person", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "Sara 1 left."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "leave", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Sara 1 left."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Sara 1 left."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "person", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "Sara 1 is the sister of Mike 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Sara 1 is the sister of Mike 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa", "person", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]]
+           ],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Mike 2"]],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], "#:Mike 2", ["$ctxt","present","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa", "person", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]],
+            ["-isa","person","#:Mike 2"],
+            ["-is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], "#:Mike 2", ["$ctxt","present","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], "#:Mike 2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], "#:Mike 2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], "#:Mike 2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Is Sara 1 the brother of Mike 2?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Mike 2", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "sister of", ["$theof1","sister","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "sister", ["$theof1","sister","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_kin_excl",
+ "@logic": [["-isa","sister","?:X"], ["-isa","brother","?:X"]],
+ "@nl": "[generated: frm_kin_excl]"},
+{"@name": "frm_kin_excl",
+ "@logic": [["-is rel2","sister of","?:X","?:Y","?:Fv16"],
+            ["-is rel2","brother of","?:X","?:Y","?:Fv16"]
+           ],
+ "@nl": "[generated: frm_kin_excl]"},
+{"@name": "frm_kin_excl",
+ "@logic": [["-is rel2","sister of","?:X","?:Y","?:Fv17"], ["isa","sister","?:X"]],
+ "@nl": "[generated: frm_kin_excl]"},
+{"@name": "frm_kin_excl",
+ "@logic": [["-is rel2","brother of","?:X","?:Y","?:Fv18"], ["isa","brother","?:X"]],
+ "@nl": "[generated: frm_kin_excl]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","frm_theof","assumption",1], [["is rel2", "sister of", ["$theof1","sister","?:X","?:Y"], "?:X", "?:Y"]]],
+          [2, ["in","frm_kin_excl","assumption",1], [["-is rel2","sister of","?:X","?:Y","?:Z"], ["isa","sister","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa", "sister", ["$theof1","sister","?:X","?:Y"]]]],
+          [4, ["in","frm_kin_excl","assumption",1], [["-isa","sister","?:X"], ["-isa","brother","?:X"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["-isa", "brother", ["$theof1","sister","?:X","?:Y"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-$defq0"], ["is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:X","?:Y"]], "#:Mike 2", ["$ctxt","present","W1","?:Z","?:U"]]]],
+          [7, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [8, ["mp",6,7,"fromga",1], [["is rel2", "brother of", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:X","?:Y"]], "#:Mike 2", ["$ctxt","present","W1","?:Z","?:U"]]]],
+          [9, ["in","frm_kin_excl","assumption",1], [["-is rel2","brother of","?:X","?:Y","?:Z"], ["isa","brother","?:X"]]],
+          [10, ["mp",8,9,"fromga",1], [["isa", "brother", ["$theof1", "sister", "#:Mike 2", ["$ctxt","past","W0","?:X","?:Y"]]]]],
+          [11, ["mp",5,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Sara is the brother of Mike?",
+"Knowledge used:",
+"  X's sister is sister of some X. Why: assumed basic knowledge.",
+"  If some X is sister of some Y then X is a sister. Why: assumed basic knowledge.",
+"  If some X is a sister then X is not a brother. Why: assumed basic knowledge.",
+"  If some X is brother of some Y then X is a brother. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) X's sister is sister of some X  [background knowledge]",
+"  (2) If some X is sister of some Y then X is a sister  [background knowledge]",
+"  (3) X's sister is a sister  [from steps 1, 2]",
+"  (4) If some X is a sister then X is not a brother  [background knowledge]",
+"  (5) X's sister is not a brother  [from steps 3, 4]",
+"  (6) If answer holds then Mike's sister is brother of Mike  [sentence 1]",
+"  (7) Answer holds  [assumption]",
+"  (8) Mike's sister is brother of Mike  [from steps 6, 7]",
+"  (9) If some X is brother of some Y then X is a brother  [background knowledge]",
+"  (10) Mike's sister is a brother  [from steps 8, 9]",
+"  (11) Contradiction  [from steps 5, 10]"
+],
+  "timestamp": "2026-06-19T08:42:44Z"
+}

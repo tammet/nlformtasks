@@ -1,0 +1,99 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 58,
+  "input_text": "The car is red. The car is red?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The car is red.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The car 1 is red.",
+          "type": "situation",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "The car is red?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is the car 1 red?",
+          "type": "query",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["red","none","none"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and", ["isa","car","car 1"], ["has degree property","red","car 1","none","none"]]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and", ["isa","car","car 1"], ["has degree property","red","car 1","none","none"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The car 1 is red."},
+{"@name": "sent_S1",
+ "@logic": ["has property","red","#:car 1","?:Cu2"],
+ "@nl": "The car 1 is red."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","#:car 1"]],
+ "@nl": "Is the car 1 red?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","red","#:car 1","?:Cu4"]],
+ "@nl": "Is the car 1 red?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","#:car 1"], ["-has property","red","#:car 1","?:Cu5"], ["$defq0"]],
+ "@nl": "Is the car 1 red?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is the car 1 red?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","car","#:car 1"], ["$defq0"], ["-has property","red","#:car 1","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","car","#:car 1"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [4, ["mp",1,2,3,"fromga",1], [["-has property","red","#:car 1","?:X"]]],
+          [5, ["in","sent_S1","assumption",1], [["has property","red","#:car 1","?:X"]]],
+          [6, ["mp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The car is red.",
+"  (2) The car is red?",
+"Proof steps (by contradiction):",
+"  (1) If the car A is red then answer holds  [sentence 2]",
+"  (2) The car A is a car  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) The car A is not red  [from steps 1, 2, 3]",
+"  (5) The car A is red  [sentence 1]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-19T04:36:35Z"
+}

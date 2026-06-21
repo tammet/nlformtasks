@@ -1,0 +1,168 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 652,
+  "input_text": "The man carrying a bag waved. The man carried a bag?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The man carrying a bag waved.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The man 1 waved.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"}],
+          "actions": [{"root": "wave", "mode": "event"}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The man 1 carried a bag 2.",
+          "type": "situation",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "bag 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "carry", "mode": "event", "roles": {"target": "bag 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The man carried a bag?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did the man 1 carry the bag 2?",
+          "type": "query",
+          "entities": [{"id": "man 1", "type": "concrete", "category": "person"},
+            {"id": "bag 2", "type": "concrete", "category": "artifact"}
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","man 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","wave"],
+                ["has actor","E","man 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","man 1"],
+          ["isa","bag","bag 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","carry"],
+              ["has actor","E","man 1"],
+              ["has target","E","bag 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","carry"],
+            ["has actor","E","man 1"],
+            ["has target","E","bag 2"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:man 1"],
+ "@nl": "The man 1 waved."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:man 1"],
+ "@nl": "The man 1 waved."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "wave", "#:man 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The man 1 waved."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The man 1 waved."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:man 1"],
+ "@nl": "The man 1 carried a bag 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bag","#:bag 2"],
+ "@nl": "The man 1 carried a bag 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "carry", "#:man 1", ["eventprop","$target","#:bag 2"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The man 1 carried a bag 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "carry", "#:man 1", ["eventprop","$target","#:bag 2"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did the man 1 carry the bag 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "carry", "#:man 1", ["eventprop","$target","#:bag 2"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the man 1 carry the bag 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did the man 1 carry the bag 2?"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "carry", "#:man 1", ["eventprop","$target","#:bag 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "carry", "#:man 1", ["eventprop","$target","#:bag 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,1], 2, 3, "fromga", 1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The man carrying a bag waved.",
+"  (2) The man carried a bag?",
+"Proof steps (by contradiction):",
+"  (1) If the man A is carry of bag B then answer holds  [sentence 2]",
+"  (2) The man A is carry of bag B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-19T07:54:24Z"
+}

@@ -1,0 +1,241 @@
+{
+  "test_name": "folio_v2_prenorm_flat_guarddrop",
+  "case_id": 133,
+  "input_text": "Some mammals have teeth. Platypuses have no teeth. Platypuses are mammals. Humans have teeth. Platypuses are reptiles?",
+  "expected_answer": "Unknown.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Some mammals have teeth.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some mammals have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "mammals", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses have no teeth.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Platypuses have no teeth.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "teeth", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are mammals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Platypuses are mammals.",
+          "type": "strict_rule",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "mammals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Humans have teeth.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Humans have teeth.",
+          "type": "normal_rule",
+          "entities": [{"id": "humans", "type": "generic", "category": "person"},
+            {"id": "teeth", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Platypuses are reptiles?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Are all platypuses reptiles?",
+          "type": "query",
+          "entities": [{"id": "platypuses", "type": "generic", "category": "animal"},
+            {"id": "reptiles", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","mammal","X"],
+              ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","platypus","X"],
+            ["not", ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","mammal","X"]]]]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","human","X"],
+            ["normally", ["exists", "Y", ["and", ["isa","tooth","Y"], ["have","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["question", ["forall", "X", ["implies", ["isa","platypus","X"], ["isa","reptile","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","mammal","sk0_mammal"],
+ "@confidence": 0.9933,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S1",
+ "@logic": ["isa","tooth","sk1_tooth"],
+ "@confidence": 0.9933,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S1",
+ "@logic": ["have", "sk0_mammal", "sk1_tooth", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@confidence": 0.9933,
+ "@nl": "Some mammals have teeth."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","platypus","?:X"],
+            ["-isa","tooth","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Platypuses have no teeth."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","platypus","?:X"], ["isa","mammal","?:X"]],
+ "@nl": "Platypuses are mammals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","human","?:X"], ["isa", "tooth", ["sk2","?:X"]]],
+ "@nl": "Humans have teeth."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","human","?:X"],
+            ["have", "?:X", ["sk2","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["$block", ["$","human",1], ["$not", ["have", "?:X", ["sk2","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]]]
+           ],
+ "@nl": "Humans have teeth."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","platypus","?:X"], ["isa","reptile","?:X"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["isa","platypus","sk3_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","reptile","sk3_platypus"], ["$defq0"]],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Are all platypuses reptiles?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mammal","$some_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mammal","$some_not_mammal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tooth","$some_tooth"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tooth","$some_not_tooth"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","platypus","$some_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","platypus","$some_not_platypus"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","human","$some_human"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","human","$some_not_human"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","mammal","?:X"], ["-isa","reptile","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","mammal","?:X"], ["-isa","reptile","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.95,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["isa","platypus","$some_platypus"]]],
+          [2, ["in","sent_S5","assumption",1], [["-$defq0"], ["-isa","platypus","?:X"], ["isa","reptile","?:X"]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["isa","reptile","$some_platypus"]]],
+          [5, ["in","frm_excl_isa","assumption",0.95], [["-isa","reptile","?:X"], ["-isa","mammal","?:X"]]],
+          [6, ["mp",4,5,"fromga",0.95], [["-isa","mammal","$some_platypus"]]],
+          [7, ["in","sent_S3","assumption",1], [["-isa","platypus","?:X"], ["isa","mammal","?:X"]]],
+          [8, ["mp",1,7,"fromassumption",1], [["isa","mammal","$some_platypus"]]],
+          [9, ["simp",6,8,"fromga",0.95], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 95%.",
+"Sentences used:",
+"  (1) Platypuses have no teeth.",
+"  (2) Platypuses are mammals.",
+"  (3) Platypuses are reptiles?",
+"Knowledge used:",
+"  If some X is a reptile then X is not a mammal. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) A platypus is a platypus  [sentence 1]",
+"  (2) If answer holds and some X is a platypus then X is a reptile  [sentence 3]",
+"  (3) Answer holds  [assumption]",
+"  (4) A platypus is a reptile  [from steps 1, 2, 3]",
+"  (5) If some X is a reptile then X is not a mammal  [background knowledge, confidence 95%]",
+"  (6) A platypus is not a mammal  [from steps 4, 5, confidence 95%]",
+"  (7) If some X is a platypus then X is a mammal  [sentence 2]",
+"  (8) A platypus is a mammal  [from steps 1, 7]",
+"  (9) Contradiction  [from steps 6, 8, confidence 95%]"
+],
+  "timestamp": "2026-06-18T23:38:23Z"
+}

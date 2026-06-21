@@ -1,0 +1,171 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1282,
+  "input_text": "John jumped high in a room. John jumped low near the garage. Where did John jump low?",
+  "expected_answer": "Near the garage",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John jumped high in a room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 jumped high in a room 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "room 2", "location_prep": "in", "manner": "high"}
+            }
+          ],
+          "adjectives": [["high","none","jump"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John jumped low near the garage.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 jumped low near the garage 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "garage 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "garage 3", "location_prep": "near", "manner": "low"}
+            }
+          ],
+          "adjectives": [["low","none","jump"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did John jump low?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity did John 1 jump low near?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "entity", "location_prep": "near", "manner": "low"}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","room","room 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","jump"],
+              ["has actor","E","John 1"],
+              ["has location","E","room 2","in"],
+              ["has manner","E","high"],
+              ["has degree property","high","E","none","jump"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","garage","garage 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","jump"],
+              ["has actor","E","John 1"],
+              ["has location","E","garage 3","near"],
+              ["has manner","E","low"],
+              ["has degree property","low","E","none","jump"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","jump"],
+            ["has actor","E","John 1"],
+            ["has location","E","X","near"],
+            ["has manner","E","low"],
+            ["has degree property","low","E","none","jump"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 jumped high in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "John 1 jumped high in a room 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:room 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 jumped high in a room 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 jumped low near the garage 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","garage","#:garage 3"],
+ "@nl": "John 1 jumped low near the garage 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:garage 3"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 jumped low near the garage 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity did John 1 jump low near?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","present","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity did John 1 jump low near?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "Which entity did John 1 jump low near?"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","garage","$some_garage"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","room","$some_room"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no answers found"},
+  "timestamp": "2026-06-18T15:45:41Z"
+}

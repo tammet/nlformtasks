@@ -1,0 +1,284 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 707,
+  "input_text": "Big bears who are nice and have a trunk have a tail. John is a nice big bear. John has a trunk. John has a tail?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Big bears who are nice and have a trunk have a tail.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears that are big and nice and have a trunk have a tail.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["big","none","bear"], ["nice","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John is a nice big bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        },
+        {
+          "unit_id": "S3",
+          "text": "John 1 is nice.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","bear"]]
+        },
+        {
+          "unit_id": "S4",
+          "text": "John 1 is big.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","bear"]]
+        }
+      ]
+    },
+    {
+      "raw": "John has a trunk.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "John 1 has a trunk 1.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "trunk 1", "type": "concrete"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John has a tail?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Does John 1 have a tail?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "tail", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["normally",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["has degree property","big","X","none","bear"],
+                ["has degree property","nice","X","none","bear"],
+                ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]
+              ],
+              ["exists", "Z", ["and", ["isa","tail","Z"], ["has part","X","Z"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id", "S3", ["holds", "W0", ["has degree property","nice","John 1","none","bear"]]],
+    ["@id", "S4", ["holds", "W0", ["has degree property","big","John 1","none","bear"]]],
+    ["@id","S5",
+      ["holds", "W0", ["and", ["isa","trunk","trunk 1"], ["has part","John 1","trunk 1"]]]
+    ],
+    ["@id","S6",
+      ["question", ["exists", "Z", ["and", ["isa","tail","Z"], ["has part","John 1","Z"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property", "big", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","trunk","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["isa", "tail", ["sk0","?:X"]]
+           ],
+ "@nl": "Bears that are big and nice and have a trunk have a tail."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property", "big", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","trunk","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bear",4], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@nl": "Bears that are big and nice and have a trunk have a tail."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "John 1 is nice."},
+{"@name": "sent_S4",
+ "@logic": ["has degree property", "big", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "John 1 is big."},
+{"@name": "sent_S5",
+ "@logic": ["isa","trunk","#:trunk 1"],
+ "@nl": "John 1 has a trunk 1."},
+{"@name": "sent_S5",
+ "@logic": ["has part", "#:John 1", "#:trunk 1", ["$ctxt","present","W0","?:Fv11","?:Fv12"]],
+ "@nl": "John 1 has a trunk 1."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","tail","sk1_tail"]],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has part", "#:John 1", "sk1_tail", ["$ctxt","present","?:Fv19","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","tail","?:Z"],
+            ["-has part", "#:John 1", "?:Z", ["$ctxt","present","?:Fv22","?:Fv13","?:Fv14"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","tail","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "#:John 1", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does John 1 have a tail?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","tail","$some_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","tail","$some_not_tail"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "big", "$some_not_big_bear", "none", "bear", ["$ctxt","?:Fv48","?:Fv45","?:Fv46","?:Fv47"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_bear", "none", "bear", ["$ctxt","?:Fv52","?:Fv49","?:Fv50","?:Fv51"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "none", "?:Fv53", ["$ctxt","past","?:Fv23","?:Fv24","?:Fv25"]],
+            ["has degree property", "big", "?:X", "none", "?:Fv54", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "none", "?:Fv55", ["$ctxt","present","?:Fv23","?:Fv24","?:Fv25"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv26","?:Fv27","?:Fv28"]],
+            ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]],
+            ["$block", 0, ["$not", ["has degree property", "big", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv26","?:Fv27","?:Fv28"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["$block", ["$","bear",4], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["-has degree property", "big", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has part", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","trunk","?:W"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["has degree property", "big", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","bear","#:John 1"], ["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["-has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]], ["-has part", "#:John 1", "?:Z3", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-isa","trunk","?:Z3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","bear","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["-has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]], ["-has part", "#:John 1", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","trunk","?:Z"]]],
+          [6, ["in","sent_S3","assumption",1], [["has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 1], [["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]], ["-has part", "#:John 1", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","trunk","?:Z"]]],
+          [8, ["in","sent_S5","assumption",1], [["has part", "#:John 1", "#:trunk 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [9, ["mp", [7,2], 8, "fromassumption", 1], [["-isa","trunk","#:trunk 1"], ["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [10, ["in","sent_S5","assumption",1], [["isa","trunk","#:trunk 1"]]],
+          [11, ["simp",9,10,"fromassumption",1], [["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [12, ["in","sent_S6","assumption",1], [["$defq0"], ["-has part", "#:John 1", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","tail","?:X"]]],
+          [13, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [14, ["mp", [11,1], [12,1], 13, "fromga", 1], [["-isa", "tail", ["sk0","#:John 1"]], ["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]]]],
+          [15, ["in","sent_S1","assumption",1], [["-has degree property", "big", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has degree property", "good", "?:X", "none", "bear", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has part", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["isa", "tail", ["sk0","?:X"]], ["-isa","trunk","?:W"], ["-isa","bear","?:X"]]],
+          [16, ["mp",15,2,"fromassumption",1], [["-isa","bear","#:John 1"], ["isa", "tail", ["sk0","#:John 1"]], ["-has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-has part", "#:John 1", "?:Z3", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-isa","trunk","?:Z3"]]],
+          [17, ["simp",16,4,"fromassumption",1], [["isa", "tail", ["sk0","#:John 1"]], ["-has degree property", "good", "#:John 1", "none", "bear", ["$ctxt","present","W0","?:X","?:Y"]], ["-has part", "#:John 1", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","trunk","?:Z"]]],
+          [18, ["mp", [17,1], 6, "fromassumption", 1], [["isa", "tail", ["sk0","#:John 1"]], ["-has part", "#:John 1", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","trunk","?:X"]]],
+          [19, ["mp", [18,1], 8, "fromassumption", 1], [["-isa","trunk","#:trunk 1"], ["isa", "tail", ["sk0","#:John 1"]]]],
+          [20, ["simp",19,10,"fromassumption",1], [["isa", "tail", ["sk0","#:John 1"]]]],
+          [21, ["simp",14,20,"fromga",1], [["$block", ["$","bear",4], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","W0","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Big bears who are nice and have a trunk have a tail.",
+"  (2) John is a nice big bear.",
+"  (3) John has a trunk.",
+"  (4) John has a tail?",
+"Proof steps:",
+"  (1) If some X is a big bear and X is a good bear and X has some W as a part and W is a trunk and X is a bear then normally X has the tail sk0 of X as a part  [sentence 1]",
+"  (2) John is a big bear  [sentence 2]",
+"  (3) If John is a bear and John is a good bear and John has some Z3 as a part and Z3 is a trunk then normally John has the tail sk0 of John 1 as a part  [from steps 1, 2]",
+"  (4) John is a bear  [sentence 2]",
+"  (5) If John is a good bear and John has some Z as a part and Z is a trunk then normally John has the tail sk0 of John 1 as a part  [from steps 3, 4]",
+"  (6) John is a good bear  [sentence 2]",
+"  (7) If John has some Z as a part and Z is a trunk then normally John has the tail sk0 of John 1 as a part  [from steps 5, 6]",
+"  (8) John has the trunk A as a part  [sentence 3]",
+"  (9) Normally John has the tail sk0 of John 1 as a part  [from steps 7, 8]",
+"  (10) The trunk A is a trunk  [sentence 3]",
+"  (11) Normally John has the tail sk0 of John 1 as a part  [from steps 9, 10]",
+"  (12) If John has some X as a part and X is a tail then answer holds  [sentence 4]",
+"  (13) assume for contradiction: the answer is no  [from question]",
+"  (14) sk0 of John 1 is not a tail, except when John does not have sk0 of John 1 as a part  [from steps 11, 12, 13]",
+"  (15) If some X is a big bear and X is a good bear and X has some W as a part and W is a trunk and X is a bear then the tail sk0 of X is a tail  [sentence 1]",
+"  (16) If John is a bear and John is a good bear and John has some Z3 as a part and Z3 is a trunk then the tail sk0 of John 1 is a tail  [from steps 15, 2]",
+"  (17) If John is a good bear and John has some Z as a part and Z is a trunk then the tail sk0 of John 1 is a tail  [from steps 16, 4]",
+"  (18) If John has some X as a part and X is a trunk then the tail sk0 of John 1 is a tail  [from steps 17, 6]",
+"  (19) The tail sk0 of John 1 is a tail  [from steps 18, 8]",
+"  (20) The tail sk0 of John 1 is a tail  [from steps 19, 10]",
+"  (21) Outstanding exception: John does not have the tail sk0 of John 1 as a part  [from steps 14, 20]",
+"Exceptions checked and not holding:",
+"  John does not have the tail sk0 of John 1 as a part"
+],
+  "timestamp": "2026-06-19T10:42:57Z"
+}

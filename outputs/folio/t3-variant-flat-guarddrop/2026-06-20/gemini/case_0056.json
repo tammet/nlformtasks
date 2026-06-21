@@ -1,0 +1,330 @@
+{
+  "test_name": "folio_v2_prenorm_flat_guarddrop",
+  "case_id": 56,
+  "input_text": "Robert Lewandowski is a striker. Strikers are soccer players. Robert Lewandowski left Bayern Munchen. If a player leaves a team they no longer play for that team. Robert Lewandowski plays for Bayern Munchen?",
+  "expected_answer": "False.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Likely false.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Robert Lewandowski is a striker.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Robert Lewandowski 1 is a striker.",
+          "type": "real",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {"id": "striker", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Strikers are soccer players.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Strikers are soccer players.",
+          "type": "strict_rule",
+          "entities": [{"id": "strikers", "type": "generic", "category": "person"},
+            {"id": "soccer players", "type": "generic", "subtype": "compound", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Robert Lewandowski leaves Bayern Munchen.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Robert Lewandowski 1 leaves Bayern Munchen 1.",
+          "type": "situation",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {
+              "id": "Bayern Munchen 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+            }
+          ],
+          "actions": [{
+              "root": "leave",
+              "mode": "event",
+              "roles": {"actor": "Robert Lewandowski 1", "target": "Bayern Munchen 1"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "If a player leaves a team they no longer play for that team.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a player leaves a team, the player does not play for the team.",
+          "type": "normal_rule",
+          "entities": [{"id": "player", "type": "generic", "category": "person"},
+            {"id": "team", "type": "generic", "category": "organization"}
+          ],
+          "actions": [{"root": "leave", "mode": "habitual", "roles": {"actor": "player", "target": "team"}},
+            {"root": "play", "mode": "habitual", "roles": {"actor": "player", "location": "team"}}
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Robert Lewandowski plays for Bayern Munchen?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Does Robert Lewandowski 1 play for Bayern Munchen 1?",
+          "type": "query",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {
+              "id": "Bayern Munchen 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+            }
+          ],
+          "actions": [{
+              "root": "play",
+              "mode": "habitual",
+              "roles": {"actor": "Robert Lewandowski 1", "location": "Bayern Munchen 1"}
+            }
+          ],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["isa","striker","https://en.wikipedia.org/wiki/Robert_Lewandowski"]]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","striker","X"], ["isa","soccer player","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","https://en.wikipedia.org/wiki/Robert_Lewandowski"],
+            ["isa","organization","https://en.wikipedia.org/wiki/FC_Bayern_Munich"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leave"],
+                ["has actor","E","https://en.wikipedia.org/wiki/Robert_Lewandowski"],
+                ["has target","E","https://en.wikipedia.org/wiki/FC_Bayern_Munich"],
+                ["has time","E","present","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["forall","Y",
+              ["normally",
+                ["implies",
+                  ["and",
+                    ["isa","player","X"],
+                    ["isa","team","Y"],
+                    ["exists","E1",
+                      ["and",
+                        ["isa","activity","E1"],
+                        ["has type","E1","leave"],
+                        ["has actor","E1","X"],
+                        ["has target","E1","Y"],
+                        ["typical","E1"]
+                      ]
+                    ]
+                  ],
+                  ["not",
+                    ["exists","E2",
+                      ["and",
+                        ["isa","activity","E2"],
+                        ["has type","E2","play"],
+                        ["has actor","E2","X"],
+                        ["has location","E2","Y","for"],
+                        ["typical","E2"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.95]
+      ]
+    ],
+    ["@id","S5",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","play"],
+            ["has actor","E","https://en.wikipedia.org/wiki/Robert_Lewandowski"],
+            ["has location","E","https://en.wikipedia.org/wiki/FC_Bayern_Munich","for"],
+            ["typical","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: free_variable"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:Robert Lewandowski 1"],
+ "@nl": "Robert Lewandowski 1 is a striker."},
+{"@name": "entity_S3",
+ "@logic": ["isa","organization","#:Bayern Munchen 1"],
+ "@nl": "Robert Lewandowski 1 leaves Bayern Munchen 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","striker","https://en.wikipedia.org/wiki/Robert_Lewandowski"],
+ "@nl": "Robert Lewandowski 1 is a striker."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","striker","?:X"], ["isa","soccer player","?:X"]],
+ "@nl": "Strikers are soccer players."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","https://en.wikipedia.org/wiki/Robert_Lewandowski"],
+ "@nl": "Robert Lewandowski 1 leaves Bayern Munchen 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","organization","https://en.wikipedia.org/wiki/FC_Bayern_Munich"],
+ "@nl": "Robert Lewandowski 1 leaves Bayern Munchen 1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W0","?:Fv7","?:Fv8"]],
+ "@nl": "Robert Lewandowski 1 leaves Bayern Munchen 1."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Robert Lewandowski 1 leaves Bayern Munchen 1."},
+{"@name": "sent_S4",
+ "@logic": [["-is rel2", "leave", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-is rel2", "play", "?:X", ["eventprop","$location","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","$generic",2], ["is rel2", "play", "?:X", ["eventprop","$location","?:Y"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a player leaves a team, the player does not play for the team."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Does Robert Lewandowski 1 play for Bayern Munchen 1?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:Fv13","?:Fv14"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does Robert Lewandowski 1 play for Bayern Munchen 1?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Does Robert Lewandowski 1 play for Bayern Munchen 1?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","striker","$some_not_striker"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","soccer player","$some_soccer_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","soccer player","$some_not_soccer_player"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","soccer player","?:X"], ["isa","player","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","soccer","?:X"], ["-isa","player","?:X"], ["isa","soccer player","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]],
+          ["$block", ["$","$generic",2], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X3","?:Y3"]]]
+        ],
+        "confidence": 0.910424,
+        "negative proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S3","assumption",1], [["is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [6, ["in","sent_S4","assumption",0.9], [["$block", ["$","$generic",2], ["is rel2", "play", "?:X", ["eventprop","$location","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]]], ["-is rel2", "play", "?:X", ["eventprop","$location","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-is rel2", "leave", "?:X", ["eventprop","$target","?:Y"], ["$ctxt","?:Z","?:U","?:V","?:W"]]]],
+          [7, ["in","sent_S5","assumption",1], [["-$defq0"], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [8, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [9, ["mp",7,8,"fromga",1], [["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [10, ["mp", [6,1], 9, "fromga", 0.9], [["$block", ["$","$generic",2], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]], ["-is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [11, ["mp", [5,1], [10,1], "fromga", 0.891], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["$block", ["$","$generic",2], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]],
+          [12, ["in","sent_S3","assumption",1], [["next","W0","W1"]]],
+          [13, ["mp", [3,2], 12, "fromassumption", 0.99], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["is rel2", "leave", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$target","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X","?:Y"]]]],
+          [14, ["mp", [13,1], [10,1], "fromga", 0.891], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["$block", ["$","$generic",2], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]],
+          [15, ["cumul",11,14,"fromga",0.910424], [["$block", 0, ["moved","https://en.wikipedia.org/wiki/Robert_Lewandowski","W0"]], ["$block", ["$","$generic",2], ["is rel2", "play", "https://en.wikipedia.org/wiki/Robert_Lewandowski", ["eventprop","$location","https://en.wikipedia.org/wiki/FC_Bayern_Munich"], ["$ctxt","present","W1","?:X3","?:Y3"]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 91%.",
+"Sentences used:",
+"  (1) Robert Lewandowski leaves Bayern Munchen.",
+"  (2) If a player leaves a team they no longer play for that team.",
+"  (3) Robert Lewandowski plays for Bayern Munchen?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) Robert Lewandowski is leave of Bayern Munchen  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then Robert Lewandowski is leave of Bayern Munchen, except when Robert Lewandowski moved in the situation W0  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (5) Robert Lewandowski is leave of Bayern Munchen, except when Robert Lewandowski moved in the situation W0  [from steps 3, 4, confidence 99%]",
+"  (6) If some X is play of Y then X is not leave of Y, except when X is play of Y  [sentence 2, confidence 90%]",
+"  (7) If answer holds then Robert Lewandowski is play of Bayern Munchen  [sentence 3]",
+"  (8) Answer holds  [assumption]",
+"  (9) Robert Lewandowski is play of Bayern Munchen  [from steps 7, 8]",
+"  (10) Robert Lewandowski is not leave of Bayern Munchen, except when Robert Lewandowski is play of Bayern Munchen  [from steps 6, 9, confidence 90%]",
+"  (11) Outstanding exception: Robert Lewandowski moved in the situation W0 and Robert Lewandowski is play of Bayern Munchen  [from steps 5, 10, confidence 89%]",
+"  (12) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (13) Robert Lewandowski is leave of Bayern Munchen, except when Robert Lewandowski moved in the situation W0  [from steps 3, 12, confidence 99%]",
+"  (14) Outstanding exception: Robert Lewandowski moved in the situation W0 and Robert Lewandowski is play of Bayern Munchen  [from steps 13, 10, confidence 89%]",
+"  (15) Outstanding exception: Robert Lewandowski moved in the situation W0 and Robert Lewandowski is play of Bayern Munchen  [from steps 11, 14, confidence 91%]",
+"Exceptions checked and not holding:",
+"  Robert Lewandowski moved in W0",
+"  Robert Lewandowski is play of Bayern Munchen"
+],
+  "timestamp": "2026-06-18T23:12:00Z"
+}

@@ -1,0 +1,262 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1207,
+  "input_text": "Mary started the car. Was the car running before?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary started the car.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 started the car 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "start", "mode": "event", "roles": {"actor": "Mary 1", "target": "car 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 was not running.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "run", "mode": "event", "roles": {"actor": "car 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S3",
+          "text": "The car 2 is running.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "run", "mode": "event", "roles": {"actor": "car 2"}}],
+          "pre_state": "W1",
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Was the car running before?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Was the car 2 running before?",
+          "type": "query",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"}],
+          "actions": [{"root": "run", "mode": "event", "roles": {"actor": "car 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","car","car 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","start"],
+                ["has actor","E","Mary 1"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 2"],
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","run"],
+                ["has actor","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W1",
+        ["and",
+          ["isa","car","car 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","run"],
+              ["has actor","E","car 2"],
+              ["has time","E","present","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","run"],
+            ["has actor","E","car 2"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["event", "start", "#:Mary 1", "#:car 2", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 started the car 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 was not running."},
+{"@name": "sent_S2",
+ "@logic": [["-event", "run", "#:car 2", "?:Davp1", "?:E", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The car 2 was not running."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S3",
+ "@logic": ["event", "run", "#:car 2", "sk2", "sk1", ["$ctxt","present","W1","?:Fv5","?:Fv6"]],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S3",
+ "@logic": ["has time", "sk1", "present", "in", ["$ctxt","present","W1","?:Fv5","?:Fv6"]],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S3",
+ "@logic": ["actuality","sk1"],
+ "@nl": "The car 2 is running."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "run", "#:car 2", "sk4", "sk3", ["$ctxt","past","?:Fv10","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Was the car 2 running before?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has time", "sk3", "past", "in", ["$ctxt","past","?:Fv12","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Was the car 2 running before?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk3"]],
+ "@nl": "Was the car 2 running before?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-event", "run", "#:car 2", "?:Davp3", "?:E", ["$ctxt","past","?:Fv14","?:Fv7","?:Fv8"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Was the car 2 running before?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Was the car 2 running before?"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","run","?:Fv18"], ["has type","?:E","go","?:Fv18"]],
+ "@confidence": 0.91,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-event", "run", "#:car 2", "?:X", "?:Y", ["$ctxt","past","W0","?:Z","?:U"]], ["-actuality","?:Y"]]],
+          [2, ["in","sent_S4","assumption",1], [["-$defq0"], ["event", "run", "#:car 2", "sk4", "sk3", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [3, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [4, ["mp",2,3,"fromga",1], [["event", "run", "#:car 2", "sk4", "sk3", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [5, ["in","sent_S4","assumption",1], [["-$defq0"], ["actuality","sk3"]]],
+          [6, ["mp",5,3,"fromga",1], [["actuality","sk3"]]],
+          [7, ["mp",1,4,6,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary started the car.",
+"  (2) Was the car running before?",
+"Proof steps (by contradiction):",
+"  (1) The car B is not run X  [sentence 1]",
+"  (2) If answer holds then the car B run sk4  [sentence 2]",
+"  (3) Answer holds  [assumption]",
+"  (4) The car B run sk4  [from steps 2, 3]",
+"  (5) The answer does not hold  [sentence 2]",
+"  (6)   [from steps 5, 3]",
+"  (7) Contradiction  [from steps 1, 4, 6]"
+],
+  "timestamp": "2026-06-20T12:43:47Z"
+}

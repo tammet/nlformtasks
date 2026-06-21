@@ -1,0 +1,370 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 1459,
+  "input_text": "Bears can eat berries. Baby bears do not eat berries. John and Mike are bears.\n      John is a baby bear.  Who can not eat berries?",
+  "expected_answer": "John.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Bears can eat berries.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears can eat berries.",
+          "type": "normal_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "capability", "roles": {"target": "berries"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Baby bears do not eat berries.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Baby bears do not eat berries.",
+          "type": "normal_rule",
+          "entities": [{"id": "baby bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "capability", "roles": {"target": "berries"}}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John and Mike are bears.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        },
+        {
+          "unit_id": "S4",
+          "text": "Mike 2 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bear.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "John 1 is a baby bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Who can not eat berries?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Which entity cannot eat berries?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "capability", "roles": {"target": "berries"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","baby bear","X"],
+              ["normally",
+                ["not",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+                      ["capability","E"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id", "S4", ["holds", "W0", ["isa","bear","Mike 2"]]],
+    ["@id", "S5", ["holds", "W0", ["isa","baby bear","John 1"]]],
+    ["@id","S6",
+      ["ask","X",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","X"],
+              ["exists", "Y", ["and", ["isa","berry","Y"], ["has target","E","Y"]]],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["event", "eat", "?:X", "berry", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "Bears can eat berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["isa", "berry", ["sk1","?:X"]]],
+ "@nl": "Bears can eat berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["capability", ["sk0","?:X"]],
+            ["$block", ["$","bear",1], ["$not", ["capability", ["sk0","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Bears can eat berries."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","baby bear","?:X"],
+            ["-event", "eat", "?:X", "berry", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","berry","?:Y"],
+            ["-capability","?:E"],
+            ["$block", ["$","baby bear",2], ["capability","?:E"]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Baby bears do not eat berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bear","#:Mike 2"],
+ "@nl": "Mike 2 is a bear."},
+{"@name": "sent_S5",
+ "@logic": ["isa","baby bear","#:John 1"],
+ "@nl": "John 1 is a baby bear."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-event", "eat", "?:X", "berry", "?:E", ["$ctxt","?:Fv20","?:Fv19","?:Fv15","?:Fv16"]],
+            ["-isa","berry","?:Y"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Which entity cannot eat berries?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["event", "eat", "?:X", "berry", ["sk2","?:X"], ["$ctxt","?:Fv24","?:Fv23","?:Fv15","?:Fv16"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity cannot eat berries?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa", "berry", ["sk3","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity cannot eat berries?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["capability", ["sk2","?:X"]], ["$defq0","?:X"]],
+ "@nl": "Which entity cannot eat berries?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity cannot eat berries?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bear","$some_not_baby_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bear","?:X"], ["isa","bear","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bear","?:X"], ["isa","baby bear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "pop_what",
+ "@logic": ["isa","baby bear","$some_baby_bear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 1"]],
+        "blockers": [["$block", ["$","baby bear",2], ["capability", ["sk2","#:John 1"]]]],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.9], [["-event", "eat", "?:X", "berry", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["$block", ["$","baby bear",2], ["capability","?:Y"]], ["-isa","baby bear","?:X"], ["-isa","berry","?:2006"], ["-capability","?:Y"]]],
+          [2, ["in","sent_S6","assumption",1], [["event", "eat", "?:X", "berry", ["sk2","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","?:X"]]], ["-capability", ["sk2","?:X"]], ["-isa","baby bear","?:X"], ["-isa","berry","?:Y"], ["$defq0","?:X"]]],
+          [4, ["in","sent_S6","assumption",1], [["capability", ["sk2","?:X"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","?:X"]]], ["-isa","baby bear","?:X"], ["-isa","berry","?:Y"], ["$defq0","?:X"]]],
+          [6, ["in","sent_S5","assumption",1], [["isa","baby bear","#:John 1"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","#:John 1"]]], ["$defq0","#:John 1"], ["-isa","berry","?:X"]]],
+          [8, ["in","pop_what","assumption",1], [["isa","baby bear","$some_baby_bear"]]],
+          [9, ["in","compound_sub","assumption",1], [["-isa","baby bear","?:X"], ["isa","bear","?:X"]]],
+          [10, ["mp",8,9,"fromassumption",1], [["isa","bear","$some_baby_bear"]]],
+          [11, ["in","sent_S1","assumption",1], [["isa", "berry", ["sk1","?:X"]], ["-isa","bear","?:X"]]],
+          [12, ["mp", 10, [11,1], "fromassumption", 1], [["isa", "berry", ["sk1","$some_baby_bear"]]]],
+          [13, ["mp", [7,2], 12, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","#:John 1"]]], ["$defq0","#:John 1"]]],
+          [14, ["in","sent_S6","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [15, ["mp", [13,1], 14, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","#:John 1"]]], ["$ans","#:John 1"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_baby_bear"]],
+        "blockers": [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]]],
+        "confidence": 0.981804,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.9], [["-event", "eat", "?:X", "berry", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["$block", ["$","baby bear",2], ["capability","?:Y"]], ["-isa","baby bear","?:X"], ["-isa","berry","?:2006"], ["-capability","?:Y"]]],
+          [2, ["in","sent_S6","assumption",1], [["event", "eat", "?:X", "berry", ["sk2","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","?:X"]]], ["-capability", ["sk2","?:X"]], ["-isa","baby bear","?:X"], ["-isa","berry","?:Y"], ["$defq0","?:X"]]],
+          [4, ["in","sent_S6","assumption",1], [["capability", ["sk2","?:X"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","?:X"]]], ["-isa","baby bear","?:X"], ["-isa","berry","?:Y"], ["$defq0","?:X"]]],
+          [6, ["in","pop_what","assumption",1], [["isa","baby bear","$some_baby_bear"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"], ["-isa","berry","?:X"]]],
+          [8, ["in","compound_sub","assumption",1], [["-isa","baby bear","?:X"], ["isa","bear","?:X"]]],
+          [9, ["mp",6,8,"fromassumption",1], [["isa","bear","$some_baby_bear"]]],
+          [10, ["in","sent_S1","assumption",1], [["isa", "berry", ["sk1","?:X"]], ["-isa","bear","?:X"]]],
+          [11, ["mp", 9, [10,1], "fromassumption", 1], [["isa", "berry", ["sk1","$some_baby_bear"]]]],
+          [12, ["mp", [7,2], 11, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [13, ["in","sent_S6","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [14, ["mp", [12,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [15, ["in","sent_S6","assumption",1], [["isa", "berry", ["sk3","?:X"]], ["$defq0","?:X"]]],
+          [16, ["mp", [7,2], 15, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"], ["$defq0","?:X"]]],
+          [17, ["merge", [16,1,2], "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [18, ["mp", [17,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [19, ["cumul",14,18,"fromga",0.924545], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [20, ["in","sent_S1","assumption",1], [["isa","berry","$some_berry"]]],
+          [21, ["mp", [7,2], 20, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [22, ["mp", [21,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [23, ["cumul",19,22,"fromga",0.947182], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [24, ["in","pop_what","assumption",1], [["isa","bear","$some_bear"]]],
+          [25, ["mp", [10,1], 24, "fromassumption", 1], [["isa", "berry", ["sk1","$some_bear"]]]],
+          [26, ["mp", [7,2], 25, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [27, ["mp", [26,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [28, ["cumul",23,27,"fromga",0.960764], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [29, ["in","sent_S4","assumption",1], [["isa","bear","#:Mike 2"]]],
+          [30, ["mp", [10,1], 29, "fromassumption", 1], [["isa", "berry", ["sk1","#:Mike 2"]]]],
+          [31, ["mp", [7,2], 30, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [32, ["mp", [31,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [33, ["cumul",28,32,"fromga",0.972534], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [34, ["in","sent_S3","assumption",1], [["isa","bear","#:John 1"]]],
+          [35, ["mp", [10,1], 34, "fromassumption", 1], [["isa", "berry", ["sk1","#:John 1"]]]],
+          [36, ["mp", [7,2], 35, "fromassumption", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$defq0","$some_baby_bear"]]],
+          [37, ["mp", [36,1], 13, "fromga", 0.9], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]],
+          [38, ["cumul",33,37,"fromga",0.981804], [["$block", ["$","baby bear",2], ["capability", ["sk2","$some_baby_bear"]]], ["$ans","$some_baby_bear"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Bears can eat berries.",
+"  (2) Baby bears do not eat berries.",
+"  (3) John is a baby bear.",
+"  (4) Who can not eat berries?",
+"Knowledge used:",
+"  A baby bear is a baby bear. Why: assumed basic knowledge.",
+"  If some X is a baby bear then X is a bear. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some baby bear X eats berry and some E1 is a berry then Y is not a capability, except when Y is a capability  [sentence 2, confidence 90%]",
+"  (2) Some X eats berry or X is the answer  [sentence 4]",
+"  (3) If the event sk2 of X is a capability and X is a baby bear and some Y is a berry then X is the answer, except when sk2 of X is a capability  [from steps 1, 2, confidence 90%]",
+"  (4) The event sk2 of X is a capability or X is the answer  [sentence 4]",
+"  (5) If some X is a baby bear and some Y is a berry then X is the answer, except when the event sk2 of X is a capability  [from steps 3, 4, confidence 90%]",
+"  (6) John is a baby bear  [sentence 3]",
+"  (7) If some X is a berry then John is the answer, except when the event sk2 of John 1 is a capability  [from steps 5, 6, confidence 90%]",
+"  (8) A baby bear is a baby bear  [background knowledge]",
+"  (9) If some X is a baby bear then X is a bear  [background knowledge]",
+"  (10) A baby bear is a bear  [from steps 8, 9]",
+"  (11) If some X is a bear then the berry sk1 of X is a berry  [sentence 1]",
+"  (12) The berry sk1 of $some_baby_bear is a berry  [from steps 10, 11]",
+"  (13) John is the answer, except when the event sk2 of John 1 is a capability  [from steps 7, 12, confidence 90%]",
+"  (14) technical answer unwrap step  [from question]",
+"  (15) John is an answer, except when the event sk2 of John 1 is a capability  [from steps 13, 14, confidence 90%]",
+"Exceptions checked and not holding:",
+"  the event sk2 of John 1 is a capability"
+],
+  "timestamp": "2026-06-20T12:48:00Z"
+}

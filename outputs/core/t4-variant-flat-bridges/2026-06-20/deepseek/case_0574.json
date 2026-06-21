@@ -1,0 +1,354 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 574,
+  "input_text": "Cars are nice. Cars have brakes. Cars are nice and have brakes?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Cars are nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Cars are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["nice","none","car"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Cars have brakes.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars have brakes.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "brakes", "type": "generic", "scope": "dependent", "category": "artifact"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Cars are nice and have brakes?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are cars nice and do cars have brakes?",
+          "type": "query",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "brakes", "type": "generic", "scope": "dependent", "category": "artifact"}
+          ],
+          "adjectives": [["nice","none","car"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","nice","X","none","car"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","brake","Y"], ["have","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","nice","X","none","car"]]
+            ]
+          ],
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","brake","Y"], ["have","X","Y"]]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","car",1], ["$not", ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Cars are nice."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["isa", "brake", ["sk0","?:X"]]],
+ "@nl": "Cars have brakes."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"],
+            ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","car",1], ["$not", ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Cars have brakes."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","car","?:X"],
+            ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["-isa","car","?:X"], ["isa", "brake", ["sk1","?:X"]]],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","car","?:X"],
+            ["have", "?:X", ["sk1","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa","car","sk2_car"], ["isa","car","sk3_car"], ["$defq0"]],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["isa","car","sk2_car"],
+            ["-isa","brake","?:Y"],
+            ["-have", "sk3_car", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa","car","sk3_car"],
+            ["$defq0"]
+           ],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","brake","?:Y"],
+            ["-have", "sk3_car", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are cars nice and do cars have brakes?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","brake","$some_brake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","brake","$some_not_brake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "good", "$some_nice_car", "none", "car", ["$ctxt","?:Fv32","?:Fv29","?:Fv30","?:Fv31"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_nice_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "good", "$some_not_nice_car", "none", "car", ["$ctxt","?:Fv40","?:Fv37","?:Fv38","?:Fv39"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]]
+        ],
+        "confidence": 0.868126,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["isa","car","sk2_car"], ["$defq0"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], [2,1], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["mp", [4,2], [5,2], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [7, ["in","sent_S2","assumption",0.98], [["$block", ["$","car",1], ["$not", ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [8, ["mp", 6, [7,2], "fromga", 0.9604], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [9, ["in","sent_S3","assumption",1], [["isa","car","sk2_car"], ["$defq0"], ["-have", "sk3_car", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","brake","?:X"]]],
+          [10, ["mp", [8,2], [9,2], 3, "fromga", 0.9604], [["-isa", "brake", ["sk0","sk3_car"]], ["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [11, ["in","sent_S2","assumption",1], [["isa", "brake", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [12, ["mp", 6, [11,1], "fromga", 0.98], [["isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [13, ["mp",10,12,"fromga",0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]]]],
+          [14, ["merge", [13,1,2], "fromga", 0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [15, ["mp", 14, [1,2], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [16, ["merge", [15,0,1], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [17, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-have", "sk3_car", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:V"]]],
+          [18, ["mp", [16,2], [17,1], 3, "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-have", "sk3_car", "?:2008", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:2008"]]],
+          [19, ["mp", [18,2], [8,2], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [20, ["merge", [19,1,2], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [21, ["merge", [20,2,3], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [22, ["mp",21,12,"fromga",0.868126], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]],
+          ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:3008","?:3009","?:3010","?:3011"]]]]
+        ],
+        "confidence": 0.868126,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["isa","car","sk2_car"], ["$defq0"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], [2,1], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["mp", [4,2], [5,2], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [7, ["in","sent_S2","assumption",0.98], [["$block", ["$","car",1], ["$not", ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [8, ["mp", 6, [7,2], "fromga", 0.9604], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [9, ["in","sent_S3","assumption",1], [["isa","car","sk2_car"], ["$defq0"], ["-have", "sk3_car", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","brake","?:X"]]],
+          [10, ["mp", [8,2], [9,2], 3, "fromga", 0.9604], [["-isa", "brake", ["sk0","sk3_car"]], ["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [11, ["in","sent_S2","assumption",1], [["isa", "brake", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [12, ["mp", 6, [11,1], "fromga", 0.98], [["isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [13, ["mp",10,12,"fromga",0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]]]],
+          [14, ["merge", [13,1,2], "fromga", 0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [15, ["mp", 14, [1,2], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [16, ["merge", [15,0,1], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [17, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-have", "sk3_car", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:V"]]],
+          [18, ["mp", [16,2], [17,1], 3, "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-have", "sk3_car", "?:2008", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:2008"]]],
+          [19, ["mp", [18,2], [8,2], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [20, ["merge", [19,1,2], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [21, ["mp",20,12,"fromga",0.868126], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:3008","?:3009","?:3010","?:3011"]]]]]]
+        ]
+      },
+      {
+        "answer": true,
+        "blockers": [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]],
+          ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:3008","?:3009","?:3010","?:3011"]]]],
+          ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]],
+          ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:3012","?:3013","?:3014","?:3015"]]]]
+        ],
+        "confidence": 0.868126,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has degree property", "good", "?:X", "none", "car", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["isa","car","sk2_car"], ["$defq0"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], [2,1], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [5, ["in","sent_S3","assumption",1], [["isa","car","sk3_car"], ["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["mp", [4,2], [5,2], 3, "fromga", 0.98], [["isa","car","sk3_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [7, ["in","sent_S2","assumption",0.98], [["$block", ["$","car",1], ["$not", ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["have", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [8, ["mp", 6, [7,2], "fromga", 0.9604], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]],
+          [9, ["in","sent_S3","assumption",1], [["isa","car","sk2_car"], ["$defq0"], ["-have", "sk3_car", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","brake","?:X"]]],
+          [10, ["mp", [8,2], [9,2], 3, "fromga", 0.9604], [["-isa", "brake", ["sk0","sk3_car"]], ["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [11, ["in","sent_S2","assumption",1], [["isa", "brake", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [12, ["mp", 6, [11,1], "fromga", 0.98], [["isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [13, ["mp",10,12,"fromga",0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]]]],
+          [14, ["merge", [13,1,2], "fromga", 0.941192], [["isa","car","sk2_car"], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [15, ["mp", 14, [1,2], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [16, ["merge", [15,0,1], "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [17, ["in","sent_S3","assumption",1], [["$defq0"], ["-has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-have", "sk3_car", "?:V", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:V"]]],
+          [18, ["mp", [16,2], [17,1], 3, "fromga", 0.922368], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["-have", "sk3_car", "?:2008", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["-isa","brake","?:2008"]]],
+          [19, ["mp", [18,2], [8,2], "fromga", 0.885842], [["-isa", "brake", ["sk0","sk3_car"]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V","?:W","?:2006","?:2007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:2008","?:2009","?:2010","?:2011"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V","?:W","?:2006","?:2007"]]]]]],
+          [20, ["mp",19,12,"fromga",0.868126], [["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:3008","?:3009","?:3010","?:3011"]]]], ["$block", ["$","car",1], ["$not", ["have", "sk3_car", ["sk0","sk3_car"], ["$ctxt","?:V3","?:W3","?:3006","?:3007"]]]], ["$block", ["$","car",1], ["$not", ["has degree property", "good", "sk2_car", "none", "car", ["$ctxt","?:3012","?:3013","?:3014","?:3015"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 87%.",
+"Sentences used:",
+"  (1) Cars are nice.",
+"  (2) Cars have brakes.",
+"  (3) Cars are nice and have brakes?",
+"Proof steps:",
+"  (1) If some X is a car then normally X is a good car  [sentence 1, confidence 98%]",
+"  (2) Some car car2 is a car or some car car1 is a car or answer holds  [sentence 3]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Car2 is a car or normally car1 is a good car  [from steps 1, 2, 3, confidence 98%]",
+"  (5) If car1 is a good car then car2 is a car or answer holds  [sentence 3]",
+"  (6) Car2 is a car, except when car1 is not a good car  [from steps 4, 5, 3, confidence 98%]",
+"  (7) If some X is a car then normally X has the brake sk0 of X  [sentence 2, confidence 98%]",
+"  (8) Normally car2 has the brake sk0 of sk3_car, except when car1 is not a good car  [from steps 6, 7, confidence 96%]",
+"  (9) If car2 has some X and X is a brake then car1 is a car or answer holds  [sentence 3]",
+"  (10) If the brake sk0 of sk3_car is a brake then car1 is a car, except when car1 is not a good car and car2 does not have sk0 of sk3_car  [from steps 8, 9, 3, confidence 96%]",
+"  (11) If some X is a car then the brake sk0 of X is a brake  [sentence 2]",
+"  (12) The brake sk0 of sk3_car is a brake, except when car1 is not a good car  [from steps 6, 11, confidence 98%]",
+"  (13) Car1 is a car, except when car1 is not a good car and car1 is not a good car and car2 does not have the brake sk0 of sk3_car  [from steps 10, 12, confidence 94%]",
+"  (14) Car1 is a car, except when car1 is not a good car and car2 does not have the brake sk0 of sk3_car  [from steps 13, confidence 94%]",
+"  (15) Normally car1 is a good car, except when car1 is not a good car and car2 does not have the brake sk0 of sk3_car  [from steps 14, 1, confidence 92%]",
+"  (16) Normally car1 is a good car, except when car2 does not have the brake sk0 of sk3_car  [from steps 15, confidence 92%]",
+"  (17) If car1 is a good car and car2 has some V and V is a brake then answer holds  [sentence 3]",
+"  (18) Car2 does not have E3, except when car1 is not a good car and car2 does not have the brake sk0 of sk3_car  [from steps 16, 17, 3, confidence 92%]",
+"  (19) sk0 of sk3_car is not a brake, except when car1 is not a good car and car1 is not a good car and car2 does not have sk0 of sk3_car and car2 does not have sk0 of sk3_car  [from steps 18, 8, confidence 89%]",
+"  (20) sk0 of sk3_car is not a brake, except when car1 is not a good car and car2 does not have sk0 of sk3_car and car2 does not have sk0 of sk3_car  [from steps 19, confidence 89%]",
+"  (21) sk0 of sk3_car is not a brake, except when car1 is not a good car and car2 does not have sk0 of sk3_car  [from steps 20, confidence 89%]",
+"  (22) Outstanding exception: car1 is not a good car and car2 does not have the brake sk0 of sk3_car and car1 is not a good car  [from steps 21, 12, confidence 87%]",
+"Exceptions checked and not holding:",
+"  car1 is not a good car",
+"  car2 does not have the brake sk0 of sk3_car",
+"  car1 is not a good car"
+],
+  "timestamp": "2026-06-19T23:09:16Z"
+}

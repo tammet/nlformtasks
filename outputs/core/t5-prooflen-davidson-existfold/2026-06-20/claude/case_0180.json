@@ -1,0 +1,61 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 180,
+  "input_text": "No elephants have wings. All elephants do not have wings?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "stage1": [{
+      "raw": "No elephants have wings.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No elephants have wings.",
+          "type": "strict_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All elephants do not have wings?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Do all elephants not have wings?",
+          "type": "query",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "wings", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["not", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["not", ["exists", "Y", ["and", ["isa","wing","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "error": {
+    "exception": "TypeError",
+    "message": "unhashable type: 'list'",
+    "traceback": "Traceback (most recent call last):\n  File \"/opt/nlpsolver/llmpipe/runtests.py\", line 115, in _worker\n    english_to_answer(input_text, options=ro, collect=collect)\n  File \"/opt/nlpsolver/llmpipe/solver/solve.py\", line 279, in english_to_answer\n    logic = rawlogic_convert(s2_json, s1_json, fixes=lc_fixes)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/nlpsolver/llmpipe/solver/logconvert.py\", line 1218, in rawlogic_convert\n    pop_facts = _populate_clauses(items)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 97, in populate_clauses\n    needed_neg = _collect_negative_witness_needs(items)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 135, in _collect_negative_witness_needs\n    _walk_question_for_neg(formula, +1, cls_needed, prop_needed, degprop_needed)\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 162, in _walk_question_for_neg\n    _walk_question_for_neg(frm[-1], polarity, cls, prop, deg)\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 159, in _walk_question_for_neg\n    _walk_question_for_neg(frm[2],  polarity, cls, prop, deg)\n  File \"/opt/nlpsolver/llmpipe/solver/lc_post_normalize.py\", line 155, in _walk_question_for_neg\n    _walk_question_for_neg(frm[1], -polarity, cls, prop, deg)\nTypeError: unhashable type: 'list'\n"
+  },
+  "timestamp": "2026-06-20T12:39:45Z"
+}

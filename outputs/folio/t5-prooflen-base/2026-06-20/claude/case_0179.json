@@ -1,0 +1,174 @@
+{
+  "test_name": "folio_v2_existfold_base",
+  "case_id": 179,
+  "input_text": "All horses have hooves. No humans have hooves. Some humans are horses?",
+  "expected_answer": "False.",
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All horses have hooves.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All horses have hooves.",
+          "type": "strict_rule",
+          "entities": [{"id": "horses", "type": "generic", "category": "animal"},
+            {"id": "hooves", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "No humans have hooves.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "No humans have hooves.",
+          "type": "strict_rule",
+          "entities": [{"id": "humans", "type": "generic", "category": "person"},
+            {"id": "hooves", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Some humans are horses?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Are some humans horses?",
+          "type": "query",
+          "entities": [{"id": "humans", "type": "generic", "category": "person"},
+            {"id": "horses", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","horse","X"],
+            ["exists", "Y", ["and", ["isa","hoof","Y"], ["has part","X","Y"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","human","X"],
+            ["not", ["exists", "Y", ["and", ["isa","hoof","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["question", ["exists", "X", ["and", ["isa","human","X"], ["isa","horse","X"]]]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","horse","?:X"], ["isa", "hoof", ["sk0","?:X"]]],
+ "@nl": "All horses have hooves."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","horse","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All horses have hooves."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","human","?:X"],
+            ["-isa","hoof","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "No humans have hooves."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","human","sk1_human"]],
+ "@nl": "Are some humans horses?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","horse","sk1_human"]],
+ "@nl": "Are some humans horses?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","human","?:X"], ["-isa","horse","?:X"], ["$defq0"]],
+ "@nl": "Are some humans horses?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","hoof","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Are some humans horses?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","horse","$some_horse"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","horse","$some_not_horse"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","hoof","$some_hoof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","hoof","$some_not_hoof"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","human","$some_human"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","human","$some_not_human"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-isa","human","?:X"], ["-isa","hoof","?:Y"]]],
+          [2, ["in","sent_S1","assumption",1], [["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","horse","?:X"]]],
+          [3, ["in","sent_S3","assumption",1], [["-$defq0"], ["isa","horse","sk1_human"]]],
+          [4, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [5, ["mp",3,4,"fromga",1], [["isa","horse","sk1_human"]]],
+          [6, ["mp", [2,1], 5, "fromga", 1], [["has part", "sk1_human", ["sk0","sk1_human"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [7, ["in","sent_S3","assumption",1], [["-$defq0"], ["isa","human","sk1_human"]]],
+          [8, ["mp",7,4,"fromga",1], [["isa","human","sk1_human"]]],
+          [9, ["in","sent_S1","assumption",1], [["isa", "hoof", ["sk0","?:X"]], ["-isa","horse","?:X"]]],
+          [10, ["mp", [9,1], 5, "fromga", 1], [["isa", "hoof", ["sk0","sk1_human"]]]],
+          [11, ["mp",1,6,8,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All horses have hooves.",
+"  (2) No humans have hooves.",
+"  (3) Some humans are horses?",
+"Proof steps (by contradiction):",
+"  (1) X does not have Y as a part  [sentence 2]",
+"  (2) If some X is a horse then X has the hoof sk0 of X as a part  [sentence 1]",
+"  (3) If answer holds then some human hum1 is a horse  [sentence 3]",
+"  (4) Answer holds  [assumption]",
+"  (5) Hum1 is a horse  [from steps 3, 4]",
+"  (6) Hum1 has the hoof sk0 of sk1_human as a part  [from steps 2, 5]",
+"  (7) If answer holds then hum1 is a human  [sentence 3]",
+"  (8) Hum1 is a human  [from steps 7, 4]",
+"  (9) If some X is a horse then the hoof sk0 of X is a hoof  [sentence 1]",
+"  (10) The hoof sk0 of sk1_human is a hoof  [from steps 9, 5]",
+"  (11) Contradiction  [from steps 1, 6, 8, 10]"
+],
+  "timestamp": "2026-06-20T04:46:07Z"
+}

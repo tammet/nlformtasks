@@ -1,0 +1,262 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1546,
+  "input_text": "Elephants have a trunk with a probability 90 percent. John is an elephant. Who has a trunk?",
+  "expected_answer": ["Likely John.","John."],
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephants have a trunk with a probability 90 percent.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Elephants have a trunk.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephants", "type": "generic", "category": "animal"},
+            {"id": "trunk", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.9
+        }
+      ]
+    },
+    {
+      "raw": "John is an elephant.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is an elephant.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Who has a trunk?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity has a trunk?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "trunk", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.9]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","elephant","John 1"]]],
+    ["@id", "S3", ["ask", "X", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@nl": "Elephants have a trunk."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","elephant",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.8,
+ "@nl": "Elephants have a trunk."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:John 1"],
+ "@nl": "John 1 is an elephant."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "trunk", ["sk1","?:X"]]],
+ "@nl": "Which entity has a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has part", "?:X", ["sk1","?:X"], ["$ctxt","present","?:Fv13","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Which entity has a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","present","?:Fv16","?:Fv7","?:Fv8"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity has a trunk?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity has a trunk?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has part", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity has a trunk?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_elephant"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.8,
+        "positive proof": [[1, ["in","pop_what","assumption",1], [["isa","elephant","$some_elephant"]]],
+          [2, ["in","sent_S1","assumption",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["-isa","trunk","?:Y"], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.8], [["-isa", "trunk", ["sk0","$some_elephant"]], ["$defq0","$some_elephant"], ["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [6, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 1], [["isa", "trunk", ["sk0","$some_elephant"]]]],
+          [8, ["simp",5,7,"fromassumption",0.8], [["$defq0","$some_elephant"], ["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [9, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [10, ["mp",8,9,"fromga",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_elephant"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.8,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [2, ["in","sent_S1","assumption",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["-isa","trunk","?:Y"], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.8], [["-isa", "trunk", ["sk0","#:John 1"]], ["$defq0","#:John 1"], ["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [6, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [7, ["mp", 1, [6,1], "fromassumption", 1], [["isa", "trunk", ["sk0","#:John 1"]]]],
+          [8, ["simp",5,7,"fromassumption",0.8], [["$defq0","#:John 1"], ["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [9, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [10, ["mp",8,9,"fromga",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","#:John 1"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_elephant"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.792,
+        "positive proof": [[1, ["in","pop_what","assumption",1], [["isa","elephant","$some_elephant"]]],
+          [2, ["in","sent_S1","assumption",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",0.99], [["$block", 0, ["$not", ["has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has part", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.792], [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["-isa","trunk","?:Y"], ["$defq0","?:X"]]],
+          [7, ["mp", [5,2], 6, "fromassumption", 0.792], [["-isa", "trunk", ["sk0","$some_elephant"]], ["$defq0","$some_elephant"], ["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [8, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [9, ["mp", 1, [8,1], "fromassumption", 1], [["isa", "trunk", ["sk0","$some_elephant"]]]],
+          [10, ["simp",7,9,"fromassumption",0.792], [["$defq0","$some_elephant"], ["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [11, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [12, ["mp",10,11,"fromga",0.792], [["$block", ["$","elephant",1], ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "$some_elephant", ["sk0","$some_elephant"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","$some_elephant"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1"]],
+        "blockers": [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.792,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["isa","elephant","#:John 1"]]],
+          [2, ["in","sent_S1","assumption",0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","elephant","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.8], [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S3","assumption",0.99], [["$block", 0, ["$not", ["has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]], ["-has part", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]]]],
+          [5, ["mp", [3,1], [4,1], "fromassumption", 0.792], [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-has part", "?:X", "?:Y", ["$ctxt","present","?:Z","?:U","?:V"]], ["-isa","trunk","?:Y"], ["$defq0","?:X"]]],
+          [7, ["mp", [5,2], 6, "fromassumption", 0.792], [["-isa", "trunk", ["sk0","#:John 1"]], ["$defq0","#:John 1"], ["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [8, ["in","sent_S1","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","elephant","?:X"]]],
+          [9, ["mp", 1, [8,1], "fromassumption", 1], [["isa", "trunk", ["sk0","#:John 1"]]]],
+          [10, ["simp",7,9,"fromassumption",0.792], [["$defq0","#:John 1"], ["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X","?:Y","?:Z"]]]]]],
+          [11, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [12, ["mp",10,11,"fromga",0.792], [["$block", ["$","elephant",1], ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:John 1"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]], ["$ans","#:John 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 80%.",
+"Sentences used:",
+"  (1) Elephants have a trunk with a probability 90 percent.",
+"  (2) John is an elephant.",
+"  (3) Who has a trunk?",
+"Proof steps:",
+"  (1) John is an elephant  [sentence 2]",
+"  (2) If some X is an elephant then normally X has the trunk sk0 of X as a part  [sentence 1, confidence 80%]",
+"  (3) Normally John has the trunk sk0 of John 1 as a part  [from steps 1, 2, confidence 80%]",
+"  (4) If some X has some Y as a part and Y is a trunk then X is the answer  [sentence 3]",
+"  (5) If the trunk sk0 of John 1 is a trunk then John is the answer, except when John does not have sk0 of John 1 as a part  [from steps 3, 4, confidence 80%]",
+"  (6) If some X is an elephant then the trunk sk0 of X is a trunk  [sentence 1]",
+"  (7) The trunk sk0 of John 1 is a trunk  [from steps 1, 6]",
+"  (8) John is the answer, except when John does not have the trunk sk0 of John 1 as a part  [from steps 5, 7, confidence 80%]",
+"  (9) technical answer unwrap step  [from question]",
+"  (10) John is an answer, except when John does not have the trunk sk0 of John 1 as a part  [from steps 8, 9, confidence 80%]",
+"Exceptions checked and not holding:",
+"  John does not have the trunk sk0 of John 1 as a part"
+],
+  "timestamp": "2026-06-19T12:00:06Z"
+}

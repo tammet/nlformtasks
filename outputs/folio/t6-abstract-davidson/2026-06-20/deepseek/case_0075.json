@@ -1,0 +1,428 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 75,
+  "input_text": "All vehicle registration plates in Istanbul begin with the number 34. Plates that do not begin with the number 34 are not from Istanbul. Joe's vehicle registration plate is from Istanbul. Tom's license plate begins with the number 35. If a license plate begins with the number 35, then it does not begin with the number 34. Tom's license plate is from Istanbul?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All license plates from Istanbul begin with the number 34.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All license plates from Istanbul begin with 34.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plates", "type": "generic", "category": "artifact"},
+            {
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            },
+            {"id": "34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "License plates that do not begin with the number 34 are not from Istanbul.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "License plates that do not begin with 34 are not from Istanbul.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plates", "type": "generic", "category": "artifact"},
+            {
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            },
+            {"id": "34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Joe's license plate is from Istanbul.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Joe 1's license plate 2 is from Istanbul 1.",
+          "type": "situation",
+          "entities": [{"id": "Joe 1", "type": "concrete", "category": "person"},
+            {"id": "license plate 2", "type": "concrete", "category": "artifact"},
+            {
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "definites": [["license plate of","license plate 2","Joe 1"]]
+        },
+        {
+          "unit_id": "S4",
+          "text": "License plate 2 is the license plate of Joe 1.",
+          "type": "situation",
+          "entities": [{"id": "license plate 2", "type": "concrete", "category": "artifact"},
+            {"id": "Joe 1", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate begins with the number 35.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Tom 1's license plate 3 begins with 35.",
+          "type": "situation",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "license plate 3", "type": "concrete", "category": "artifact"},
+            {"id": "35", "type": "concrete", "category": "number"}
+          ],
+          "definites": [["license plate of","license plate 3","Tom 1"]]
+        },
+        {
+          "unit_id": "S6",
+          "text": "License plate 3 is the license plate of Tom 1.",
+          "type": "situation",
+          "entities": [{"id": "license plate 3", "type": "concrete", "category": "artifact"},
+            {"id": "Tom 1", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If a license plate begins with the number 35, then it does not begin with the number 34.",
+      "units": [{
+          "unit_id": "S7",
+          "text": "If a license plate begins with 35, then the license plate does not begin with 34.",
+          "type": "strict_rule",
+          "entities": [{"id": "license plate", "type": "generic", "category": "artifact"},
+            {"id": "35", "type": "concrete", "category": "number"},
+            {"id": "34", "type": "concrete", "category": "number"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom's license plate is from Istanbul?",
+      "units": [{
+          "unit_id": "S8",
+          "text": "Is Tom 1's license plate 3 from Istanbul 1?",
+          "type": "query",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"},
+            {"id": "license plate 3", "type": "concrete", "category": "artifact"},
+            {
+              "id": "Istanbul 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Istanbul"
+            }
+          ],
+          "definites": [["license plate of","license plate 3","Tom 1"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","place","Istanbul 1"],
+          ["isa","number","34"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","license plate","X"], ["is rel2","from","X","Istanbul 1"]],
+              ["is rel2","begin with","X","34"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","place","Istanbul 1"],
+          ["isa","number","34"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","license plate","X"], ["not", ["is rel2","begin with","X","34"]]],
+              ["not", ["is rel2","from","X","Istanbul 1"]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Joe 1"],
+            ["isa","license plate","license plate 2"],
+            ["isa","place","Istanbul 1"],
+            ["have","Joe 1","license plate 2"],
+            ["is rel2","from","license plate 2","Istanbul 1"]
+          ]
+        ],
+        ["@definite","S3","W0","license plate of","Joe 1","license plate 2"]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","license plate","license plate 2"],
+          ["isa","person","Joe 1"],
+          ["have","Joe 1","license plate 2"]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Tom 1"],
+            ["isa","license plate","license plate 3"],
+            ["isa","number","35"],
+            ["have","Tom 1","license plate 3"],
+            ["is rel2","begin with","license plate 3","35"]
+          ]
+        ],
+        ["@definite","S5","W0","license plate of","Tom 1","license plate 3"]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","license plate","license plate 3"],
+          ["isa","person","Tom 1"],
+          ["have","Tom 1","license plate 3"]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["and",
+          ["isa","number","35"],
+          ["isa","number","34"],
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","license plate","X"], ["is rel2","begin with","X","35"]],
+              ["not", ["is rel2","begin with","X","34"]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["and",
+        ["question",
+          ["and",
+            ["isa","person","Tom 1"],
+            ["isa","license plate","license plate 3"],
+            ["isa","place","Istanbul 1"],
+            ["have","Tom 1","license plate 3"],
+            ["is rel2","from","license plate 3","Istanbul 1"]
+          ]
+        ],
+        ["@definite","S8","W0","license plate of","Tom 1","license plate 3"]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","place","#:Istanbul 1"],
+ "@nl": "All license plates from Istanbul begin with 34."},
+{"@name": "sent_S1",
+ "@logic": ["isa","number","34"],
+ "@nl": "All license plates from Istanbul begin with 34."},
+{"@name": "sent_S1",
+ "@logic": [["-is rel2","from","?:X","#:Istanbul 1","?:Cu3"],
+            ["is rel2","begin with","?:X","34","?:Cu3"]
+           ],
+ "@nl": "All license plates from Istanbul begin with 34."},
+{"@name": "sent_S2",
+ "@logic": ["isa","place","#:Istanbul 1"],
+ "@nl": "License plates that do not begin with 34 are not from Istanbul."},
+{"@name": "sent_S2",
+ "@logic": ["isa","number","34"],
+ "@nl": "License plates that do not begin with 34 are not from Istanbul."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","license plate","?:X"],
+            ["is rel2","begin with","?:X","34","?:Cu6"],
+            ["-is rel2","from","?:X","#:Istanbul 1","?:Cu6"]
+           ],
+ "@nl": "License plates that do not begin with 34 are not from Istanbul."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Joe 1"],
+ "@nl": "Joe 1's license plate 2 is from Istanbul 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","license plate","#:license plate 2"],
+ "@nl": "Joe 1's license plate 2 is from Istanbul 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","place","#:Istanbul 1"],
+ "@nl": "Joe 1's license plate 2 is from Istanbul 1."},
+{"@name": "sent_S3",
+ "@logic": ["have","#:Joe 1","#:license plate 2","?:Cu10"],
+ "@nl": "Joe 1's license plate 2 is from Istanbul 1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2","from","#:license plate 2","#:Istanbul 1","?:Cu11"],
+ "@nl": "Joe 1's license plate 2 is from Istanbul 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","license plate","#:license plate 2"],
+ "@nl": "License plate 2 is the license plate of Joe 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Joe 1"],
+ "@nl": "License plate 2 is the license plate of Joe 1."},
+{"@name": "sent_S4",
+ "@logic": ["have","#:Joe 1","#:license plate 2","?:Cu14"],
+ "@nl": "License plate 2 is the license plate of Joe 1."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "Tom 1's license plate 3 begins with 35."},
+{"@name": "sent_S5",
+ "@logic": ["isa","license plate","#:license plate 3"],
+ "@nl": "Tom 1's license plate 3 begins with 35."},
+{"@name": "sent_S5",
+ "@logic": ["isa","number","35"],
+ "@nl": "Tom 1's license plate 3 begins with 35."},
+{"@name": "sent_S5",
+ "@logic": ["have","#:Tom 1","#:license plate 3","?:Cu18"],
+ "@nl": "Tom 1's license plate 3 begins with 35."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2","begin with","#:license plate 3","35","?:Cu19"],
+ "@nl": "Tom 1's license plate 3 begins with 35."},
+{"@name": "sent_S6",
+ "@logic": ["isa","license plate","#:license plate 3"],
+ "@nl": "License plate 3 is the license plate of Tom 1."},
+{"@name": "sent_S6",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "License plate 3 is the license plate of Tom 1."},
+{"@name": "sent_S6",
+ "@logic": ["have","#:Tom 1","#:license plate 3","?:Cu22"],
+ "@nl": "License plate 3 is the license plate of Tom 1."},
+{"@name": "sent_S7",
+ "@logic": ["isa","number","35"],
+ "@nl": "If a license plate begins with 35, then the license plate does not begin with 34."},
+{"@name": "sent_S7",
+ "@logic": ["isa","number","34"],
+ "@nl": "If a license plate begins with 35, then the license plate does not begin with 34."},
+{"@name": "sent_S7",
+ "@logic": [["-is rel2","begin with","?:X","35","?:Cu25"],
+            ["-is rel2","begin with","?:X","34","?:Cu25"]
+           ],
+ "@nl": "If a license plate begins with 35, then the license plate does not begin with 34."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Tom 1"]],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","license plate","#:license plate 3"]],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","place","#:Istanbul 1"]],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have","#:Tom 1","#:license plate 3","?:Cu29"]],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","from","#:license plate 3","#:Istanbul 1","?:Cu30"]],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Tom 1"],
+            ["-isa","license plate","#:license plate 3"],
+            ["-isa","place","#:Istanbul 1"],
+            ["-have","#:Tom 1","#:license plate 3","?:Cu31"],
+            ["-is rel2","from","#:license plate 3","#:Istanbul 1","?:Cu31"],
+            ["$defq0"]
+           ],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "Is Tom 1's license plate 3 from Istanbul 1?"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","license plate","$some_not_license_plate"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","license plate","?:X"], ["isa","plate","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","license","?:X"], ["-isa","plate","?:X"], ["isa","license plate","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S7","assumption",1], [["-is rel2","begin with","?:X","35","?:Y"], ["-is rel2","begin with","?:X","34","?:Y"]]],
+          [2, ["in","sent_S5","assumption",1], [["is rel2","begin with","#:license plate 3","35","?:X"]]],
+          [3, ["in","sent_S1","assumption",1], [["-is rel2","from","?:X","#:Istanbul 1","?:Y"], ["is rel2","begin with","?:X","34","?:Y"]]],
+          [4, ["in","sent_S8","assumption",1], [["-$defq0"], ["is rel2","from","#:license plate 3","#:Istanbul 1","?:X"]]],
+          [5, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [6, ["mp",4,5,"fromga",1], [["is rel2","from","#:license plate 3","#:Istanbul 1","?:X"]]],
+          [7, ["mp",3,6,"fromga",1], [["is rel2","begin with","#:license plate 3","34","?:X3"]]],
+          [8, ["mp",1,2,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All license plates from Istanbul begin with the number 34.",
+"  (2) Tom's license plate begins with the number 35.",
+"  (3) If a license plate begins with the number 35, then it does not begin with the number 34.",
+"  (4) Tom's license plate is from Istanbul?",
+"Proof steps (by contradiction):",
+"  (1) If some X is begin with the number 35 then X is not begin with the number 34  [sentence 3]",
+"  (2) The license plate 3 is begin with the number 35  [sentence 2]",
+"  (3) If some X is from Istanbul then X is begin with the number 34  [sentence 1]",
+"  (4) If answer holds then the license plate 3 is from Istanbul  [sentence 4]",
+"  (5) Answer holds  [assumption]",
+"  (6) The license plate 3 is from Istanbul  [from steps 4, 5]",
+"  (7) The license plate 3 is begin with the number 34  [from steps 3, 6]",
+"  (8) Contradiction  [from steps 1, 2, 7]"
+],
+  "timestamp": "2026-06-20T13:33:30Z"
+}

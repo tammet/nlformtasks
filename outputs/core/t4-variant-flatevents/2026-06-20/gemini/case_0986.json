@@ -1,0 +1,191 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 986,
+  "input_text": "John saw the bird in the garden. Did John see a fish in the garden?",
+  "expected_answer": null,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw the bird in the garden.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw the bird 2 in the garden 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "bird 2", "type": "concrete", "category": "animal"},
+            {"id": "garden 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "see",
+              "mode": "event",
+              "roles": {"target": "bird 2", "location": "garden 3", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did John see a fish in the garden?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Did John 1 see a fish in the garden 3?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "fish", "type": "generic", "category": "animal"},
+            {"id": "garden 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "see",
+              "mode": "event",
+              "roles": {"target": "fish", "location": "garden 3", "location_prep": "in"}
+            }
+          ],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","animal","bird 2"],
+            ["isa","place","garden 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","bird 2"],
+                ["has location","E","garden 3","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","fish","X"],
+            ["isa","person","John 1"],
+            ["isa","place","garden 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","X"],
+                ["has location","E","garden 3","in"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","bird","#:bird 2"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","garden","#:garden 3"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","animal","#:bird 2"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","place","#:garden 3"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop","$target","#:bird 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 saw the bird 2 in the garden 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","fish","sk0_fish"]],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","place","#:garden 3"]],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop","$target","sk0_fish"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","fish","?:X"],
+            ["-isa","person","#:John 1"],
+            ["-isa","place","#:garden 3"],
+            ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see a fish in the garden 3?"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","bird","?:X"], ["-isa","fish","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","bird","?:X"], ["-isa","fish","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","bird","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","bird","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","fish","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_excl_isa_xg",
+ "@logic": [["-isa","fish","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa_xg]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T16:46:52Z"
+}

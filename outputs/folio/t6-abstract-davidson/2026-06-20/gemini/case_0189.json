@@ -1,0 +1,524 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_fix",
+  "case_id": 189,
+  "input_text": "Some professional basketball players are not American nationals. All professional basketball players can do jump shots. If someone can jump shots, they leap straight into the air. If someone leaps straight into the air, they activate their leg muscles. Yuri does not activate his leg muscles. Yuri is not an American professional basketball player?",
+  "expected_answer": "True.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Some professional basketball players are not American nationals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some professional basketball players are not American nationals.",
+          "type": "normal_rule",
+          "entities": [{"id": "professional basketball players", "type": "generic", "category": "person"},
+            {"id": "American nationals", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["American","none","person"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All professional basketball players can do jump shots.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All professional basketball players can do jump shots.",
+          "type": "strict_rule",
+          "entities": [{"id": "professional basketball players", "type": "generic", "category": "person"},
+            {"id": "jump shots", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{"root": "do", "mode": "capability", "roles": {"target": "jump shots"}}]
+        }
+      ]
+    },
+    {
+      "raw": "If someone can do jump shots, they leap straight into the air.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If someone 1 can do jump shots, someone 1 leaps straight into the air.",
+          "type": "normal_rule",
+          "entities": [{"id": "someone 1", "type": "generic", "category": "person"},
+            {"id": "jump shots", "type": "generic", "category": "abstract"},
+            {"id": "air", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "leap",
+              "mode": "habitual",
+              "roles": {"actor": "someone 1", "manner": "straight into the air", "target": "air"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If someone leaps straight into the air, they activate their leg muscles.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If someone 1 leaps straight into the air, someone 1 activates someone 1's leg muscles.",
+          "type": "normal_rule",
+          "entities": [{"id": "someone 1", "type": "generic", "category": "person"},
+            {"id": "air", "type": "generic", "scope": "kind", "category": "substance"},
+            {"id": "leg muscles", "type": "generic", "scope": "dependent", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "activate",
+              "mode": "habitual",
+              "roles": {"actor": "someone 1", "target": "leg muscles"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Yuri does not activate his leg muscles.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Yuri 1 does not activate Yuri 1's leg muscles.",
+          "type": "situation",
+          "entities": [{"id": "Yuri 1", "type": "concrete", "category": "person"},
+            {"id": "leg muscles", "type": "generic", "scope": "dependent", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "activate",
+              "mode": "habitual",
+              "roles": {"actor": "Yuri 1", "target": "leg muscles"}
+            }
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Yuri is not a professional basketball player who is an American nationals?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is Yuri 1 not a professional basketball player who is an American nationals?",
+          "type": "query",
+          "entities": [{"id": "Yuri 1", "type": "concrete", "category": "person"},
+            {"id": "professional basketball player", "type": "generic", "category": "person"},
+            {"id": "American nationals", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["American","none","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","player","X"],
+              ["normally",
+                ["not",
+                  ["and",
+                    ["isa","national","X"],
+                    ["has degree property","American","X","none","person"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","player","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","do"],
+                ["has actor","E","X"],
+                ["exists", "Y", ["and", ["isa","shot","Y"], ["has target","E","Y"]]],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","do"],
+                    ["has actor","E1","X"],
+                    ["exists", "Y", ["and", ["isa","shot","Y"], ["has target","E1","Y"]]],
+                    ["capability","E1"]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","leap"],
+                    ["has actor","E2","X"],
+                    ["has manner","E2","straight into the air"],
+                    ["has target","E2","air"],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","person","X"],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","leap"],
+                    ["has actor","E1","X"],
+                    ["has manner","E1","straight into the air"],
+                    ["has target","E1","air"],
+                    ["typical","E1"]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["exists","E2",
+                  ["and",
+                    ["isa","activity","E2"],
+                    ["has type","E2","activate"],
+                    ["has actor","E2","X"],
+                    ["exists","Y",
+                      ["and",
+                        ["isa","leg muscles","Y"],
+                        ["has part","X","Y"],
+                        ["has target","E2","Y"]
+                      ]
+                    ],
+                    ["typical","E2"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.95]
+      ]
+    ],
+    ["@id","S5",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Yuri 1"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","activate"],
+                  ["has actor","E","Yuri 1"],
+                  ["exists","Y",
+                    ["and",
+                      ["isa","leg muscles","Y"],
+                      ["has part","Yuri 1","Y"],
+                      ["has target","E","Y"]
+                    ]
+                  ],
+                  ["typical","E"],
+                  ["has time","E","present","in"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["not",
+          ["and",
+            ["isa","player","Yuri 1"],
+            ["isa","national","Yuri 1"],
+            ["has degree property","American","Yuri 1","none","person"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","player","sk0_player"],
+ "@nl": "Some professional basketball players are not American nationals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","player","?:X"], ["event", "do", "?:X", "shot", ["sk1","?:X"], "?:Cu3"]],
+ "@nl": "All professional basketball players can do jump shots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","player","?:X"], ["isa", "shot", ["sk2","?:X"]]],
+ "@nl": "All professional basketball players can do jump shots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","player","?:X"], ["capability", ["sk1","?:X"]]],
+ "@nl": "All professional basketball players can do jump shots."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","do","?:X","shot","?:E1","?:Cu6"],
+            ["-isa","shot","?:Y"],
+            ["-capability","?:E1"],
+            ["event", "spring", "?:X", "air", ["sk3","?:X"], "?:Cu6"]
+           ],
+ "@nl": "If someone 1 can do jump shots, someone 1 leaps straight into the air."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","do","?:X","shot","?:E1","?:Cu7"],
+            ["-isa","shot","?:Y"],
+            ["-capability","?:E1"],
+            ["has manner", ["sk3","?:X"], "straight into the air", "?:Cu7"]
+           ],
+ "@nl": "If someone 1 can do jump shots, someone 1 leaps straight into the air."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","spring","?:X","air","?:E1","?:Cu9"],
+            ["-has manner","?:E1","straight into the air","?:Cu9"],
+            ["event", "activate", "?:X", "leg muscles", ["sk4","?:X"], "?:Cu9"]
+           ],
+ "@nl": "If someone 1 leaps straight into the air, someone 1 activates someone 1's leg muscles."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","spring","?:X","air","?:E1","?:Cu10"],
+            ["-has manner","?:E1","straight into the air","?:Cu10"],
+            ["isa", "leg muscles", ["sk5","?:X"]]
+           ],
+ "@nl": "If someone 1 leaps straight into the air, someone 1 activates someone 1's leg muscles."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event","spring","?:X","air","?:E1","?:Cu11"],
+            ["-has manner","?:E1","straight into the air","?:Cu11"],
+            ["has part", "?:X", ["sk5","?:X"], "?:Cu11"]
+           ],
+ "@nl": "If someone 1 leaps straight into the air, someone 1 activates someone 1's leg muscles."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Yuri 1"],
+ "@nl": "Yuri 1 does not activate Yuri 1's leg muscles."},
+{"@name": "sent_S5",
+ "@logic": [["-event","activate","#:Yuri 1","leg muscles","?:E","?:Cu14"],
+            ["-isa","leg muscles","?:Y"],
+            ["-has part","#:Yuri 1","?:Y","?:Cu14"]
+           ],
+ "@nl": "Yuri 1 does not activate Yuri 1's leg muscles."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","player","#:Yuri 1"],
+            ["-isa","national","#:Yuri 1"],
+            ["-has property","American","#:Yuri 1","?:Cu15"]
+           ],
+ "@nl": "Is Yuri 1 not a professional basketball player who is an American nationals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","player","#:Yuri 1"], ["$defq0"]],
+ "@nl": "Is Yuri 1 not a professional basketball player who is an American nationals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","national","#:Yuri 1"], ["$defq0"]],
+ "@nl": "Is Yuri 1 not a professional basketball player who is an American nationals?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has property","American","#:Yuri 1","?:Cu18"], ["$defq0"]],
+ "@nl": "Is Yuri 1 not a professional basketball player who is an American nationals?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","leg muscles","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is Yuri 1 not a professional basketball player who is an American nationals?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","player","$some_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","player","$some_not_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","national","$some_national"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","national","$some_not_national"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","shot","$some_shot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","shot","$some_not_shot"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","leg muscles","$some_leg_muscles"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","leg muscles","$some_not_leg_muscles"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","American","$some_American","?:Cu30"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","American","$some_not_American","?:Cu31"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","leg muscles","?:X"], ["isa","muscles","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","leg","?:X"], ["-isa","muscles","?:X"], ["isa","leg muscles","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","national","?:X"], ["isa","person","?:X"]],
+ "@confidence": 0.68,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","person","?:X"], ["isa","national","?:X"]],
+ "@confidence": 0.68,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["isa","shot","$some_shot"]]],
+          [2, ["in","sent_S3","assumption",1], [["event", "spring", "?:X", "air", ["sk3","?:X"], "?:Y"], ["-event","do","?:X","shot","?:Z","?:Y"], ["-isa","shot","?:U"], ["-isa","person","?:X"], ["-capability","?:Z"]]],
+          [3, ["in","sent_S2","assumption",1], [["event", "do", "?:X", "shot", ["sk1","?:X"], "?:Y"], ["-isa","player","?:X"]]],
+          [4, ["in","sent_S6","assumption",1], [["isa","player","#:Yuri 1"], ["$defq0"]]],
+          [5, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [6, ["mp", [3,1], 4, 5, "fromga", 1], [["event", "do", "#:Yuri 1", "shot", ["sk1","#:Yuri 1"], "?:X"]]],
+          [7, ["in","sent_S2","assumption",1], [["capability", ["sk1","?:X"]], ["-isa","player","?:X"]]],
+          [8, ["mp", [7,1], 4, 5, "fromga", 1], [["capability", ["sk1","#:Yuri 1"]]]],
+          [9, ["mp", [2,1], 6, 8, "fromga", 1], [["-isa","person","#:Yuri 1"], ["event", "spring", "#:Yuri 1", "air", ["sk3","#:Yuri 1"], "?:X3"], ["-isa","shot","?:Y3"]]],
+          [10, ["in","sent_S5","assumption",1], [["isa","person","#:Yuri 1"]]],
+          [11, ["simp",9,10,"fromga",1], [["event", "spring", "#:Yuri 1", "air", ["sk3","#:Yuri 1"], "?:X"], ["-isa","shot","?:Y"]]],
+          [12, ["mp", 1, [11,1], "fromga", 1], [["event", "spring", "#:Yuri 1", "air", ["sk3","#:Yuri 1"], "?:X"]]],
+          [13, ["in","sent_S4","assumption",1], [["event", "activate", "?:X", "leg muscles", ["sk4","?:X"], "?:Y"], ["-event","spring","?:X","air","?:Z","?:Y"], ["-has manner","?:Z","straight into the air","?:Y"], ["-isa","person","?:X"]]],
+          [14, ["in","sent_S3","assumption",1], [["-event","do","?:X","shot","?:Y","?:Z"], ["has manner", ["sk3","?:X"], "straight into the air", "?:Z"], ["-isa","shot","?:U"], ["-isa","person","?:X"], ["-capability","?:Y"]]],
+          [15, ["mp",14,6,8,"fromga",1], [["-isa","person","#:Yuri 1"], ["has manner", ["sk3","#:Yuri 1"], "straight into the air", "?:X3"], ["-isa","shot","?:Y3"]]],
+          [16, ["simp",15,10,"fromga",1], [["has manner", ["sk3","#:Yuri 1"], "straight into the air", "?:X"], ["-isa","shot","?:Y"]]],
+          [17, ["mp", 1, [16,1], "fromga", 1], [["has manner", ["sk3","#:Yuri 1"], "straight into the air", "?:X3"]]],
+          [18, ["mp", 12, [13,1], 17, "fromga", 1], [["-isa","person","#:Yuri 1"], ["event", "activate", "#:Yuri 1", "leg muscles", ["sk4","#:Yuri 1"], "?:X3"]]],
+          [19, ["simp",18,10,"fromga",1], [["event", "activate", "#:Yuri 1", "leg muscles", ["sk4","#:Yuri 1"], "?:X"]]],
+          [20, ["in","sent_S5","assumption",1], [["-event","activate","#:Yuri 1","leg muscles","?:X","?:Y"], ["-has part","#:Yuri 1","?:Z","?:Y"], ["-isa","leg muscles","?:Z"]]],
+          [21, ["mp",19,20,"fromga",1], [["-has part","#:Yuri 1","?:X","?:Y"], ["-isa","leg muscles","?:X"]]],
+          [22, ["in","sent_S4","assumption",1], [["-event","spring","?:X","air","?:Y","?:Z"], ["has part", "?:X", ["sk5","?:X"], "?:Z"], ["-has manner","?:Y","straight into the air","?:Z"], ["-isa","person","?:X"]]],
+          [23, ["mp",12,22,17,"fromga",1], [["-isa","person","#:Yuri 1"], ["has part", "#:Yuri 1", ["sk5","#:Yuri 1"], "?:X3"]]],
+          [24, ["simp",23,10,"fromga",1], [["has part", "#:Yuri 1", ["sk5","#:Yuri 1"], "?:X"]]],
+          [25, ["in","sent_S4","assumption",1], [["-event","spring","?:X","air","?:Y","?:Z"], ["isa", "leg muscles", ["sk5","?:X"]], ["-has manner","?:Y","straight into the air","?:Z"], ["-isa","person","?:X"]]],
+          [26, ["mp",12,25,17,"fromga",1], [["-isa","person","#:Yuri 1"], ["isa", "leg muscles", ["sk5","#:Yuri 1"]]]],
+          [27, ["simp",26,10,"fromga",1], [["isa", "leg muscles", ["sk5","#:Yuri 1"]]]],
+          [28, ["mp",21,24,27,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All professional basketball players can do jump shots.",
+"  (2) If someone can do jump shots, they leap straight into the air.",
+"  (3) If someone leaps straight into the air, they activate their leg muscles.",
+"  (4) Yuri does not activate his leg muscles.",
+"  (5) Yuri is not a professional basketball player who is an American nationals?",
+"Proof steps (by contradiction):",
+"  (1) A shot is a shot  [sentence 1]",
+"  (2) If some X do shot and some U is a shot and X is a person and an event Z is a capability then X springs the air  [sentence 2]",
+"  (3) If some X is a player then X do shot  [sentence 1]",
+"  (4) Yuri is a player or answer holds  [sentence 5]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Yuri do shot  [from steps 3, 4, 5]",
+"  (7) If some X is a player then the event sk1 of X is a capability  [sentence 1]",
+"  (8) The event sk1 of Yuri 1 is a capability  [from steps 7, 4, 5]",
+"  (9) If Yuri is a person and some Y3 is a shot then Yuri springs the air  [from steps 2, 6, 8]",
+"  (10) Yuri is a person  [sentence 4]",
+"  (11) If some Y is a shot then Yuri springs the air  [from steps 9, 10]",
+"  (12) Yuri springs the air  [from steps 1, 11]",
+"  (13) If some X springs the air and an event Z happens in a straight into the air manner and X is a person then X activate the leg muscles  [sentence 3]",
+"  (14) If some X do shot and some U is a shot and X is a person and an event Y is a capability then the event sk3 of X happens in a straight into the air manner  [sentence 2]",
+"  (15) If Yuri is a person and some Y3 is a shot then the event sk3 of Yuri 1 happens in a straight into the air manner  [from steps 14, 6, 8]",
+"  (16) If some Y is a shot then the event sk3 of Yuri 1 happens in a straight into the air manner  [from steps 15, 10]",
+"  (17) The event sk3 of Yuri 1 happens in a straight into the air manner  [from steps 1, 16]",
+"  (18) If Yuri is a person then Yuri activate the leg muscles  [from steps 12, 13, 17]",
+"  (19) Yuri activate the leg muscles  [from steps 18, 10]",
+"  (20) If Yuri activate the leg muscles then Yuri does not have Z as a part  [sentence 4]",
+"  (21) Yuri does not have X as a part  [from steps 19, 20]",
+"  (22) If some X springs the air and an event Y happens in a straight into the air manner and X is a person then X has the leg muscles sk5 of X as a part  [sentence 3]",
+"  (23) If Yuri is a person then Yuri has the leg muscles sk5 of Yuri 1 as a part  [from steps 12, 22, 17]",
+"  (24) Yuri has the leg muscles sk5 of Yuri 1 as a part  [from steps 23, 10]",
+"  (25) If some X springs the air and an event Y happens in a straight into the air manner and X is a person then the leg muscles sk5 of X is a leg muscles  [sentence 3]",
+"  (26) If Yuri is a person then the leg muscles sk5 of Yuri 1 is a leg muscles  [from steps 12, 25, 17]",
+"  (27) The leg muscles sk5 of Yuri 1 is a leg muscles  [from steps 26, 10]",
+"  (28) Contradiction  [from steps 21, 24, 27]"
+],
+  "timestamp": "2026-06-20T13:32:25Z"
+}

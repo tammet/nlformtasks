@@ -1,0 +1,190 @@
+{
+  "test_name": "core_davidson_fix",
+  "case_id": 683,
+  "input_text": "The dog chased by the boy escaped. Did the dog catch the boy?",
+  "expected_answer": null,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The dog chased by the boy escaped.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The boy 2 chased the dog 1.",
+          "type": "situation",
+          "entities": [{"id": "dog 1", "type": "concrete", "category": "animal"},
+            {"id": "boy 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "chase", "mode": "event", "roles": {"actor": "boy 2", "target": "dog 1"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The dog 1 escaped.",
+          "type": "situation",
+          "entities": [{"id": "dog 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "escape", "mode": "event"}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Did the dog catch the boy?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did the dog 1 catch the boy 2?",
+          "type": "query",
+          "entities": [{"id": "dog 1", "type": "concrete", "category": "animal"},
+            {"id": "boy 2", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "catch", "mode": "event", "roles": {"actor": "dog 1", "target": "boy 2"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","dog","dog 1"],
+          ["isa","boy","boy 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","chase"],
+              ["has actor","E","boy 2"],
+              ["has target","E","dog 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","dog","dog 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","escape"],
+                ["has actor","E","dog 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","catch"],
+            ["has actor","E","dog 1"],
+            ["has target","E","boy 2"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","dog","#:dog 1"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S1",
+ "@logic": ["isa","boy","#:boy 2"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S1",
+ "@logic": ["event", "chase", "#:boy 2", "#:dog 1", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "The boy 2 chased the dog 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","dog","#:dog 1"],
+ "@nl": "The dog 1 escaped."},
+{"@name": "sent_S2",
+ "@logic": ["event", "escape", "#:dog 1", "sk2", "sk1", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The dog 1 escaped."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk1", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The dog 1 escaped."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk1"],
+ "@nl": "The dog 1 escaped."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The dog 1 escaped."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "catch", "#:dog 1", "#:boy 2", "sk3", ["$ctxt","past","?:Fv8","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did the dog 1 catch the boy 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk3"]],
+ "@nl": "Did the dog 1 catch the boy 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-event", "catch", "#:dog 1", "#:boy 2", "?:E", ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did the dog 1 catch the boy 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did the dog 1 catch the boy 2?"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T10:31:44Z"
+}

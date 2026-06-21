@@ -1,0 +1,152 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1061,
+  "input_text": "The guide explained that the road was closed. Was the road open?",
+  "expected_answer": false,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "The guide explained that the road was closed.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The guide 1 explained that the road 2 was closed.",
+          "type": "situation",
+          "entities": [{"id": "guide 1", "type": "concrete", "category": "person"},
+            {"id": "road 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "explain",
+              "mode": "speech_act",
+              "roles": {
+                "actor": "guide 1",
+                "content": {
+                  "root": "be",
+                  "mode": "event",
+                  "roles": {"actor": "road 2"},
+                  "adjectives": [["closed","none","road"]],
+                  "time": "past"
+                }
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Was the road open?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Was the road 2 open?",
+          "type": "query",
+          "entities": [{"id": "road 2", "type": "concrete", "category": "artifact"}],
+          "adjectives": [["open","none","road"]],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","guide 1"],
+            ["isa","road","road 2"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","explain"],
+                ["has actor","E1","guide 1"],
+                ["has time","E1","past","in"],
+                ["exists","E2",
+                  ["and",
+                    ["has content","E1","E2"],
+                    ["isa","activity","E2"],
+                    ["has type","E2","be"],
+                    ["has actor","E2","road 2"],
+                    ["has degree property","closed","road 2","none","road"],
+                    ["has time","E2","past","in"]
+                  ]
+                ],
+                ["speech_act","E1"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and", ["isa","road","road 2"], ["has degree property","open","road 2","none","road"]]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: state_time_in_body"],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","guide","#:guide 1"],
+ "@nl": "The guide 1 explained that the road 2 was closed."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:guide 1"],
+ "@nl": "The guide 1 explained that the road 2 was closed."},
+{"@name": "sent_S1",
+ "@logic": ["isa","road","#:road 2"],
+ "@nl": "The guide 1 explained that the road 2 was closed."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "explain", "#:guide 1", ["eventprop","$target","be"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The guide 1 explained that the road 2 was closed."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The guide 1 explained that the road 2 was closed."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","road","#:road 2"]],
+ "@nl": "Was the road 2 open?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "open", "#:road 2", "none", "?:Fv12", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Was the road 2 open?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","road","#:road 2"],
+            ["-has degree property", "open", "#:road 2", "none", "?:Fv13", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was the road 2 open?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Was the road 2 open?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "open", "#:road 2", "none", "road", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has degree property", "open", "#:road 2", "none", "road", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "open", "#:road 2", "none", "road", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was the road 2 open?"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","open","?:X"], ["isa","outside","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","outside","?:X"], ["isa","open","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T09:05:33Z"
+}

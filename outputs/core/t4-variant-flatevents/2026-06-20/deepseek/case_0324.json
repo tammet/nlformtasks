@@ -1,0 +1,224 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 324,
+  "input_text": "John saw a head of the elephant. John saw a head of an elephant?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw a head of the elephant.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw a head 2 of the elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head 2", "type": "concrete", "text": "head"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"actor": "John 1", "target": "head 2"}}],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The head 2 is the head of the elephant 3.",
+          "type": "situation",
+          "entities": [{"id": "head 2", "type": "concrete", "text": "head"},
+            {"id": "elephant 3", "type": "concrete", "category": "animal"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John saw a head of an elephant?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did John 1 see a head of an elephant?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "head", "type": "generic", "text": "head"},
+            {"id": "elephant", "type": "generic", "category": "animal"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","head","head 2"],
+          ["isa","elephant","elephant 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","see"],
+              ["has actor","E","John 1"],
+              ["has target","E","head 2"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","head","head 2"],
+            ["isa","elephant","elephant 3"],
+            ["has part","elephant 3","head 2"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["exists","Y",
+            ["and",
+              ["isa","elephant","Y"],
+              ["exists","X",
+                ["and",
+                  ["isa","head","X"],
+                  ["has part","Y","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","see"],
+                      ["has actor","E","John 1"],
+                      ["has target","E","X"],
+                      ["has time","E","past","in"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw a head 2 of the elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "John 1 saw a head 2 of the elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "John 1 saw a head 2 of the elephant 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop","$target","#:head 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw a head 2 of the elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","head","#:head 2"],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","elephant","#:elephant 3"],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S2",
+ "@logic": ["has part", "#:elephant 3", "#:head 2", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The head 2 is the head of the elephant 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","elephant","sk0_elephant"]],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","head","sk1_head"]],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has part", "sk0_elephant", "sk1_head", ["$ctxt","past","?:Fv15","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "show", "#:John 1", ["eventprop","$target","sk1_head"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","elephant","?:Y"],
+            ["-isa","head","?:X"],
+            ["-has part", "?:Y", "?:X", ["$ctxt","past","?:Fv22","?:Fv5","?:Fv6"]],
+            ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","head","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did John 1 see a head of an elephant?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has part", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did John 1 see a head of an elephant?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-is rel2", "show", "#:John 1", ["eventprop","$target","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["-has part", "?:V", "?:X", ["$ctxt","past","?:W","?:Z","?:U"]], ["-isa","head","?:X"], ["-isa","elephant","?:V"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "show", "#:John 1", ["eventprop","$target","#:head 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,2], 2, 3, "fromga", 1], [["-isa","head","#:head 2"], ["-isa","person","#:John 1"], ["-has part", "?:X3", "#:head 2", ["$ctxt","past","?:Y3","?:Z3","?:U3"]], ["-isa","elephant","?:X3"]]],
+          [5, ["in","sent_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [6, ["in","sent_S2","assumption",1], [["isa","head","#:head 2"]]],
+          [7, ["simp",4,5,6,"fromga",1], [["-has part", "?:X", "#:head 2", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","elephant","?:X"]]],
+          [8, ["in","sent_S2","assumption",1], [["has part", "#:elephant 3", "#:head 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [9, ["mp",7,8,"fromga",1], [["-isa","elephant","#:elephant 3"]]],
+          [10, ["in","sent_S2","assumption",1], [["isa","elephant","#:elephant 3"]]],
+          [11, ["simp",9,10,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John saw a head of the elephant.",
+"  (2) John saw a head of an elephant?",
+"Proof steps (by contradiction):",
+"  (1) If John is a person and John is show of X and some V has some X as a part and X is a head and V is an elephant then answer holds  [sentence 2]",
+"  (2) John is show of head B  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If John is a person then X3 does not have the head B as a part  [from steps 1, 2, 3]",
+"  (5) John is a person  [sentence 1]",
+"  (6) The head B is a head  [sentence 1]",
+"  (7) X does not have the head B as a part  [from steps 4, 5, 6]",
+"  (8) The elephant C has the head B as a part  [sentence 1]",
+"  (9) The elephant C is not an elephant  [from steps 7, 8]",
+"  (10) The elephant C is an elephant  [sentence 1]",
+"  (11) Contradiction  [from steps 9, 10]"
+],
+  "timestamp": "2026-06-18T17:31:44Z"
+}

@@ -1,0 +1,165 @@
+{
+  "test_name": "core_davidson_existfold_fix",
+  "case_id": 634,
+  "input_text": "Dr. Smith, a surgeon, entered the room. Dr. Smith is a surgeon?",
+  "expected_answer": true,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Dr. Smith, a surgeon, entered the room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Dr. Smith 1 entered the room 2.",
+          "type": "situation",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{"root": "enter", "mode": "event", "roles": {"target": "room 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Dr. Smith 1 is a surgeon.",
+          "type": "real",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Dr. Smith is a surgeon?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is Dr. Smith 1 a surgeon?",
+          "type": "query",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person"},
+            {"id": "surgeon", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Dr. Smith 1"],
+            ["isa","room","room 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","enter"],
+                ["has actor","E","Dr. Smith 1"],
+                ["has target","E","room 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","surgeon","Dr. Smith 1"]]],
+    ["@id", "S3", ["question", ["isa","surgeon","Dr. Smith 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","Dr. Smith 1"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["event", "enter", "Dr. Smith 1", "#:room 2", "sk0", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Dr. Smith 1 entered the room 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","surgeon","Dr. Smith 1"],
+ "@nl": "Dr. Smith 1 is a surgeon."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","surgeon","Dr. Smith 1"]],
+ "@nl": "Is Dr. Smith 1 a surgeon?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","surgeon","Dr. Smith 1"], ["$defq0"]],
+ "@nl": "Is Dr. Smith 1 a surgeon?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is Dr. Smith 1 a surgeon?"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","surgeon","Dr. Smith 1"], ["$defq0"]]],
+          [2, ["in","sent_S2","assumption",1], [["isa","surgeon","Dr. Smith 1"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp",1,2,3,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Dr. Smith, a surgeon, entered the room.",
+"  (2) Dr. Smith is a surgeon?",
+"Proof steps (by contradiction):",
+"  (1) If Dr. Smith is a surgeon then answer holds  [sentence 2]",
+"  (2) Dr. Smith is a surgeon  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Contradiction  [from steps 1, 2, 3]"
+],
+  "timestamp": "2026-06-20T12:41:25Z"
+}

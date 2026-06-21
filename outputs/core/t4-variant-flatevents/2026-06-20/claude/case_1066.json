@@ -1,0 +1,257 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1066,
+  "input_text": "Mary opened the window to let in air. Mary did not open the window?",
+  "expected_answer": false,
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary opened the window to let in air.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 opened the window 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "window 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "open", "mode": "event", "roles": {"actor": "Mary 1", "target": "window 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 1 opened the window 2 to let in air 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "window 2", "type": "concrete", "category": "artifact"},
+            {"id": "air 3", "type": "concrete", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "open",
+              "mode": "event",
+              "roles": {
+                "actor": "Mary 1",
+                "target": "window 2",
+                "content": {"root": "let in", "mode": "event", "roles": {"actor": "Mary 1", "target": "air 3"}}
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary did not open the window?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 1 not open the window 2?",
+          "type": "query",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "window 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "open", "mode": "event", "roles": {"actor": "Mary 1", "target": "window 2"}}],
+          "pre_state": "W1",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","window","window 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","open"],
+                ["has actor","E","Mary 1"],
+                ["has target","E","window 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","window","window 2"],
+            ["isa","air","air 3"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","open"],
+                ["has actor","E1","Mary 1"],
+                ["has target","E1","window 2"],
+                ["has time","E1","past","in"],
+                ["exists","E2",
+                  ["and",
+                    ["has content","E1","E2"],
+                    ["isa","activity","E2"],
+                    ["has type","E2","let in"],
+                    ["has actor","E2","Mary 1"],
+                    ["has target","E2","air 3"],
+                    ["has time","E2","past","in"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","open"],
+              ["has actor","E","Mary 1"],
+              ["has target","E","window 2"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "stage_2_retries": ["sanity #1: inner_content_event_missing_time"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 opened the window 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","window","#:window 2"],
+ "@nl": "Mary 1 opened the window 2."},
+{"@name": "sent_S1",
+ "@logic": ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:Fv10", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 opened the window 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 opened the window 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 opened the window 2 to let in air 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","window","#:window 2"],
+ "@nl": "Mary 1 opened the window 2 to let in air 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","air","#:air 3"],
+ "@nl": "Mary 1 opened the window 2 to let in air 3."},
+{"@name": "sent_S2",
+ "@logic": ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:Fv11", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 1 opened the window 2 to let in air 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 opened the window 2 to let in air 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:Fv14", ["$ctxt","past","W1","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 1 not open the window 2?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:Fv15", ["$ctxt","past","W1","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 1 not open the window 2?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 1 not open the window 2?"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","open","?:X"], ["isa","outside","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_syn",
+ "@logic": [["-isa","outside","?:X"], ["isa","open","?:X"]],
+ "@confidence": 0.64,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.996955,
+        "negative proof": [[1, ["in","frm_59","axiom",0.99], [["$block", 0, ["$not", ["has degree rel2", "?:X", "?:Y", "?:Z", "?:U", "?:V", ["$ctxt","?:W","?:2006","?:2007","?:2008"]]]], ["-has degree rel2", "?:X", "?:Y", "?:Z", "?:U", "?:V", ["$ctxt","?:W","?:2009","?:2007","?:2008"]], ["has degree rel2", "?:X", "?:Y", "?:Z", "?:U", "?:V", ["$ctxt","?:W","?:2006","?:2007","?:2008"]], ["-next","?:2009","?:2006"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-next","W0","?:Y"]]],
+          [4, ["in","sent_S1","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]],
+          [6, ["in","sent_S3","assumption",1], [["-$defq0"], ["-has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]],
+          [7, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [8, ["mp", [5,1], [6,1], 7, "fromga", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [9, ["in","sent_S1","assumption",1], [["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]],
+          [10, ["mp", [1,1], 9, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-next","W0","?:Y"]]],
+          [11, ["mp", [10,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]],
+          [12, ["mp", [11,1], [6,1], 7, "fromga", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [13, ["cumul",8,12,"fromga",0.992475], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [14, ["in","sent_S2","assumption",1], [["next","W0","W1"]]],
+          [15, ["mp", [10,2], 14, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]],
+          [16, ["mp", [15,1], [6,1], 7, "fromga", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [17, ["cumul",13,16,"fromga",0.994958], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [18, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [19, ["mp", [10,2], 18, "fromassumption", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]], ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X", ["$ctxt","past","W1","?:Y","?:Z"]]]],
+          [20, ["mp", [19,1], [6,1], 7, "fromga", 0.99], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]],
+          [21, ["cumul",17,20,"fromga",0.996955], [["$block", 0, ["$not", ["has degree rel2", "open", "#:Mary 1", ["eventprop","$target","#:window 2"], "none", "?:X3", ["$ctxt","past","W1","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 100%.",
+"Sentences used:",
+"  (1) Mary opened the window to let in air.",
+"  (2) Mary did not open the window?",
+"Knowledge used:",
+"  If some Y is some X of some Z and a situation E4 is followed by a situation E1 then normally Y has a X-relation with Z. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some X of some Z and a situation E4 is followed by a situation E1 then normally Y has a X-relation with Z  [background knowledge, confidence 99%]",
+"  (2) Mary is open of window B  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation Y then normally Mary is open of window B  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (5) Normally Mary is open of window B  [from steps 3, 4, confidence 99%]",
+"  (6) If answer holds then Mary is not open of window B  [sentence 2]",
+"  (7) Answer holds  [assumption]",
+"  (8) Outstanding exception: Mary is not open of window B  [from steps 5, 6, 7, confidence 99%]",
+"  (9) Mary is open of window B  [sentence 1]",
+"  (10) If the situation W0 is followed by a situation Y then normally Mary is open of window B  [from steps 1, 9, confidence 99%]",
+"  (11) Normally Mary is open of window B  [from steps 10, 4, confidence 99%]",
+"  (12) Outstanding exception: Mary is not open of window B  [from steps 11, 6, 7, confidence 99%]",
+"  (13) Outstanding exception: Mary is not open of window B  [from steps 8, 12, confidence 99%]",
+"  (14) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (15) Normally Mary is open of window B  [from steps 10, 14, confidence 99%]",
+"  (16) Outstanding exception: Mary is not open of window B  [from steps 15, 6, 7, confidence 99%]",
+"  (17) Outstanding exception: Mary is not open of window B  [from steps 13, 16, confidence 99%]",
+"  (18) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (19) Normally Mary is open of window B  [from steps 10, 18, confidence 99%]",
+"  (20) Outstanding exception: Mary is not open of window B  [from steps 19, 6, 7, confidence 99%]",
+"  (21) Outstanding exception: Mary is not open of window B  [from steps 17, 20, confidence 100%]",
+"Exceptions checked and not holding:",
+"  Mary is not open of window B"
+],
+  "timestamp": "2026-06-18T15:29:06Z"
+}

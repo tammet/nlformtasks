@@ -1,0 +1,248 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 578,
+  "input_text": "Cars are nice and cool and have brakes. Cars have brakes and are nice and cool?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Cars are nice and cool and have brakes.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Cars are nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["nice","none","entity"]],
+          "confidence": 0.99
+        },
+        {
+          "unit_id": "S2",
+          "text": "Cars are cool.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"}],
+          "adjectives": [["cool","none","entity"]],
+          "confidence": 0.99
+        },
+        {
+          "unit_id": "S3",
+          "text": "Cars have brakes.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "brakes", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Cars have brakes and are nice and cool?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Do cars have brakes and are nice and cool?",
+          "type": "query",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "brakes", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["nice","none","entity"], ["cool","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","nice","X","none","entity"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["has degree property","cool","X","none","entity"]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","brake","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S3",0.99]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","car","X"],
+            ["normally",
+              ["and",
+                ["exists", "Y", ["and", ["isa","brake","Y"], ["has part","X","Y"]]],
+                ["has degree property","nice","X","none","entity"],
+                ["has degree property","cool","X","none","entity"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"], ["has degree property","good","?:X","none","?:Fv57","?:Cu1"]],
+ "@confidence": 0.98,
+ "@nl": "Cars are nice."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["has degree property","cool","?:X","none","?:Fv59","?:Cu2"]],
+ "@confidence": 0.98,
+ "@nl": "Cars are cool."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","car","?:X"], ["isa", "brake", ["sk0","?:X"]]],
+ "@nl": "Cars have brakes."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","car","?:X"], ["has part", "?:X", ["sk0","?:X"], "?:Cu4"]],
+ "@confidence": 0.98,
+ "@nl": "Cars have brakes."},
+{"@name": "sent_S4",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","car","skq_S4_car"],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","brake","sk1_brake"]],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","skq_S4_car","sk1_brake","?:Cu7"]],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","skq_S4_car","none","?:Fv61","?:Cu8"]],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","cool","skq_S4_car","none","?:Fv62","?:Cu9"]],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","brake","?:Y"],
+            ["-has part","skq_S4_car","?:Y","?:Cu10"],
+            ["-has degree property","good","skq_S4_car","none","?:Fv63","?:Cu10"],
+            ["-has degree property","cool","skq_S4_car","none","?:Fv64","?:Cu10"],
+            ["$defq0"]
+           ],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","brake","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Do cars have brakes and are nice and cool?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","brake","$some_brake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","brake","$some_not_brake"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_entity","none","?:Fv65","?:Cu16"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_entity","none","?:Fv66","?:Cu17"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","cool","$some_cool_entity","none","?:Fv67","?:Cu18"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","cool","$some_not_cool_entity","none","?:Fv68","?:Cu19"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.941192,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has degree property","good","?:X","none","?:Y","?:Z"], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["isa","car","skq_S4_car"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has degree property","good","skq_S4_car","none","?:X","?:Y"]]],
+          [4, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","good","skq_S4_car","none","?:X","?:Y"], ["-has degree property","cool","skq_S4_car","none","?:Z","?:Y"], ["-has part","skq_S4_car","?:U","?:Y"], ["-isa","brake","?:U"]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], [["-has degree property","cool","skq_S4_car","none","?:X3","?:Y3"], ["-has part","skq_S4_car","?:Z3","?:Y3"], ["-isa","brake","?:Z3"]]],
+          [7, ["in","sent_S2","assumption",0.98], [["has degree property","cool","?:X","none","?:Y","?:Z"], ["-isa","car","?:X"]]],
+          [8, ["mp", [7,1], 2, "fromassumption", 0.98], [["has degree property","cool","skq_S4_car","none","?:X3","?:Y3"]]],
+          [9, ["simp",6,8,"fromga",0.9604], [["-has part","skq_S4_car","?:X","?:Y"], ["-isa","brake","?:X"]]],
+          [10, ["in","sent_S3","assumption",0.98], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["-isa","car","?:X"]]],
+          [11, ["mp", [10,1], 2, "fromassumption", 0.98], [["has part", "skq_S4_car", ["sk0","skq_S4_car"], "?:X"]]],
+          [12, ["mp",9,11,"fromga",0.941192], [["-isa", "brake", ["sk0","skq_S4_car"]]]],
+          [13, ["in","sent_S3","assumption",1], [["isa", "brake", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [14, ["mp", [13,1], 2, "fromassumption", 1], [["isa", "brake", ["sk0","skq_S4_car"]]]],
+          [15, ["simp",12,14,"fromga",0.941192], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 94%.",
+"Sentences used:",
+"  (1) Cars are nice and cool and have brakes.",
+"  (2) Cars have brakes and are nice and cool?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a car then X is good  [sentence 1, confidence 98%]",
+"  (2) Skq_S4_car is a car  [sentence 2]",
+"  (3) Skq_S4_car is good  [from steps 1, 2, confidence 98%]",
+"  (4) If skq_S4_car is good and skq_S4_car is cool and skq_S4_car has some U as a part and U is a brake then answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If skq_S4_car is cool then skq_S4_car does not have Z3 as a part  [from steps 3, 4, 5, confidence 98%]",
+"  (7) If some X is a car then X is cool  [sentence 1, confidence 98%]",
+"  (8) Skq_S4_car is cool  [from steps 7, 2, confidence 98%]",
+"  (9) Skq_S4_car does not have X as a part  [from steps 6, 8, confidence 96%]",
+"  (10) If some X is a car then X has the brake sk0 of X as a part  [sentence 1, confidence 98%]",
+"  (11) Skq_S4_car has the brake sk0 of skq_S4_car as a part  [from steps 10, 2, confidence 98%]",
+"  (12) sk0 of skq_S4_car is not a brake  [from steps 9, 11, confidence 94%]",
+"  (13) If some X is a car then the brake sk0 of X is a brake  [sentence 1]",
+"  (14) The brake sk0 of skq_S4_car is a brake  [from steps 13, 2]",
+"  (15) Contradiction  [from steps 12, 14, confidence 94%]"
+],
+  "timestamp": "2026-06-19T02:46:51Z"
+}

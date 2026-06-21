@@ -1,0 +1,273 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1203,
+  "input_text": "Before Mary wrote a letter, she found a pen. Mary found a pen?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Before Mary wrote a letter, she found a pen.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 found a pen 2.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "pen 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "find", "mode": "event", "roles": {"target": "pen 2"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Mary 1 wrote a letter 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "letter 3", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "write", "mode": "event", "roles": {"target": "letter 3"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary found a pen?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 1 find a pen?",
+          "type": "query",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "pen", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{"root": "find", "mode": "event", "roles": {"target": "pen"}}],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","pen","pen 2"],
+            ["exists","E1",
+              ["and",
+                ["isa","activity","E1"],
+                ["has type","E1","find"],
+                ["has actor","E1","Mary 1"],
+                ["has target","E1","pen 2"],
+                ["has time","E1","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","Mary 1"],
+            ["isa","letter","letter 3"],
+            ["exists","E2",
+              ["and",
+                ["isa","activity","E2"],
+                ["has type","E2","write"],
+                ["has actor","E2","Mary 1"],
+                ["has target","E2","letter 3"],
+                ["has time","E2","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","pen","X"],
+            ["exists","E3",
+              ["and",
+                ["isa","activity","E3"],
+                ["has type","E3","find"],
+                ["has actor","E3","Mary 1"],
+                ["has target","E3","X"],
+                ["has time","E3","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 found a pen 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","write","#:pen 2"],
+ "@nl": "Mary 1 found a pen 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 found a pen 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Mary 1 found a pen 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 wrote a letter 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","letter","#:letter 3"],
+ "@nl": "Mary 1 wrote a letter 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "write", "#:Mary 1", ["eventprop","$target","#:letter 3"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "Mary 1 wrote a letter 3."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "Mary 1 wrote a letter 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","write","sk0_pen"]],
+ "@nl": "Did Mary 1 find a pen?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "find", "#:Mary 1", ["eventprop","$target","sk0_pen"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Did Mary 1 find a pen?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","write","?:X"],
+            ["-is rel2", "find", "#:Mary 1", ["eventprop","$target","?:X"], ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 1 find a pen?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 1 find a pen?"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]],
+        "confidence": 0.987116,
+        "positive proof": [[1, ["in","frm_54","axiom",0.99], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:2007","?:W","?:2006"]], ["$block", 0, ["moved","?:Y","?:V"]], ["-next","?:V","?:2007"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","sent_S1","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["mp", [5,1], 1, "fromassumption", 0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W1","?:X"]]],
+          [7, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [8, ["mp", [6,3], 7, "fromassumption", 0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [9, ["in","sent_S3","assumption",1], [["$defq0"], ["-is rel2", "find", "#:Mary 1", ["eventprop","$target","?:X"], ["$ctxt","past","W2","?:Y","?:Z"]], ["-isa","write","?:X"]]],
+          [10, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [11, ["mp", [8,2], [9,1], 10, "fromga", 0.9801], [["-isa","write","#:pen 2"], ["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [12, ["in","sent_S1","assumption",1], [["isa","write","#:pen 2"]]],
+          [13, ["mp",11,12,"fromga",0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [14, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [15, ["mp", [3,2], 14, "fromassumption", 0.99], [["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [16, ["mp", [15,1], 1, "fromassumption", 0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W1","?:X"]]],
+          [17, ["mp", [16,3], 7, "fromassumption", 0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [18, ["mp", [17,2], [9,1], 10, "fromga", 0.9801], [["-isa","write","#:pen 2"], ["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [19, ["mp",18,12,"fromga",0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [20, ["cumul",13,19,"fromga",0.983351], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [21, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [22, ["mp", [16,3], 21, "fromassumption", 0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]], ["is rel2", "find", "#:Mary 1", ["eventprop","$target","#:pen 2"], ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [23, ["mp", [22,2], [9,1], 10, "fromga", 0.9801], [["-isa","write","#:pen 2"], ["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [24, ["mp",23,12,"fromga",0.9801], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]],
+          [25, ["cumul",20,24,"fromga",0.987116], [["$block", 0, ["moved","#:Mary 1","W1"]], ["$block", 0, ["moved","#:Mary 1","W0"]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) Before Mary wrote a letter, she found a pen.",
+"  (2) Mary found a pen?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is followed by a situation E2 then Y is in relation X to Z, except when Y moved in V  [background knowledge, confidence 99%]",
+"  (2) Mary is find of pen B  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then Mary is find of pen B, except when Mary moved in the situation W0  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (5) Mary is find of pen B, except when Mary moved in the situation W0  [from steps 3, 4, confidence 99%]",
+"  (6) If the situation W1 is followed by a situation X then Mary is find of pen B, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 5, 1, confidence 98%]",
+"  (7) The situation W1 is followed by the situation W2  [sentence 1]",
+"  (8) Mary is find of pen B, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 6, 7, confidence 98%]",
+"  (9) If Mary is find of X and some X is a write then answer holds  [sentence 2]",
+"  (10) assume for contradiction: the answer is no  [from question]",
+"  (11) The pen B is not a write, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 8, 9, 10, confidence 98%]",
+"  (12) The pen B is a write  [sentence 1]",
+"  (13) Outstanding exception: Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 11, 12, confidence 98%]",
+"  (14) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (15) Mary is find of pen B, except when Mary moved in the situation W0  [from steps 3, 14, confidence 99%]",
+"  (16) If the situation W1 is followed by a situation X then Mary is find of pen B, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 15, 1, confidence 98%]",
+"  (17) Mary is find of pen B, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 16, 7, confidence 98%]",
+"  (18) The pen B is not a write, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 17, 9, 10, confidence 98%]",
+"  (19) Outstanding exception: Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 18, 12, confidence 98%]",
+"  (20) Outstanding exception: Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 13, 19, confidence 98%]",
+"  (21) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (22) Mary is find of pen B, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 16, 21, confidence 98%]",
+"  (23) The pen B is not a write, except when Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 22, 9, 10, confidence 98%]",
+"  (24) Outstanding exception: Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 23, 12, confidence 98%]",
+"  (25) Outstanding exception: Mary moved in the situation W1 and Mary moved in the situation W0  [from steps 20, 24, confidence 99%]",
+"Exceptions checked and not holding:",
+"  Mary moved in W1",
+"  Mary moved in W0"
+],
+  "timestamp": "2026-06-19T23:11:47Z"
+}

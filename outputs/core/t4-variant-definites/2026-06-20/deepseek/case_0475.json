@@ -1,0 +1,177 @@
+{
+  "test_name": "core_definites",
+  "case_id": 475,
+  "input_text": "The length of the car is 3 meters. The bike has the same length as the car. The length of the bike is 3 meters?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The length of the car is 3 meters.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The length 1 of the car 1 is 3 meters.",
+          "type": "real",
+          "entities": [{"id": "car 1", "type": "concrete", "category": "artifact"},
+            {"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "3 meters", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["length of","length 1","car 1"]]
+        },
+        {
+          "unit_id": "S2",
+          "text": "The length 1 is the length of the car 1.",
+          "type": "real",
+          "entities": [{"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The bike has the same length as the car.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The length 2 of the bike 2 is equal to the length 1 of the car 1.",
+          "type": "real",
+          "entities": [{"id": "bike 2", "type": "concrete", "category": "artifact"},
+            {"id": "length 2", "type": "concrete", "text": "length"},
+            {"id": "length 1", "type": "concrete", "text": "length"},
+            {"id": "car 1", "type": "concrete", "category": "artifact"}
+          ],
+          "definites": [["length of","length 2","bike 2"], ["length of","length 1","car 1"]]
+        },
+        {
+          "unit_id": "S4",
+          "text": "The length 2 is the length of the bike 2.",
+          "type": "real",
+          "entities": [{"id": "length 2", "type": "concrete", "text": "length"},
+            {"id": "bike 2", "type": "concrete", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The length of the bike is 3 meters?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is the length 2 of the bike 2 3 meters?",
+          "type": "query",
+          "entities": [{"id": "length 2", "type": "concrete", "text": "length"},
+            {"id": "bike 2", "type": "concrete", "category": "artifact"},
+            {"id": "3 meters", "type": "concrete", "category": "measure"}
+          ],
+          "definites": [["length of","length 2","bike 2"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","car","car 1"],
+          ["=", ["$measure_of","length","car 1","W0"], ["$measure",3,"meter"]]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds", "W0", ["isa","length","length 1"]],
+        ["@definite","S2","W0","length of","car 1","length 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","bike","bike 2"],
+          ["=", ["$measure_of","length","bike 2","W0"], ["$measure_of","length","car 1","W0"]]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds", "W0", ["isa","length","length 2"]],
+        ["@definite","S4","W0","length of","bike 2","length 2"]
+      ]
+    ],
+    ["@id","S5",
+      ["question", ["=", ["$measure_of","length","bike 2","W0"], ["$measure",3,"meter"]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","measure","3 meters"],
+ "@nl": "The length 1 of the car 1 is 3 meters."},
+{"@name": "sent_S1",
+ "@logic": ["isa","car","#:car 1"],
+ "@nl": "The length 1 of the car 1 is 3 meters."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$measure_of","length","#:car 1","W0"], ["$list",3,"#:meter"]],
+ "@nl": "The length 1 of the car 1 is 3 meters."},
+{"@name": "sent_S2",
+ "@logic": ["isa","length","#:length 1"],
+ "@nl": "The length 1 is the length of the car 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bike","#:bike 2"],
+ "@nl": "The length 2 of the bike 2 is equal to the length 1 of the car 1."},
+{"@name": "sent_S3",
+ "@logic": ["=", ["$measure_of","length","#:bike 2","W0"], ["$measure_of","length","#:car 1","W0"]],
+ "@nl": "The length 2 of the bike 2 is equal to the length 1 of the car 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","length","#:length 2"],
+ "@nl": "The length 2 is the length of the bike 2."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["=", ["$measure_of","length","#:bike 2","W0"], ["$list",3,"#:meter"]]],
+ "@nl": "Is the length 2 of the bike 2 3 meters?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-=", ["$measure_of","length","#:bike 2","W0"], ["$list",3,"#:meter"]], ["$defq0"]],
+ "@nl": "Is the length 2 of the bike 2 3 meters?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is the length 2 of the bike 2 3 meters?"},
+{"@name": "frm_measure",
+ "@logic": ["have", "?:S", ["$measure_of","length","?:S","?:W"], ["$ctxt","?:T","?:W","?:L","?:K"]],
+ "@nl": "[generated: frm_measure]"},
+{"@name": "frm_measure",
+ "@logic": ["isa", "length", ["$measure_of","length","?:S","?:W"]],
+ "@nl": "[generated: frm_measure]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S5","assumption",1], [["-=", ["$measure_of","length","#:bike 2","W0"], ["$list",3,"#:meter"]], ["$defq0"]]],
+          [2, ["in","sent_S3","assumption",1], [["=", ["$measure_of","length","#:bike 2","W0"], ["$measure_of","length","#:car 1","W0"]]]],
+          [3, ["in","sent_S1","assumption",1], [["=", ["$measure_of","length","#:car 1","W0"], ["$list",3,"#:meter"]]]],
+          [4, ["simp",2,3,"fromassumption",1], [["=", ["$measure_of","length","#:bike 2","W0"], ["$list",3,"#:meter"]]]],
+          [5, ["simp",1,4,"fromassumption",1], [["$defq0"]]],
+          [6, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [7, ["mp",5,6,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The length of the car is 3 meters.",
+"  (2) The bike has the same length as the car.",
+"  (3) The length of the bike is 3 meters?",
+"Proof steps (by contradiction):",
+"  (1) If the length of bike B equals 3 meters then answer holds  [sentence 3]",
+"  (2) The length of bike B equals the length of car A  [sentence 2]",
+"  (3) The length of car A equals 3 meters  [sentence 1]",
+"  (4) The length of bike B equals 3 meters  [from steps 2, 3]",
+"  (5) Answer holds  [from steps 1, 4]",
+"  (6) assume for contradiction: the answer is no  [from question]",
+"  (7) Contradiction  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T07:44:09Z"
+}

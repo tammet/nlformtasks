@@ -1,0 +1,256 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1014,
+  "input_text": "An apple was eaten. John ate a pear. What was eaten?",
+  "expected_answer": ["The apple and the pear.","An apple and a pear.","An apple.","A pear."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "The apple.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "An apple was eaten.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An apple 1 was eaten.",
+          "type": "situation",
+          "entities": [{"id": "apple 1", "type": "concrete", "category": "plant"}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John ate a pear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 ate a pear 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "pear 2", "type": "concrete", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "event", "roles": {"actor": "John 1", "target": "pear 2"}}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "What was eaten?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity was eaten?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "pre_state": "W2",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","apple","apple 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has target","E","apple 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","pear","pear 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","pear 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","eat"],
+            ["has target","E","X"],
+            ["has time","E","past","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","apple","#:apple 1"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "eat", "#:apple 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "An apple 1 was eaten."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","pear","#:pear 2"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "eat", "#:John 1", ["eventprop","$target","#:pear 2"], ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "John 1 ate a pear 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "eat", "?:X", ["$ctxt","past","W2","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "eat", "?:X", ["$ctxt","past","W2","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity was eaten?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "eat", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["has property", "eat", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "eat", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity was eaten?"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","apple","?:X"], ["-isa","pear","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "pop_what",
+ "@logic": ["isa","apple","$some_apple"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","pear","$some_pear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:apple 1"]],
+        "blockers": [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]],
+          ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.988277,
+        "positive proof": [[1, ["in","frm_56","axiom",0.99], [["$block", 0, ["$not", ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]]]], ["-has property", "?:X", "?:Y", ["$ctxt","?:Z","?:2006","?:V","?:W"]], ["has property", "?:X", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-next","?:2006","?:U"]]],
+          [2, ["in","sent_S1","assumption",1], [["has property", "eat", "#:apple 1", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","?:X","?:Y","?:Z"]], ["-next","W0","?:X"]]],
+          [4, ["in","sent_S1","assumption",1], [["next","W0","W1"]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [6, ["mp", [5,1], [1,1], "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","?:Z","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-next","W1","?:Z"]]],
+          [7, ["in","sent_S2","assumption",1], [["next","W1","W2"]]],
+          [8, ["mp", [6,3], 7, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [9, ["in","sent_S3","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","past","W2","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [10, ["mp", [8,2], 9, "fromassumption", 0.9801], [["$defq0","#:apple 1"], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]]]],
+          [11, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [12, ["mp",10,11,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$ans","#:apple 1"]]],
+          [13, ["in","frm_world_geom","assumption",1], [["next","W0","W1"]]],
+          [14, ["mp", [3,2], 13, "fromassumption", 0.99], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]],
+          [15, ["mp", [14,1], [1,1], "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","?:Z","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","?:Z","?:X","?:Y"]], ["-next","W1","?:Z"]]],
+          [16, ["mp", [15,3], 7, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [17, ["mp", [16,2], 9, "fromassumption", 0.9801], [["$defq0","#:apple 1"], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]]]],
+          [18, ["mp",17,11,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$ans","#:apple 1"]]],
+          [19, ["cumul",12,18,"fromga",0.984001], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$ans","#:apple 1"]]],
+          [20, ["in","frm_world_geom","assumption",1], [["next","W1","W2"]]],
+          [21, ["mp", [15,3], 20, "fromassumption", 0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]], ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]],
+          [22, ["mp", [21,2], 9, "fromassumption", 0.9801], [["$defq0","#:apple 1"], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X","?:Y"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X","?:Y"]]]]]],
+          [23, ["mp",22,11,"fromga",0.9801], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$ans","#:apple 1"]]],
+          [24, ["cumul",19,23,"fromga",0.988277], [["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W2","?:X3","?:Y3"]]]], ["$block", 0, ["$not", ["has property", "eat", "#:apple 1", ["$ctxt","past","W1","?:X3","?:Y3"]]]], ["$ans","#:apple 1"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 99%.",
+"Sentences used:",
+"  (1) An apple was eaten.",
+"  (2) John ate a pear.",
+"  (3) What was eaten?",
+"Knowledge used:",
+"  If some Y is some X and a situation E1 is followed by a situation U then normally Y is X. Why: assumed basic knowledge.",
+"  The situation W0 is followed by the situation W1. Why: assumed basic knowledge.",
+"  The situation W1 is followed by the situation W2. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is some X and a situation E1 is followed by a situation U then normally Y is X  [background knowledge, confidence 99%]",
+"  (2) The apple A is eat  [sentence 1]",
+"  (3) If the situation W0 is followed by a situation X then normally the apple A is eat  [from steps 1, 2, confidence 99%]",
+"  (4) The situation W0 is followed by the situation W1  [sentence 1]",
+"  (5) Normally the apple A is eat  [from steps 3, 4, confidence 99%]",
+"  (6) If the situation W1 is followed by a situation Z then normally the apple A is eat, except when the apple A is not eat  [from steps 5, 1, confidence 98%]",
+"  (7) The situation W1 is followed by the situation W2  [sentence 2]",
+"  (8) Normally the apple A is eat, except when the apple A is not eat  [from steps 6, 7, confidence 98%]",
+"  (9) If some X is eat then X is the answer  [sentence 3]",
+"  (10) The apple A is the answer, except when the apple A is not eat and the apple A is not eat  [from steps 8, 9, confidence 98%]",
+"  (11) technical answer unwrap step  [from question]",
+"  (12) The apple is an answer, except when the apple A is not eat and the apple A is not eat  [from steps 10, 11, confidence 98%]",
+"  (13) The situation W0 is followed by the situation W1  [background knowledge]",
+"  (14) Normally the apple A is eat  [from steps 3, 13, confidence 99%]",
+"  (15) If the situation W1 is followed by a situation Z then normally the apple A is eat, except when the apple A is not eat  [from steps 14, 1, confidence 98%]",
+"  (16) Normally the apple A is eat, except when the apple A is not eat  [from steps 15, 7, confidence 98%]",
+"  (17) The apple A is the answer, except when the apple A is not eat and the apple A is not eat  [from steps 16, 9, confidence 98%]",
+"  (18) The apple is an answer, except when the apple A is not eat and the apple A is not eat  [from steps 17, 11, confidence 98%]",
+"  (19) The apple is an answer, except when the apple A is not eat and the apple A is not eat  [from steps 12, 18, confidence 98%]",
+"  (20) The situation W1 is followed by the situation W2  [background knowledge]",
+"  (21) Normally the apple A is eat, except when the apple A is not eat  [from steps 15, 20, confidence 98%]",
+"  (22) The apple A is the answer, except when the apple A is not eat and the apple A is not eat  [from steps 21, 9, confidence 98%]",
+"  (23) The apple is an answer, except when the apple A is not eat and the apple A is not eat  [from steps 22, 11, confidence 98%]",
+"  (24) The apple is an answer, except when the apple A is not eat and the apple A is not eat  [from steps 19, 23, confidence 99%]",
+"Exceptions checked and not holding:",
+"  apple A is not eat",
+"  apple A is not eat"
+],
+  "timestamp": "2026-06-19T07:55:47Z"
+}

@@ -1,0 +1,201 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1421,
+  "input_text": "Red cars do not have trunks. Cars have trunks. John is a car. John has a trunk?",
+  "expected_answer": true,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Red cars do not have trunks.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Red cars do not have trunks.",
+          "type": "strict_rule",
+          "entities": [{"id": "red cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["red","none","car"]]
+        }
+      ]
+    },
+    {
+      "raw": "Cars have trunks.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars have trunks.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a car.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a car.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "artifact"}]
+        }
+      ]
+    },
+    {
+      "raw": "John has a trunk?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a trunk?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","car","X"], ["has degree property","red","X","none","car"]],
+            ["not", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["isa","car","John 1"]]],
+    ["@id","S4",
+      ["question", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","John 1","Y"]]]]
+    ]
+  ],
+  "stage_2_fixes": ["json: removed content after top-level close bracket"],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["-has property","red","?:X","?:Cu1"],
+            ["-isa","trunk","?:Y"],
+            ["-has part","?:X","?:Y","?:Cu1"]
+           ],
+ "@nl": "Red cars do not have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["has part", "?:X", ["sk0","?:X"], "?:Cu3"]],
+ "@confidence": 0.98,
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:John 1"],
+ "@nl": "John 1 is a car."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","trunk","sk1_trunk"]],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","#:John 1","sk1_trunk","?:Cu6"]],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"], ["-has part","#:John 1","?:Y","?:Cu7"], ["$defq0"]],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red_car","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_red_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","red","$some_not_red_car","?:Cu15"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","car","$some_red_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red_car","?:Cu17"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.98], [["has part", "?:X", ["sk0","?:X"], "?:Y"], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","#:John 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has part", "#:John 1", ["sk0","#:John 1"], "?:X"]]],
+          [4, ["in","sent_S4","assumption",1], [["$defq0"], ["-has part","#:John 1","?:X","?:Y"], ["-isa","trunk","?:X"]]],
+          [5, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], [["-isa", "trunk", ["sk0","#:John 1"]]]],
+          [7, ["in","sent_S2","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [8, ["mp", [7,1], 2, "fromassumption", 1], [["isa", "trunk", ["sk0","#:John 1"]]]],
+          [9, ["simp",6,8,"fromga",0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Cars have trunks.",
+"  (2) John is a car.",
+"  (3) John has a trunk?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a car then X has the trunk sk0 of X as a part  [sentence 1, confidence 98%]",
+"  (2) John is a car  [sentence 2]",
+"  (3) John has the trunk sk0 of John 1 as a part  [from steps 1, 2, confidence 98%]",
+"  (4) If John has some X as a part and X is a trunk then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) sk0 of John 1 is not a trunk  [from steps 3, 4, 5, confidence 98%]",
+"  (7) If some X is a car then the trunk sk0 of X is a trunk  [sentence 1]",
+"  (8) The trunk sk0 of John 1 is a trunk  [from steps 7, 2]",
+"  (9) Contradiction  [from steps 6, 8, confidence 98%]"
+],
+  "timestamp": "2026-06-19T04:42:14Z"
+}

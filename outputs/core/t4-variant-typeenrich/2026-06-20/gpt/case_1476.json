@@ -1,0 +1,282 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1476,
+  "input_text": "If a bear eats red berries, it is big. John eats red berries. John is a bear.\n     John is big?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear eats red berries, it is big.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear eats red berries, the bear is big.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "bear", "target": "berries"}}],
+          "adjectives": [["red","none","none"], ["big","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John eats red berries.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 eats red berries.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "berries"}}],
+          "adjectives": [["red","none","none"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is big?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 big?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["big","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","bear","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["exists","Y",
+                        ["and",
+                          ["isa","berry","Y"],
+                          ["has degree property","red","Y","none","none"],
+                          ["has target","E","Y"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                ["has degree property","big","X","none","bear"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["normally",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["exists","Y",
+                  ["and",
+                    ["isa","berry","Y"],
+                    ["has degree property","red","Y","none","none"],
+                    ["has target","E","Y"]
+                  ]
+                ],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S3", ["holds", "W0", ["and", ["isa","bear","John 1"], ["isa","John","John 1"]]]],
+    ["@id", "S4", ["question", ["has degree property","big","John 1","none","bear"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu2"],
+            ["-has actor","?:E","?:X","?:Cu2"],
+            ["-isa","berry","?:Y"],
+            ["-has property","red","?:Y","?:Cu2"],
+            ["-has target","?:E","?:Y","?:Cu2"],
+            ["has degree property","big","?:X","none","bear","?:Cu2"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear eats red berries, the bear is big."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has type","sk0_activity","eat","?:Cu5"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu6"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","berry","sk1_berry"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has property","red","sk1_berry","?:Cu8"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S2",
+ "@logic": ["has target","sk0_activity","sk1_berry","?:Cu9"],
+ "@nl": "John 1 eats red berries."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","john","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","big","#:John 1","none","bear","?:Cu13"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-has degree property","big","#:John 1","none","bear","?:Cu14"], ["$defq0"]],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 big?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","red","$some_red","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","red","$some_not_red","?:Cu22"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","big","$some_big_bear","none","bear","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_big_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_bear","none","bear","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv67","?:Cu26"],
+            ["has degree property","big","?:X","none","?:Fv68","?:Cu26"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["has degree property","big","?:X","none","bear","?:Y"], ["-has property","red","?:Z","?:Y"], ["-has type","?:U","eat","?:Y"], ["-has actor","?:U","?:X","?:Y"], ["-has target","?:U","?:Z","?:Y"], ["-isa","berry","?:Z"], ["-isa","bear","?:X"], ["-isa","activity","?:U"]]],
+          [2, ["in","sent_S2","assumption",1], [["has property","red","sk1_berry","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-isa","berry","sk1_berry"], ["has degree property","big","?:X3","none","bear","?:Y3"], ["-has type","?:Z3","eat","?:Y3"], ["-has actor","?:Z3","?:X3","?:Y3"], ["-has target","?:Z3","sk1_berry","?:Y3"], ["-isa","bear","?:X3"], ["-isa","activity","?:Z3"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","berry","sk1_berry"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["has degree property","big","?:X","none","bear","?:Y"], ["-has type","?:Z","eat","?:Y"], ["-has actor","?:Z","?:X","?:Y"], ["-has target","?:Z","sk1_berry","?:Y"], ["-isa","bear","?:X"], ["-isa","activity","?:Z"]]],
+          [6, ["in","sent_S2","assumption",1], [["has target","sk0_activity","sk1_berry","?:X"]]],
+          [7, ["mp", [5,3], 6, "fromassumption", 0.9], [["-isa","activity","sk0_activity"], ["has degree property","big","?:X3","none","bear","?:Y3"], ["-has type","sk0_activity","eat","?:Y3"], ["-has actor","sk0_activity","?:X3","?:Y3"], ["-isa","bear","?:X3"]]],
+          [8, ["in","sent_S2","assumption",1], [["isa","activity","sk0_activity"]]],
+          [9, ["simp",7,8,"fromassumption",0.9], [["has degree property","big","?:X","none","bear","?:Y"], ["-has type","sk0_activity","eat","?:Y"], ["-has actor","sk0_activity","?:X","?:Y"], ["-isa","bear","?:X"]]],
+          [10, ["in","sent_S2","assumption",1], [["has type","sk0_activity","eat","?:X"]]],
+          [11, ["mp", [9,1], 10, "fromassumption", 0.9], [["has degree property","big","?:X","none","bear","?:Y"], ["-has actor","sk0_activity","?:X","?:Y"], ["-isa","bear","?:X"]]],
+          [12, ["in","sent_S2","assumption",1], [["has actor","sk0_activity","#:John 1","?:X"]]],
+          [13, ["mp", [11,1], 12, "fromassumption", 0.9], [["-isa","bear","#:John 1"], ["has degree property","big","#:John 1","none","bear","?:X3"]]],
+          [14, ["in","sent_S3","assumption",1], [["isa","bear","#:John 1"]]],
+          [15, ["simp",13,14,"fromassumption",0.9], [["has degree property","big","#:John 1","none","bear","?:X"]]],
+          [16, ["in","sent_S4","assumption",1], [["$defq0"], ["-has degree property","big","#:John 1","none","bear","?:X"]]],
+          [17, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [18, ["mp", 15, [16,1], 17, "fromga", 0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) If a bear eats red berries, it is big.",
+"  (2) John eats red berries.",
+"  (3) John is a bear.",
+"  (4) John is big?",
+"Proof steps (by contradiction):",
+"  (1) If some Z is red and U is a eat event and some X performs U and U targets Z and Z is a berry and X is a bear and U is an activity then X is a big bear  [sentence 1, confidence 90%]",
+"  (2) Some berry ber1 is red  [sentence 2]",
+"  (3) If ber1 is a berry and Z3 is a eat event and some X3 performs Z3 and Z3 targets ber1 and X3 is a bear and Z3 is an activity then X3 is a big bear  [from steps 1, 2, confidence 90%]",
+"  (4) Ber1 is a berry  [sentence 2]",
+"  (5) If Z is a eat event and some X performs Z and Z targets ber1 and X is a bear and Z is an activity then X is a big bear  [from steps 3, 4, confidence 90%]",
+"  (6) The event act1 targets ber1  [sentence 2]",
+"  (7) If the event act1 is an activity and the act1 is a eat event and some X3 performs the act1 and X3 is a bear then X3 is a big bear  [from steps 5, 6, confidence 90%]",
+"  (8) The event act1 is an activity  [sentence 2]",
+"  (9) If the event act1 is a eat event and some X performs the act1 and X is a bear then X is a big bear  [from steps 7, 8, confidence 90%]",
+"  (10) The event act1 is a eat event  [sentence 2]",
+"  (11) If some X performs the event act1 and X is a bear then X is a big bear  [from steps 9, 10, confidence 90%]",
+"  (12) John performs the event act1  [sentence 2]",
+"  (13) If John is a bear then John is a big bear  [from steps 11, 12, confidence 90%]",
+"  (14) John is a bear  [sentence 3]",
+"  (15) John is a big bear  [from steps 13, 14, confidence 90%]",
+"  (16) If John is a big bear then answer holds  [sentence 4]",
+"  (17) assume for contradiction: the answer is no  [from question]",
+"  (18) Contradiction  [from steps 15, 16, 17, confidence 90%]"
+],
+  "timestamp": "2026-06-19T02:51:21Z"
+}

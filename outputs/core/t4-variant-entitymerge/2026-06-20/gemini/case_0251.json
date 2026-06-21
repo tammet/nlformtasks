@@ -1,0 +1,189 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 251,
+  "input_text": "The toy of the child was broken. Who had a toy?",
+  "expected_answer": ["The child.","A child."],
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The child.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The toy of the child was broken.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The toy 1 of the child 2 was broken.",
+          "type": "situation",
+          "entities": [{"id": "toy 1", "type": "concrete", "text": "toy", "category": "artifact"},
+            {"id": "child 2", "type": "concrete", "category": "person"}
+          ],
+          "adjectives": [["broken","none","toy"]],
+          "definites": [["toy of","toy 1","child 2"]],
+          "time": "past",
+          "pre_state": "W0"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The toy 1 is the toy of the child 2.",
+          "type": "situation",
+          "entities": [{"id": "toy 1", "type": "concrete", "text": "toy", "category": "artifact"},
+            {"id": "child 2", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["toy of","toy 1","child 2"]],
+          "time": "past",
+          "pre_state": "W0"
+        }
+      ]
+    },
+    {
+      "raw": "Who had a toy?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity had a toy?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "toy", "type": "generic", "category": "artifact"}
+          ],
+          "time": "past",
+          "pre_state": "W0"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","toy","toy 1"],
+            ["isa","child","child 2"],
+            ["have","child 2","toy 1"],
+            ["has degree property","broken","toy 1","none","toy"]
+          ]
+        ],
+        ["state time","W0","past"],
+        ["@definite","S1","W0","toy of","child 2","toy 1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","toy","toy 1"], ["isa","child","child 2"], ["have","child 2","toy 1"]]
+        ],
+        ["state time","W0","past"],
+        ["@definite","S2","W0","toy of","child 2","toy 1"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask", "X", ["exists", "Y", ["and", ["isa","toy","Y"], ["@time", "past", ["have","X","Y"]]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","toy","#:toy 1"],
+ "@nl": "The toy 1 of the child 2 was broken."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "toy", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "The toy 1 of the child 2 was broken."},
+{"@name": "sent_S1",
+ "@logic": ["isa","child","#:child 2"],
+ "@nl": "The toy 1 of the child 2 was broken."},
+{"@name": "sent_S1",
+ "@logic": ["have", "#:child 2", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The toy 1 of the child 2 was broken."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "broken", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The toy 1 of the child 2 was broken."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "toy", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]]],
+ "@nl": "The toy 1 is the toy of the child 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","child","#:child 2"],
+ "@nl": "The toy 1 is the toy of the child 2."},
+{"@name": "sent_S2",
+ "@logic": ["have", "#:child 2", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The toy 1 is the toy of the child 2."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "toy", ["sk0","?:X"]]],
+ "@nl": "Which entity had a toy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["have", "?:X", ["sk0","?:X"], ["$ctxt","past","?:Fv10","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity had a toy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","toy","?:Y"],
+            ["-have", "?:X", "?:Y", ["$ctxt","past","?:Fv13","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity had a toy?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity had a toy?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "?:Br1", "?:Br2", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "?:Br1", "?:Br2", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity had a toy?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:child 2", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:child 2", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "toy of", ["$theof1","toy","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "toy", ["$theof1","toy","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "pop_what",
+ "@logic": ["isa","child","$some_child"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","toy","$some_toy"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:child 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_theof","assumption",1], [["have", "#:child 2", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:X","?:Y"]], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["-have", "?:X", "?:Y", ["$ctxt","past","?:Z","?:U","?:V"]], ["-isa","toy","?:Y"], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:child 2"], ["-isa", "toy", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:X","?:Y"]]]]],
+          [4, ["in","sent_S2","assumption",1], [["isa", "toy", ["$theof1", "toy", "#:child 2", ["$ctxt","past","W0","?:X","?:Y"]]]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 1], [["$defq0","#:child 2"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:child 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The toy of the child was broken.",
+"  (2) Who had a toy?",
+"Knowledge used:",
+"  The child B has the toy of child B. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) The child B has the toy of child B  [background knowledge]",
+"  (2) If some X has some Y and Y is a toy then X is the answer  [sentence 2]",
+"  (3) If the toy of child B is a toy then the child B is the answer  [from steps 1, 2]",
+"  (4) The toy of child B is a toy  [sentence 1]",
+"  (5) The child B is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The child is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T00:41:05Z"
+}

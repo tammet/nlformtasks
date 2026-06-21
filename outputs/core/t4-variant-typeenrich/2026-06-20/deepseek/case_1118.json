@@ -1,0 +1,347 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1118,
+  "input_text": "If a bear eats, it is hungry. John is a brown bear.\n      John quickly eats berries in a deep forest. Who is hungry?",
+  "expected_answer": "John.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear eats, it is hungry.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear eats, the bear is hungry.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "eat", "mode": "habitual"}],
+          "adjectives": [["hungry","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a brown bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a brown bear.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "brown bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John quickly eats berries in a deep forest.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 quickly eats berries 2 in a deep forest 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "berries 2", "type": "concrete", "category": "plant"},
+            {"id": "forest 3", "type": "concrete", "category": "place"}
+          ],
+          "adjectives": [["deep","none","forest"]],
+          "actions": [{
+              "root": "eat",
+              "mode": "event",
+              "roles": {
+                "target": "berries 2",
+                "location": "forest 3",
+                "location_prep": "in",
+                "manner": "quickly"
+              }
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1"
+        }
+      ]
+    },
+    {
+      "raw": "Who is hungry?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Which entity is hungry?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "adjectives": [["hungry","none","entity"]],
+          "pre_state": "W1"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bear","X"],
+              ["normally",
+                ["implies",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","eat"],
+                      ["has actor","E","X"],
+                      ["typical","E"]
+                    ]
+                  ],
+                  ["has degree property","hungry","X","none","bear"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["holds", "W0", ["and", ["isa","brown bear","John 1"], ["isa","person","John 1"]]]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","berry","berries 2"],
+            ["isa","forest","forest 3"],
+            ["has degree property","deep","forest 3","none","forest"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","eat"],
+                ["has actor","E","John 1"],
+                ["has target","E","berries 2"],
+                ["has location","E","forest 3","in"],
+                ["has manner","E","quickly"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id", "S4", ["ask", "X", ["has degree property","hungry","X","none","entity"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is a brown bear."},
+{"@name": "entity_S3",
+ "@logic": ["isa","berries","#:berries 2"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu3"],
+            ["-has actor","?:E","?:X","?:Cu3"],
+            ["has degree property","hungry","?:X","none","bear","?:Cu3"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear eats, the bear is hungry."},
+{"@name": "sent_S2",
+ "@logic": ["isa","brown bear","#:John 1"],
+ "@nl": "John 1 is a brown bear."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a brown bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","berry","#:berries 2"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","forest","#:forest 3"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property","deep","#:forest 3","none","forest","?:Cu9"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has type","sk0_activity","eat","?:Cu11"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu12"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has target","sk0_activity","#:berries 2","?:Cu13"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has location","sk0_activity","#:forest 3","in","?:Cu14"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["has manner","sk0_activity","quickly","?:Cu15"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "John 1 quickly eats berries 2 in a deep forest 3."},
+{"@name": "sent_S4",
+ "@question": ["has degree property","hungry","?:X","none","?:Fv54","?:Cu17"],
+ "@askvars": 1,
+ "@nl": "Which entity is hungry?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property","hungry","?:Br1","none","?:Fv55","?:Cu18"],
+            ["has degree property","hungry","?:Br1","none","?:Fv56","?:Cu18"]
+           ],
+ "@nl": "Which entity is hungry?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","hungry","$some_hungry_bear","none","bear","?:Cu23"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_hungry_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","hungry","$some_not_hungry_bear","none","bear","?:Cu25"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","brown bear","?:X"], ["isa","bear","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","brown","?:X"], ["-isa","bear","?:X"], ["isa","brown bear","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","deep","?:X","none","?:Fv58","?:Cu28"],
+            ["has degree property","deep","?:X","none","?:Fv59","?:Cu28"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","berries","$some_berries"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","forest","$some_forest"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","brown bear","$some_brown_bear"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_hungry_bear","bear","?:X3"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["has degree property","hungry","$some_hungry_bear","none","bear","?:X"]]],
+          [2, ["in","sent_S4","goal",1], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [3, ["mp",1,2,"fromga",1], [["$ans","$some_hungry_bear","bear","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_hungry_bear","?:X3","?:Y3"]],
+        "confidence": 0.99,
+        "positive proof": [[1, ["in","sent_S4","assumption",0.99], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["has degree property","hungry","?:X","none","?:U","?:Z"]]],
+          [2, ["in","sent_S1","assumption",1], [["has degree property","hungry","$some_hungry_bear","none","bear","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.99], [["has degree property","hungry","$some_hungry_bear","none","?:X","?:Y"]]],
+          [4, ["in","sent_S4","goal",1], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [5, ["mp",3,4,"fromga",0.99], [["$ans","$some_hungry_bear","?:X3","?:Y3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1","bear","?:X3"]],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["has degree property","hungry","?:X","none","bear","?:Y"], ["-has type","?:Z","eat","?:Y"], ["-has actor","?:Z","?:X","?:Y"], ["-isa","bear","?:X"], ["-isa","activity","?:Z"]]],
+          [2, ["in","sent_S3","assumption",1], [["has type","sk0_activity","eat","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-isa","activity","sk0_activity"], ["has degree property","hungry","?:X3","none","bear","?:Y3"], ["-has actor","sk0_activity","?:X3","?:Y3"], ["-isa","bear","?:X3"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","activity","sk0_activity"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["has degree property","hungry","?:X","none","bear","?:Y"], ["-has actor","sk0_activity","?:X","?:Y"], ["-isa","bear","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["has actor","sk0_activity","#:John 1","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.9], [["-isa","bear","#:John 1"], ["has degree property","hungry","#:John 1","none","bear","?:X3"]]],
+          [8, ["in","compound_sub","assumption",1], [["-isa","brown bear","?:X"], ["isa","bear","?:X"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","brown bear","#:John 1"]]],
+          [10, ["mp",8,9,"fromassumption",1], [["isa","bear","#:John 1"]]],
+          [11, ["simp",7,10,"fromassumption",0.9], [["has degree property","hungry","#:John 1","none","bear","?:X"]]],
+          [12, ["in","sent_S4","goal",1], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [13, ["mp",11,12,"fromga",0.9], [["$ans","#:John 1","bear","?:X3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1","?:X3","?:Y3"]],
+        "confidence": 0.891,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["has degree property","hungry","?:X","none","bear","?:Y"], ["-has type","?:Z","eat","?:Y"], ["-has actor","?:Z","?:X","?:Y"], ["-isa","bear","?:X"], ["-isa","activity","?:Z"]]],
+          [2, ["in","sent_S3","assumption",1], [["has type","sk0_activity","eat","?:X"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["-isa","activity","sk0_activity"], ["has degree property","hungry","?:X3","none","bear","?:Y3"], ["-has actor","sk0_activity","?:X3","?:Y3"], ["-isa","bear","?:X3"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","activity","sk0_activity"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["has degree property","hungry","?:X","none","bear","?:Y"], ["-has actor","sk0_activity","?:X","?:Y"], ["-isa","bear","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["has actor","sk0_activity","#:John 1","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.9], [["-isa","bear","#:John 1"], ["has degree property","hungry","#:John 1","none","bear","?:X3"]]],
+          [8, ["in","compound_sub","assumption",1], [["-isa","brown bear","?:X"], ["isa","bear","?:X"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa","brown bear","#:John 1"]]],
+          [10, ["mp",8,9,"fromassumption",1], [["isa","bear","#:John 1"]]],
+          [11, ["simp",7,10,"fromassumption",0.9], [["has degree property","hungry","#:John 1","none","bear","?:X"]]],
+          [12, ["in","sent_S4","assumption",0.99], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["has degree property","hungry","?:X","none","?:U","?:Z"]]],
+          [13, ["mp",11,12,"fromassumption",0.891], [["has degree property","hungry","#:John 1","none","?:X","?:Y"]]],
+          [14, ["in","sent_S4","goal",1], [["-has degree property","hungry","?:X","none","?:Y","?:Z"], ["$ans","?:X","?:Y","?:Z"]]],
+          [15, ["mp",13,14,"fromga",0.891], [["$ans","#:John 1","?:X3","?:Y3"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) If a bear eats, it is hungry.",
+"  (2) John is a brown bear.",
+"  (3) John quickly eats berries in a deep forest.",
+"  (4) Who is hungry?",
+"Knowledge used:",
+"  If some X is a brown bear then X is a bear. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If Z is a eat event and some X performs Z and X is a bear and Z is an activity then X is a hungry bear  [sentence 1, confidence 90%]",
+"  (2) The event act1 is a eat event  [sentence 3]",
+"  (3) If the event act1 is an activity and some X3 performs the act1 and X3 is a bear then X3 is a hungry bear  [from steps 1, 2, confidence 90%]",
+"  (4) The event act1 is an activity  [sentence 3]",
+"  (5) If some X performs the event act1 and X is a bear then X is a hungry bear  [from steps 3, 4, confidence 90%]",
+"  (6) John performs the event act1  [sentence 3]",
+"  (7) If John is a bear then John is a hungry bear  [from steps 5, 6, confidence 90%]",
+"  (8) If some X is a brown bear then X is a bear  [background knowledge]",
+"  (9) John is a brown bear  [sentence 2]",
+"  (10) John is a bear  [from steps 8, 9]",
+"  (11) John is a hungry bear  [from steps 7, 10, confidence 90%]",
+"  (12) If some X is hungry then X is an answer  [from question]",
+"  (13) [John, the bear] is an answer  [from steps 11, 12, confidence 90%]"
+],
+  "timestamp": "2026-06-19T04:39:58Z"
+}

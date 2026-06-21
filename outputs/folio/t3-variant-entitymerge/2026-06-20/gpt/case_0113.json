@@ -1,0 +1,366 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 113,
+  "input_text": "The Picuris Mountains are a mountain range in New Mexico or Texas. Juan de Onate visited the Picuris Mountains. The Harding Pegmatite Mine, located in the Picuris Mountains, was donated. There are no mountain ranges in texas that have mines that have been donated. Juan de Onate visited a mountain range in Texas?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The Picuris Mountains are a mountain range in New Mexico or Texas.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The Picuris Mountains 1 are a mountain range in New Mexico 2 or Texas 3.",
+          "type": "real",
+          "entities": [{"id": "Picuris Mountains 1", "type": "concrete", "category": "place"},
+            {"id": "New Mexico 2", "type": "concrete", "category": "place"},
+            {"id": "Texas 3", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Juan de Onate visited the Picuris Mountains.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Juan de Onate 4 visited the Picuris Mountains 1.",
+          "type": "situation",
+          "entities": [{"id": "Juan de Onate 4", "type": "concrete", "category": "person"},
+            {"id": "Picuris Mountains 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "visit",
+              "mode": "event",
+              "roles": {"actor": "Juan de Onate 4", "target": "Picuris Mountains 1"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The Harding Pegmatite Mine, located in the Picuris Mountains, was donated.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The Harding Pegmatite Mine 5 is located in the Picuris Mountains 1.",
+          "type": "real",
+          "entities": [{"id": "Harding Pegmatite Mine 5", "type": "concrete", "category": "place"},
+            {"id": "Picuris Mountains 1", "type": "concrete", "category": "place"}
+          ]
+        },
+        {
+          "unit_id": "S4",
+          "text": "The Harding Pegmatite Mine 5 was donated.",
+          "type": "situation",
+          "entities": [{"id": "Harding Pegmatite Mine 5", "type": "concrete", "category": "place"}],
+          "actions": [{"root": "donate", "mode": "event", "roles": {"target": "Harding Pegmatite Mine 5"}}],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "There are no mountain ranges in Texas that have mines that have been donated.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "There are no mountain ranges in Texas 3 that have mines that have been donated.",
+          "type": "real",
+          "entities": [{"id": "mountain ranges", "type": "generic", "category": "place"},
+            {"id": "Texas 3", "type": "concrete", "category": "place"},
+            {"id": "mines", "type": "generic", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Juan de Onate visited a mountain range in Texas?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Did Juan de Onate 4 visit a mountain range in Texas 3?",
+          "type": "query",
+          "entities": [{"id": "Juan de Onate 4", "type": "concrete", "category": "person"},
+            {"id": "mountain range", "type": "generic", "category": "place"},
+            {"id": "Texas 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "visit",
+              "mode": "event",
+              "roles": {"actor": "Juan de Onate 4", "target": "mountain range", "location": "Texas 3"}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","mountain range","Picuris Mountains 1"],
+          ["or",
+            ["is rel2","in","Picuris Mountains 1","New Mexico 2"],
+            ["is rel2","in","Picuris Mountains 1","Texas 3"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Juan de Onate 4"],
+          ["isa","place","Picuris Mountains 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","visit"],
+              ["has actor","E","Juan de Onate 4"],
+              ["has target","E","Picuris Mountains 1"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","place","Harding Pegmatite Mine 5"],
+          ["isa","place","Picuris Mountains 1"],
+          ["is rel2","in","Harding Pegmatite Mine 5","Picuris Mountains 1"]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","place","Harding Pegmatite Mine 5"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","donate"],
+              ["has target","E","Harding Pegmatite Mine 5"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and", ["isa","mountain range","X"], ["is rel2","in","X","Texas 3"]],
+            ["not",
+              ["exists","Y",
+                ["and",
+                  ["isa","mine","Y"],
+                  ["is rel2","in","Y","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","donate"],
+                      ["has target","E","Y"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","mountain range","X"],
+            ["is rel2","in","X","Texas 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","visit"],
+                ["has actor","E","Juan de Onate 4"],
+                ["has target","E","X"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:New Mexico 2"],
+ "@nl": "The Picuris Mountains 1 are a mountain range in New Mexico 2 or Texas 3."},
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Texas 3"],
+ "@nl": "The Picuris Mountains 1 are a mountain range in New Mexico 2 or Texas 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","mountain range","#:Picuris Mountains 1"],
+ "@nl": "The Picuris Mountains 1 are a mountain range in New Mexico 2 or Texas 3."},
+{"@name": "sent_S1",
+ "@logic": [["is rel2", "in", "#:Picuris Mountains 1", "#:New Mexico 2", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+            ["is rel2", "in", "#:Picuris Mountains 1", "#:Texas 3", ["$ctxt","present","W0","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "The Picuris Mountains 1 are a mountain range in New Mexico 2 or Texas 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Juan de Onate 4"],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","place","#:Picuris Mountains 1"],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["has type", "sk0_activity", "visit", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["has actor", "sk0_activity", "#:Juan de Onate 4", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["has target", "sk0_activity", "#:Picuris Mountains 1", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["has time", "sk0_activity", "past", "in", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S2",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Juan de Onate 4 visited the Picuris Mountains 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","place","#:Harding Pegmatite Mine 5"],
+ "@nl": "The Harding Pegmatite Mine 5 is located in the Picuris Mountains 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","place","#:Picuris Mountains 1"],
+ "@nl": "The Harding Pegmatite Mine 5 is located in the Picuris Mountains 1."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "in", "#:Harding Pegmatite Mine 5", "#:Picuris Mountains 1", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The Harding Pegmatite Mine 5 is located in the Picuris Mountains 1."},
+{"@name": "sent_S4",
+ "@logic": ["isa","place","#:Harding Pegmatite Mine 5"],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S4",
+ "@logic": ["has type", "sk1_activity", "donate", ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S4",
+ "@logic": ["has target", "sk1_activity", "#:Harding Pegmatite Mine 5", ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk1_activity", "past", "in", ["$ctxt","past","W0","?:Fv7","?:Fv8"]],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S4",
+ "@logic": ["actuality","sk1_activity"],
+ "@nl": "The Harding Pegmatite Mine 5 was donated."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","mountain range","?:X"],
+            ["-is rel2", "in", "?:X", "#:Texas 3", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","mine","?:Y"],
+            ["-is rel2", "in", "?:Y", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "donate", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has target", "?:E", "?:Y", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "There are no mountain ranges in Texas 3 that have mines that have been donated."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","mountain range","sk2_mountain range"]],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "sk2_mountain range", "#:Texas 3", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk3_activity"]],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk3_activity", "visit", ["$ctxt","?:Fv22","?:Fv21","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk3_activity", "#:Juan de Onate 4", ["$ctxt","?:Fv24","?:Fv23","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has target", "sk3_activity", "sk2_mountain range", ["$ctxt","?:Fv26","?:Fv25","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk3_activity"]],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","mountain range","?:X"],
+            ["-is rel2", "in", "?:X", "#:Texas 3", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "visit", ["$ctxt","?:Fv32","?:Fv31","?:Fv13","?:Fv14"]],
+            ["-has actor", "?:E", "#:Juan de Onate 4", ["$ctxt","?:Fv34","?:Fv33","?:Fv13","?:Fv14"]],
+            ["-has target", "?:E", "?:X", ["$ctxt","?:Fv36","?:Fv35","?:Fv13","?:Fv14"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "?:Br1", "#:Texas 3", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "?:Br1", "#:Texas 3", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "?:Br1", "#:Texas 3", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Juan de Onate 4 visit a mountain range in Texas 3?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mountain range","$some_not_mountain_range"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mine","$some_mine"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mine","$some_not_mine"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","mountain range","$some_mountain_range_in_Texas"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["is rel2", "in", "$some_mountain_range_in_Texas", "#:Texas 3", ["$ctxt","?:Fv64","?:Fv61","?:Fv62","?:Fv63"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","mountain range","?:X"], ["isa","range","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","mountain","?:X"], ["-isa","range","?:X"], ["isa","mountain range","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T21:21:15Z"
+}

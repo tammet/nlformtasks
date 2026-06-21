@@ -1,0 +1,567 @@
+{
+  "test_name": "folio_v2_prenorm",
+  "case_id": 90,
+  "input_text": "Books contain tons of knowledge. When a person reads a book, that person gains knowledge. If a person gains knowledge, they become smarter. Harry read the book “Walden” by Henry Thoreau. A smarter person has gained knowledge?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Books contain knowledge.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Books contain knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "books", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "When a person reads a book, that person gains knowledge.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a person reads a book, the person gains knowledge.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "book", "type": "generic", "category": "artifact"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{"root": "read", "mode": "habitual", "roles": {"actor": "person", "target": "book"}},
+            {
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            }
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If a person gains knowledge, that person becomes smarter.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person gains knowledge, the person becomes smarter.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "gain",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "knowledge"}
+            },
+            {"root": "become", "mode": "habitual", "roles": {"actor": "person"}}
+          ],
+          "adjectives": [["smart","high","person"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Harry reads the book Walden by Henry Thoreau.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3.",
+          "type": "situation",
+          "entities": [{"id": "Harry 1", "type": "concrete", "category": "person"},
+            {"id": "book 2", "type": "concrete", "category": "artifact"},
+            {"id": "Walden 4", "type": "concrete", "category": "abstract"},
+            {"id": "Henry Thoreau 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "read", "mode": "event", "roles": {"actor": "Harry 1", "target": "book 2"}}],
+          "time": "present"
+        },
+        {
+          "unit_id": "S5",
+          "text": "The book 2 is titled \"Walden 4\".",
+          "type": "situation",
+          "entities": [{"id": "book 2", "type": "concrete", "category": "artifact"},
+            {"id": "Walden 4", "type": "concrete", "category": "abstract"}
+          ]
+        },
+        {
+          "unit_id": "S6",
+          "text": "Henry Thoreau 3 is the author of the book 2.",
+          "type": "situation",
+          "entities": [{"id": "Henry Thoreau 3", "type": "concrete", "category": "person"},
+            {"id": "book 2", "type": "concrete", "category": "artifact"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "A smarter person has gained knowledge?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Has a smarter person gained knowledge?",
+          "type": "query",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "knowledge", "type": "generic", "scope": "kind", "category": "abstract"}
+          ],
+          "adjectives": [["smart","high","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies", ["isa","book","X"], ["normally", ["is rel2","in","knowledge","X"]]]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","person","X"],
+              ["normally",
+                ["and",
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","read"],
+                      ["has actor","E","X"],
+                      ["exists", "Y", ["and", ["isa","book","Y"], ["has target","E","Y"]]],
+                      ["typical","E"]
+                    ]
+                  ],
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","gain"],
+                      ["has actor","E1","X"],
+                      ["has target","E1","knowledge"],
+                      ["typical","E1"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","gain"],
+                      ["has actor","E","X"],
+                      ["has target","E","knowledge"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ],
+                ["and",
+                  ["exists","E1",
+                    ["and",
+                      ["isa","activity","E1"],
+                      ["has type","E1","become"],
+                      ["has actor","E1","X"],
+                      ["typical","E1"]
+                    ]
+                  ],
+                  ["has degree property","smart","X","high","person"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Harry 1"],
+          ["isa","book","book 2"],
+          ["isa","abstract","Walden 4"],
+          ["isa","person","Henry Thoreau 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","read"],
+              ["has actor","E","Harry 1"],
+              ["has target","E","book 2"],
+              ["has time","E","present","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","book","book 2"],
+          ["isa","abstract","Walden 4"],
+          ["is rel2","titled","book 2","Walden 4"]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Henry Thoreau 3"],
+          ["isa","book","book 2"],
+          ["is rel2","author of","Henry Thoreau 3","book 2"]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["question",
+        ["exists","X",
+          ["and",
+            ["isa","person","X"],
+            ["has degree property","smart","X","high","person"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","gain"],
+                ["has actor","E","X"],
+                ["has target","E","knowledge"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","book","?:X"],
+            ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","book",1], ["$not", ["is rel2", "in", "knowledge", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Books contain knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["has type", ["sk0","?:X"], "read", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"], ["isa", "book", ["sk1","?:X"]]],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"], ["isa", "activity", ["sk2","?:X"]]],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-has type", ["sk2","?:X"], "loss", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["has actor", ["sk2","?:X"], "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"], ["isa", "knowledge", ["sk3","?:X"]]],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["has target", ["sk2","?:X"], ["sk3","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["typical", ["sk2","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","person",1], ["$not", ["typical", ["sk2","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person reads a book, the person gains knowledge."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["isa", "activity", ["sk4","?:X"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has type", ["sk4","?:X"], "become", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["has actor", ["sk4","?:X"], "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["typical", ["sk4","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-isa","knowledge","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["-has degree property", "stupid", "?:X", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]],
+            ["$block", ["$","person",4], ["$not", ["has degree property", "smart", "?:X", "high", "person", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person gains knowledge, the person becomes smarter."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Harry 1"],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","abstract","#:Walden 4"],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["isa","activity","sk5_activity"],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has type", "sk5_activity", "read", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has actor", "sk5_activity", "#:Harry 1", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has target", "sk5_activity", "#:book 2", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S4",
+ "@logic": ["has time", "sk5_activity", "present", "in", ["$ctxt","present","W0","?:Fv13","?:Fv14"]],
+ "@nl": "Harry 1 reads the book 2 \"Walden\" by Henry Thoreau 3."},
+{"@name": "sent_S5",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "The book 2 is titled \"Walden 4\"."},
+{"@name": "sent_S5",
+ "@logic": ["isa","abstract","#:Walden 4"],
+ "@nl": "The book 2 is titled \"Walden 4\"."},
+{"@name": "sent_S5",
+ "@logic": ["is rel2", "titled", "#:book 2", "#:Walden 4", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+ "@nl": "The book 2 is titled \"Walden 4\"."},
+{"@name": "sent_S6",
+ "@logic": ["isa","person","#:Henry Thoreau 3"],
+ "@nl": "Henry Thoreau 3 is the author of the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["isa","book","#:book 2"],
+ "@nl": "Henry Thoreau 3 is the author of the book 2."},
+{"@name": "sent_S6",
+ "@logic": ["is rel2", "author of", "#:Henry Thoreau 3", "#:book 2", ["$ctxt","present","W0","?:Fv17","?:Fv18"]],
+ "@nl": "Henry Thoreau 3 is the author of the book 2."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","sk6_person"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree property", "stupid", "sk6_person", "high", "person", ["$ctxt","?:Fv26","?:Fv25","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk7_activity"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has type", "sk7_activity", "loss", ["$ctxt","?:Fv30","?:Fv29","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk7_activity", "sk6_person", ["$ctxt","?:Fv32","?:Fv31","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","knowledge","sk8_knowledge"]],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has target", "sk7_activity", "sk8_knowledge", ["$ctxt","?:Fv36","?:Fv35","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","?:X"],
+            ["has degree property", "stupid", "?:X", "high", "person", ["$ctxt","?:Fv40","?:Fv39","?:Fv19","?:Fv20"]],
+            ["-isa","activity","?:E"],
+            ["has type", "?:E", "loss", ["$ctxt","?:Fv44","?:Fv43","?:Fv19","?:Fv20"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv46","?:Fv45","?:Fv19","?:Fv20"]],
+            ["-isa","knowledge","?:Gobj2"],
+            ["-has target", "?:E", "?:Gobj2", ["$ctxt","?:Fv50","?:Fv49","?:Fv19","?:Fv20"]],
+            ["$defq0"]
+           ],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Has a smarter person gained knowledge?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","book","$some_not_book"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "stupid", "$some_smart_person", "none", "person", ["$ctxt","?:Fv76","?:Fv73","?:Fv74","?:Fv75"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_smart_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "stupid", "$some_not_smart_person", "none", "person", ["$ctxt","?:Fv84","?:Fv81","?:Fv82","?:Fv83"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "stupid", "?:X", "none", "?:Fv85", ["$ctxt","past","?:Fv51","?:Fv52","?:Fv53"]],
+            ["-has degree property", "stupid", "?:X", "none", "?:Fv86", ["$ctxt","present","?:Fv51","?:Fv52","?:Fv53"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "none", "?:Fv87", ["$ctxt","present","?:Fv51","?:Fv52","?:Fv53"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["has degree property", "stupid", "?:X", "?:D", "?:RC", ["$ctxt","past","?:Fv54","?:Fv55","?:Fv56"]],
+            ["-has degree property", "stupid", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv54","?:Fv55","?:Fv56"]],
+            ["$block", 0, ["$not", ["has degree property", "smart", "?:X", "?:D", "?:RC", ["$ctxt","present","?:Fv54","?:Fv55","?:Fv56"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has target", ["sk2","?:X"], ["sk3","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","person","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","person","$some_smart_person"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["has target", ["sk2","$some_smart_person"], ["sk3","$some_smart_person"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S2","assumption",1], [["has actor", ["sk2","?:X"], "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","person","?:X"]]],
+          [5, ["mp", [4,1], 2, "fromassumption", 1], [["has actor", ["sk2","$some_smart_person"], "$some_smart_person", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S7","assumption",1], [["$defq0"], ["has degree property", "stupid", "?:X", "high", "person", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has actor", "?:W", "?:X", ["$ctxt","?:2006","?:2007","?:U","?:V"]], ["-has target", "?:W", "?:2008", ["$ctxt","?:2009","?:2010","?:U","?:V"]], ["has type", "?:W", "loss", ["$ctxt","?:2011","?:2012","?:U","?:V"]], ["-isa","knowledge","?:2008"], ["-isa","person","?:X"], ["-isa","activity","?:W"]]],
+          [7, ["in","sent_S7","goal",1], [["-$defq0"]]],
+          [8, ["mp", 5, [6,2], 7, "fromga", 1], [["-isa", "activity", ["sk2","$some_smart_person"]], ["-isa","person","$some_smart_person"], ["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]], ["has type", ["sk2","$some_smart_person"], "loss", ["$ctxt","?:3007","?:3008","?:Z3","?:U3"]], ["-has target", ["sk2","$some_smart_person"], "?:V3", ["$ctxt","?:W3","?:3006","?:Z3","?:U3"]], ["-isa","knowledge","?:V3"]]],
+          [9, ["in","sent_S2","assumption",1], [["isa", "activity", ["sk2","?:X"]], ["-isa","person","?:X"]]],
+          [10, ["mp", [9,1], 2, "fromassumption", 1], [["isa", "activity", ["sk2","$some_smart_person"]]]],
+          [11, ["simp",8,2,10,"fromga",1], [["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["has type", ["sk2","$some_smart_person"], "loss", ["$ctxt","?:V","?:W","?:Z","?:U"]], ["-has target", ["sk2","$some_smart_person"], "?:2006", ["$ctxt","?:2007","?:2008","?:Z","?:U"]], ["-isa","knowledge","?:2006"]]],
+          [12, ["mp", 3, [11,2], "fromga", 1], [["-isa", "knowledge", ["sk3","$some_smart_person"]], ["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]], ["has type", ["sk2","$some_smart_person"], "loss", ["$ctxt","?:V3","?:W3","?:Z3","?:U3"]]]],
+          [13, ["in","sent_S2","assumption",1], [["isa", "knowledge", ["sk3","?:X"]], ["-isa","person","?:X"]]],
+          [14, ["mp", [13,1], 2, "fromassumption", 1], [["isa", "knowledge", ["sk3","$some_smart_person"]]]],
+          [15, ["simp",12,14,"fromga",1], [["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X","?:Y","?:Z","?:U"]], ["has type", ["sk2","$some_smart_person"], "loss", ["$ctxt","?:V","?:W","?:Z","?:U"]]]],
+          [16, ["in","sent_S2","assumption",1], [["-has type", ["sk2","?:X"], "loss", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","person","?:X"]]],
+          [17, ["mp", [15,1], 16, "fromga", 1], [["-isa","person","$some_smart_person"], ["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]],
+          [18, ["simp",17,2,"fromga",1], [["has degree property", "stupid", "$some_smart_person", "high", "person", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [19, ["in","frm_6","axiom",1], [["-has degree property","?:X","?:Y","high","?:Z","?:U"], ["has degree property","?:X","?:Y","none","?:Z","?:U"]]],
+          [20, ["mp",18,19,"fromga",1], [["has degree property", "stupid", "$some_smart_person", "none", "person", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [21, ["in","sent_S3","assumption",1], [["-has degree property", "stupid", "$some_smart_person", "none", "person", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [22, ["mp",20,21,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) When a person reads a book, that person gains knowledge.",
+"  (2) If a person gains knowledge, that person becomes smarter.",
+"  (3) A smarter person has gained knowledge?",
+"Knowledge used:",
+"  If some Y is very some X then Y is X. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If some X is a person then the lossing event sk2 of X targets the knowledge sk3 of X  [sentence 1]",
+"  (2) A smart person is a person  [sentence 2]",
+"  (3) The lossing event sk2 of $some_smart_person targets the knowledge sk3 of $some_smart_person  [from steps 1, 2]",
+"  (4) If some X is a person then X performs the lossing event sk2 of X  [sentence 1]",
+"  (5) A smart person performs the lossing event sk2 of $some_smart_person  [from steps 4, 2]",
+"  (6) If some X performs W and W targets some E3 and E3 is a knowledge and X is a person and W is an activity then answer holds or X is a very stupid person or W is a loss event  [sentence 3]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) If the lossing event sk2 of $some_smart_person is an activity and a smart person is a person and sk2 of $some_smart_person targets some V3 and V3 is a knowledge then a smart person is a very stupid person or sk2 of $some_smart_person is a loss event  [from steps 5, 6, 7]",
+"  (9) If some X is a person then the lossing event sk2 of X is an activity  [sentence 1]",
+"  (10) The lossing event sk2 of $some_smart_person is an activity  [from steps 9, 2]",
+"  (11) If the lossing event sk2 of $some_smart_person targets some E1 and E1 is a knowledge then a smart person is a very stupid person or sk2 of $some_smart_person is a loss event  [from steps 8, 2, 10]",
+"  (12) If the knowledge sk3 of $some_smart_person is a knowledge then a smart person is a very stupid person or sk2 of $some_smart_person is a loss event  [from steps 3, 11]",
+"  (13) If some X is a person then the knowledge sk3 of X is a knowledge  [sentence 1]",
+"  (14) The knowledge sk3 of $some_smart_person is a knowledge  [from steps 13, 2]",
+"  (15) A smart person is a very stupid person or sk2 of $some_smart_person is a loss event  [from steps 12, 14]",
+"  (16) If sk2 of X is a loss event then X is not a person  [sentence 1]",
+"  (17) If a smart person is a person then a smart person is a very stupid person  [from steps 15, 16]",
+"  (18) A smart person is a very stupid person  [from steps 17, 2]",
+"  (19) If some Y is very some X then Y is X  [background knowledge]",
+"  (20) A smart person is a stupid person  [from steps 18, 19]",
+"  (21) A smart person is not a stupid person  [sentence 2]",
+"  (22) Contradiction  [from steps 20, 21]"
+],
+  "timestamp": "2026-06-18T19:26:41Z"
+}

@@ -1,0 +1,394 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 72,
+  "input_text": "All growth stocks are bought to earn profits from rapid price appreciation. If the stock price is bought to earn profits from rapid price appreciation, then it is not suitable for a retirement fund. Some stocks are growth stocks. All mature stocks are suitable for a retirement fund. KO is a mature stock. KO is a stock and a growth stock?",
+  "expected_answer": "False.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "All growth stocks are bought to earn profits from rapid price appreciation.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All growth stocks are bought to earn profits from rapid price appreciation.",
+          "type": "strict_rule",
+          "entities": [{"id": "growth stocks", "type": "generic", "category": "abstract"},
+            {"id": "profits", "type": "generic", "category": "abstract"},
+            {"id": "price appreciation", "type": "generic", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "buy",
+              "mode": "habitual",
+              "roles": {
+                "target": "growth stocks",
+                "purpose": "to earn profits from rapid price appreciation"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If the stock price is bought to earn profits from rapid price appreciation, then it is not suitable for a retirement fund.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "If a stock is bought to earn profits from rapid price appreciation, then the stock is not suitable for a retirement fund.",
+          "type": "normal_rule",
+          "entities": [{"id": "stock", "type": "generic", "category": "abstract"},
+            {"id": "profits", "type": "generic", "category": "abstract"},
+            {"id": "price appreciation", "type": "generic", "category": "abstract"},
+            {"id": "retirement fund", "type": "generic", "category": "organization"}
+          ],
+          "actions": [{
+              "root": "buy",
+              "mode": "habitual",
+              "roles": {"target": "stock", "purpose": "to earn profits from rapid price appreciation"}
+            }
+          ],
+          "adjectives": [["suitable","none","stock"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Some stocks are growth stocks.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Some stocks are growth stocks.",
+          "type": "normal_rule",
+          "entities": [{"id": "stocks", "type": "generic", "category": "abstract"},
+            {"id": "growth stocks", "type": "generic", "category": "abstract"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All mature stocks are suitable for a retirement fund.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All mature stocks are suitable for a retirement fund.",
+          "type": "strict_rule",
+          "entities": [{"id": "mature stocks", "type": "generic", "category": "abstract"},
+            {"id": "retirement fund", "type": "generic", "category": "organization"}
+          ],
+          "adjectives": [["suitable","none","stock"]]
+        }
+      ]
+    },
+    {
+      "raw": "KO is a mature stock.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "KO 1 is a mature stock.",
+          "type": "real",
+          "entities": [{
+              "id": "KO 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/The_Coca-Cola_Company"
+            },
+            {"id": "mature stock", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "KO is a stock and a growth stock?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is KO 1 a stock and a growth stock?",
+          "type": "query",
+          "entities": [{
+              "id": "KO 1",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/The_Coca-Cola_Company"
+            },
+            {"id": "stock", "type": "generic", "category": "abstract"},
+            {"id": "growth stock", "type": "generic", "category": "abstract"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","growth stock","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","buy"],
+                ["exists", "A", ["and", ["isa","entity","A"], ["has actor","E","A"]]],
+                ["has target","E","X"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","stock","X"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","buy"],
+                    ["exists", "A", ["and", ["isa","entity","A"], ["has actor","E","A"]]],
+                    ["has target","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ],
+              ["normally",
+                ["not",
+                  ["exists","F",
+                    ["and",
+                      ["isa","retirement fund","F"],
+                      ["has degree rel2","suitable","X","F","none","stock"]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.95]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["exists", "X", ["and", ["isa","stock","X"], ["normally", ["isa","growth stock","X"]]]]
+        ],
+        ["@p","S3",0.99]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","mature stock","X"],
+            ["exists","F",
+              ["and",
+                ["isa","retirement fund","F"],
+                ["has degree rel2","suitable","X","F","none","stock"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","organization","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+          ["isa","mature stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["and",
+          ["isa","organization","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+          ["isa","stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+          ["isa","growth stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","organization","#:KO 1"],
+ "@nl": "KO 1 is a mature stock."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","growth stock","?:X"],
+            ["event", "buy", "entity", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All growth stocks are bought to earn profits from rapid price appreciation."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","growth stock","?:X"],
+            ["typical", ["sk0","?:X"], ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All growth stocks are bought to earn profits from rapid price appreciation."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","stock","?:X"],
+            ["-event", "buy", "entity", "?:X", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-isa","retirement fund","?:F"],
+            ["-has degree rel2", "suitable", "?:X", "?:F", "none", "stock", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","entity",2], ["has degree rel2", "suitable", "?:X", "?:F", "none", "stock", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a stock is bought to earn profits from rapid price appreciation, then the stock is not suitable for a retirement fund."},
+{"@name": "sent_S3",
+ "@logic": ["isa","stock","sk2_stock"],
+ "@nl": "Some stocks are growth stocks."},
+{"@name": "sent_S3",
+ "@logic": [["isa","growth stock","sk2_stock"],
+            ["$block", ["$","$generic",1], ["$not", ["isa","growth stock","sk2_stock"]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some stocks are growth stocks."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","mature stock","?:X"], ["isa", "retirement fund", ["sk3","?:X"]]],
+ "@nl": "All mature stocks are suitable for a retirement fund."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","mature stock","?:X"],
+            ["has degree rel2", "suitable", "?:X", ["sk3","?:X"], "none", "stock", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All mature stocks are suitable for a retirement fund."},
+{"@name": "sent_S5",
+ "@logic": ["isa","organization","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+ "@nl": "KO 1 is a mature stock."},
+{"@name": "sent_S5",
+ "@logic": ["isa","mature stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+ "@nl": "KO 1 is a mature stock."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa","organization","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"]
+           ],
+ "@nl": "Is KO 1 a stock and a growth stock?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"]],
+ "@nl": "Is KO 1 a stock and a growth stock?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa","growth stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"]
+           ],
+ "@nl": "Is KO 1 a stock and a growth stock?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","organization","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+            ["-isa","stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+            ["-isa","growth stock","https://en.wikipedia.org/wiki/The_Coca-Cola_Company"],
+            ["$defq0"]
+           ],
+ "@nl": "Is KO 1 a stock and a growth stock?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is KO 1 a stock and a growth stock?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","growth stock","$some_growth_stock"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","growth stock","$some_not_growth_stock"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","stock","$some_stock"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","stock","$some_not_stock"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","retirement fund","$some_retirement_fund"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","retirement fund","$some_not_retirement_fund"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","mature stock","$some_not_mature_stock"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","growth stock","?:X"], ["isa","stock","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","growth","?:X"], ["-isa","stock","?:X"], ["isa","growth stock","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","mature stock","?:X"], ["isa","stock","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","mature","?:X"], ["-isa","stock","?:X"], ["isa","mature stock","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","retirement fund","?:X"], ["isa","fund","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","retirement","?:X"], ["-isa","fund","?:X"], ["isa","retirement fund","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv35","?:Fv36","?:Fv38","?:Fv39"]],
+            ["-has actor", "?:E", "?:Owner", ["$ctxt","?:Fv35","?:Fv36","?:Fv38","?:Fv39"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv35","?:Fv36","?:Fv38","?:Fv39"]],
+            ["-next","?:Fv36","?:Fv37"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv37","?:Fv38","?:Fv39"]],
+            ["$block", 0, ["$not", ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv37","?:Fv38","?:Fv39"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv40","?:Fv41","?:Fv43","?:Fv44"]],
+            ["-has beneficiary", "?:E", "?:Owner", ["$ctxt","?:Fv40","?:Fv41","?:Fv43","?:Fv44"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv40","?:Fv41","?:Fv43","?:Fv44"]],
+            ["-next","?:Fv41","?:Fv42"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv42","?:Fv43","?:Fv44"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_acquire_have",
+ "@logic": [["-has type", "?:E", "buy", ["$ctxt","?:Fv45","?:Fv46","?:Fv48","?:Fv49"]],
+            ["-has recipient", "?:E", "?:Owner", ["$ctxt","?:Fv45","?:Fv46","?:Fv48","?:Fv49"]],
+            ["-has target", "?:E", "?:Obj", ["$ctxt","?:Fv45","?:Fv46","?:Fv48","?:Fv49"]],
+            ["-next","?:Fv46","?:Fv47"],
+            ["have", "?:Owner", "?:Obj", ["$ctxt","present","?:Fv47","?:Fv48","?:Fv49"]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_acquire_have]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "generic assumptions contradicted"},
+  "timestamp": "2026-06-20T12:40:26Z"
+}

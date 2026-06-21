@@ -1,0 +1,112 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 138,
+  "input_text": "John was bad. She was in a room. John was in a room?",
+  "expected_answer": null,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John was bad.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 was bad.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["bad","none","person"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "She was in a room.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "She 2 was in a room 3.",
+          "type": "situation",
+          "entities": [{"id": "She 2", "type": "concrete", "category": "person"},
+            {"id": "room 3", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "John was in a room?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Was John 1 in a room?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "room", "type": "generic", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","person","John 1"], ["has degree property","bad","John 1","none","person"]]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","She 2"],
+            ["isa","room","room 3"],
+            ["is rel2","in","She 2","room 3"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["question", ["exists", "X", ["and", ["isa","room","X"], ["is rel2","in","John 1","X"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 was bad."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 was bad."},
+{"@name": "sent_S1",
+ "@logic": ["-has degree property","good","#:John 1","none","person","?:Cu3"],
+ "@nl": "John 1 was bad."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:She 2"],
+ "@nl": "She 2 was in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","room","#:room 3"],
+ "@nl": "She 2 was in a room 3."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2","in","#:She 2","#:room 3","?:Cu6"],
+ "@nl": "She 2 was in a room 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","room","sk0_room"]],
+ "@nl": "Was John 1 in a room?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","in","#:John 1","sk0_room","?:Cu8"]],
+ "@nl": "Was John 1 in a room?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","room","?:X"], ["-is rel2","in","#:John 1","?:X","?:Cu9"], ["$defq0"]],
+ "@nl": "Was John 1 in a room?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Was John 1 in a room?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T02:45:37Z"
+}

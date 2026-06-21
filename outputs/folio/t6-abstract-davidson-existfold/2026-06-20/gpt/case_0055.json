@@ -1,0 +1,341 @@
+{
+  "test_name": "folio_v2_ultracoarse_davidson_existfold_fix",
+  "case_id": 55,
+  "input_text": "Robert Lewandowski is a striker. Strikers are soccer players. Robert Lewandowski left Bayern Munchen. If a player leaves a team they no longer play for that team. Robert Lewandowski is a soccer player?",
+  "expected_answer": "True.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Robert Lewandowski is a striker.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Robert Lewandowski 1 is a striker.",
+          "type": "real",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {"id": "striker", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Strikers are soccer players.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Strikers are soccer players.",
+          "type": "strict_rule",
+          "entities": [{"id": "strikers", "type": "generic", "category": "person"},
+            {"id": "soccer players", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Robert Lewandowski left FC Bayern Munich.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Robert Lewandowski 1 left FC Bayern Munich 2.",
+          "type": "situation",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {
+              "id": "FC Bayern Munich 2",
+              "type": "concrete",
+              "category": "organization",
+              "url": "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+            }
+          ],
+          "actions": [{
+              "root": "leave",
+              "mode": "event",
+              "roles": {"actor": "Robert Lewandowski 1", "source": "FC Bayern Munich 2"}
+            }
+          ],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "If a player leaves a team the player no longer plays for that team.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a player leaves a team, the player no longer plays for that team.",
+          "type": "normal_rule",
+          "entities": [{"id": "player", "type": "generic", "category": "person"},
+            {"id": "team", "type": "generic", "category": "organization"}
+          ],
+          "actions": [{"root": "leave", "mode": "event", "roles": {"actor": "player", "source": "team"}},
+            {"root": "play", "mode": "habitual", "roles": {"actor": "player", "target": "team"}}
+          ],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Is Robert Lewandowski a soccer player?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is Robert Lewandowski 1 a soccer player?",
+          "type": "query",
+          "entities": [{
+              "id": "Robert Lewandowski 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+            },
+            {"id": "soccer player", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["isa","striker","Robert Lewandowski 1"]]],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","striker","X"], ["isa","soccer player","X"]]]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Robert Lewandowski 1"],
+            ["isa","organization","FC Bayern Munich 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leave"],
+                ["has actor","E","Robert Lewandowski 1"],
+                ["has source","E","FC Bayern Munich 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","player","X"],
+              ["forall","Y",
+                ["implies",
+                  ["isa","team","Y"],
+                  ["normally",
+                    ["implies",
+                      ["exists","E",
+                        ["and",
+                          ["isa","activity","E"],
+                          ["has type","E","leave"],
+                          ["has actor","E","X"],
+                          ["has source","E","Y"]
+                        ]
+                      ],
+                      ["not",
+                        ["exists","E1",
+                          ["and",
+                            ["isa","activity","E1"],
+                            ["has type","E1","play"],
+                            ["has actor","E1","X"],
+                            ["has target","E1","Y"],
+                            ["typical","E1"]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.95]
+      ]
+    ],
+    ["@id", "S5", ["question", ["isa","soccer player","Robert Lewandowski 1"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:Robert Lewandowski 1"],
+ "@nl": "Robert Lewandowski 1 is a striker."},
+{"@name": "entity_S1",
+ "@logic": ["isa","robert lewandowski","#:Robert Lewandowski 1"],
+ "@nl": "Robert Lewandowski 1 is a striker."},
+{"@name": "entity_S3",
+ "@logic": ["isa","fc bayern munich","#:FC Bayern Munich 2"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","striker","#:Robert Lewandowski 1"],
+ "@nl": "Robert Lewandowski 1 is a striker."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","striker","?:X"], ["isa","soccer player","?:X"]],
+ "@nl": "Strikers are soccer players."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Robert Lewandowski 1"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","organization","#:FC Bayern Munich 2"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["event","leave","#:Robert Lewandowski 1","sk1","sk0","?:Cu8"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["has source","sk0","#:FC Bayern Munich 2","?:Cu9"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["has time","sk0","past","in","?:Cu10"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["actuality","sk0"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S3",
+ "@logic": ["next","W0","W1"],
+ "@nl": "Robert Lewandowski 1 left FC Bayern Munich 2."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","soccer player","#:Robert Lewandowski 1"]],
+ "@nl": "Is Robert Lewandowski 1 a soccer player?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","soccer player","#:Robert Lewandowski 1"], ["$defq0"]],
+ "@nl": "Is Robert Lewandowski 1 a soccer player?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is Robert Lewandowski 1 a soccer player?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","striker","$some_not_striker"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","soccer player","$some_soccer_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","soccer player","$some_not_soccer_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","player","$some_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","player","$some_not_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","team","$some_team"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","team","$some_not_team"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","fc bayern munich","?:X"], ["isa","munich","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","fc bayern","?:X"], ["-isa","munich","?:X"], ["isa","fc bayern munich","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","robert lewandowski","?:X"], ["isa","lewandowski","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","robert","?:X"],
+            ["-isa","lewandowski","?:X"],
+            ["isa","robert lewandowski","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","soccer player","?:X"], ["isa","player","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","soccer","?:X"], ["-isa","player","?:X"], ["isa","soccer player","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-isa","striker","?:X"], ["isa","soccer player","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["isa","striker","#:Robert Lewandowski 1"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","soccer player","#:Robert Lewandowski 1"]]],
+          [4, ["in","sent_S5","assumption",1], [["-isa","soccer player","#:Robert Lewandowski 1"], ["$defq0"]]],
+          [5, ["in","sent_S5","goal",1], [["-$defq0"]]],
+          [6, ["mp",3,4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Robert Lewandowski is a striker.",
+"  (2) Strikers are soccer players.",
+"  (3) Is Robert Lewandowski a soccer player?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a striker then X is a soccer player  [sentence 2]",
+"  (2) Robert Lewandowski is a striker  [sentence 1]",
+"  (3) Robert Lewandowski is a soccer player  [from steps 1, 2]",
+"  (4) If Robert Lewandowski is a soccer player then answer holds  [sentence 3]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) Contradiction  [from steps 3, 4, 5]"
+],
+  "timestamp": "2026-06-20T13:43:06Z"
+}

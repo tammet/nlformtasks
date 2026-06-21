@@ -1,0 +1,599 @@
+{
+  "test_name": "folio_v2_davidson_fix",
+  "case_id": 191,
+  "input_text": "Some professional basketball players are not American nationals. All professional basketball players can do jump shots. If someone can jump shots, they leap straight into the air. If someone leaps straight into the air, they activate their leg muscles. Yuri does not activate his leg muscles. If Yuri does not leap straight into the air, then Yuri is an American professional basketball player?",
+  "expected_answer": "False.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Some professional basketball players are not American nationals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Some professional basketball players are not American nationals.",
+          "type": "normal_rule",
+          "entities": [{"id": "professional basketball players", "type": "generic", "category": "person"},
+            {"id": "American nationals", "type": "generic", "category": "person"}
+          ],
+          "adjectives": [["American","none","person"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All professional basketball players can do jump shots.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All professional basketball players can do jump shots.",
+          "type": "strict_rule",
+          "entities": [{"id": "professional basketball players", "type": "generic", "category": "person"},
+            {"id": "jump shots", "type": "generic", "category": "event"}
+          ],
+          "actions": [{
+              "root": "do jump shot",
+              "mode": "capability",
+              "roles": {"actor": "professional basketball players", "target": "jump shots"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If someone can jump shots, they leap straight into the air.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If a person can do jump shots, the person leaps straight into the air.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"}],
+          "actions": [{
+              "root": "do jump shot",
+              "mode": "capability",
+              "roles": {"actor": "person", "target": "jump shots"}
+            },
+            {
+              "root": "leap",
+              "mode": "habitual",
+              "roles": {"actor": "person", "direction": "into the air"}
+            }
+          ],
+          "adjectives": [["straight","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "If someone leaps straight into the air, they activate their leg muscles.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If a person leaps straight into the air, the person activates the leg muscles of the person.",
+          "type": "normal_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "leg muscles", "type": "generic", "scope": "dependent", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "leap",
+              "mode": "habitual",
+              "roles": {"actor": "person", "direction": "into the air"}
+            },
+            {
+              "root": "activate",
+              "mode": "habitual",
+              "roles": {"actor": "person", "target": "leg muscles"}
+            }
+          ],
+          "adjectives": [["straight","none","entity"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Yuri does not activate his leg muscles.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Yuri 1 does not activate the leg muscles of Yuri 1.",
+          "type": "situation",
+          "entities": [{"id": "Yuri 1", "type": "concrete", "category": "person"},
+            {"id": "leg muscles", "type": "generic", "scope": "dependent", "category": "abstract"}
+          ],
+          "actions": [{
+              "root": "activate",
+              "mode": "habitual",
+              "roles": {"actor": "Yuri 1", "target": "leg muscles"}
+            }
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "If Yuri does not leap straight into the air, then Yuri is an American professional basketball player?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?",
+          "type": "query",
+          "entities": [{"id": "Yuri 1", "type": "concrete", "category": "person"},
+            {"id": "professional basketball players", "type": "generic", "category": "person"},
+            {"id": "American nationals", "type": "generic", "category": "person"}
+          ],
+          "actions": [{
+              "root": "leap",
+              "mode": "habitual",
+              "roles": {"actor": "Yuri 1", "direction": "into the air"}
+            }
+          ],
+          "adjectives": [["American","none","person"], ["straight","none","entity"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","professional basketball player","X"],
+              ["not", ["isa","American national","X"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","professional basketball player","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","do jump shot"],
+                ["has actor","E","X"],
+                ["has target","E","jump shots"],
+                ["capability","E"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","do jump shot"],
+                      ["has actor","E","X"],
+                      ["has target","E","jump shots"],
+                      ["capability","E"]
+                    ]
+                  ]
+                ],
+                ["exists","E1",
+                  ["and",
+                    ["isa","activity","E1"],
+                    ["has type","E1","leap"],
+                    ["has actor","E1","X"],
+                    ["has direction","E1","into the air"],
+                    ["has degree property","straight","E1","none","entity"],
+                    ["typical","E1"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["normally",
+              ["implies",
+                ["and",
+                  ["isa","person","X"],
+                  ["exists","E",
+                    ["and",
+                      ["isa","activity","E"],
+                      ["has type","E","leap"],
+                      ["has actor","E","X"],
+                      ["has direction","E","into the air"],
+                      ["has degree property","straight","E","none","entity"],
+                      ["typical","E"]
+                    ]
+                  ]
+                ],
+                ["exists","Y",
+                  ["and",
+                    ["isa","leg muscle","Y"],
+                    ["has part","X","Y"],
+                    ["exists","E1",
+                      ["and",
+                        ["isa","activity","E1"],
+                        ["has type","E1","activate"],
+                        ["has actor","E1","X"],
+                        ["has target","E1","Y"],
+                        ["typical","E1"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S4",0.95]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Yuri 1"],
+          ["not",
+            ["exists","Y",
+              ["and",
+                ["isa","leg muscle","Y"],
+                ["has part","Yuri 1","Y"],
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","activate"],
+                    ["has actor","E","Yuri 1"],
+                    ["has target","E","Y"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["question",
+        ["implies",
+          ["not",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","leap"],
+                ["has actor","E","Yuri 1"],
+                ["has direction","E","into the air"],
+                ["has degree property","straight","E","none","entity"],
+                ["typical","E"]
+              ]
+            ]
+          ],
+          ["and",
+            ["isa","professional basketball player","Yuri 1"],
+            ["isa","American national","Yuri 1"],
+            ["has degree property","American","Yuri 1","none","person"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","professional basketball player","sk0_professional basketball player"],
+ "@confidence": 0.9899,
+ "@nl": "Some professional basketball players are not American nationals."},
+{"@name": "sent_S1",
+ "@logic": ["-isa","american national","sk0_professional basketball player"],
+ "@confidence": 0.9899,
+ "@nl": "Some professional basketball players are not American nationals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","professional basketball player","?:X"],
+            ["event", "do jump shot", "?:X", "jump shots", ["sk1","?:X"], ["$ctxt","?:Fv6","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "All professional basketball players can do jump shots."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","professional basketball player","?:X"], ["capability", ["sk1","?:X"]]],
+ "@nl": "All professional basketball players can do jump shots."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "do jump shot", "?:X", "jump shots", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-capability","?:E"],
+            ["event", "spring", "?:X", ["sk3","?:X"], ["sk2","?:X"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "If a person can do jump shots, the person leaps straight into the air."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "do jump shot", "?:X", "jump shots", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-capability","?:E"],
+            ["has direction", ["sk2","?:X"], "into the air", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "If a person can do jump shots, the person leaps straight into the air."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "do jump shot", "?:X", "jump shots", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-capability","?:E"],
+            ["has degree property", "straight", ["sk2","?:X"], "none", "?:Fv129", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "If a person can do jump shots, the person leaps straight into the air."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "do jump shot", "?:X", "jump shots", "?:E", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-capability","?:E"],
+            ["typical", ["sk2","?:X"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$block", ["$","person",3], ["$not", ["typical", ["sk2","?:X"], ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person can do jump shots, the person leaps straight into the air."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "spring", "?:X", "?:Davp2", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has direction", "?:E", "into the air", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has degree property", "straight", "?:E", "none", "?:Fv130", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["isa", "leg muscle", ["sk4","?:X"]]
+           ],
+ "@nl": "If a person leaps straight into the air, the person activates the leg muscles of the person."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "spring", "?:X", "?:Davp2", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has direction", "?:E", "into the air", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has degree property", "straight", "?:E", "none", "?:Fv131", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["has part", "?:X", ["sk4","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "If a person leaps straight into the air, the person activates the leg muscles of the person."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "spring", "?:X", "?:Davp2", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has direction", "?:E", "into the air", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has degree property", "straight", "?:E", "none", "?:Fv132", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["event", "activate", "?:X", ["sk4","?:X"], ["sk5","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "If a person leaps straight into the air, the person activates the leg muscles of the person."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","person","?:X"],
+            ["-event", "spring", "?:X", "?:Davp2", "?:E", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has direction", "?:E", "into the air", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has degree property", "straight", "?:E", "none", "?:Fv133", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["typical", ["sk5","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["$block", ["$","person",4], ["$not", ["typical", ["sk5","?:X"], ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a person leaps straight into the air, the person activates the leg muscles of the person."},
+{"@name": "sent_S5",
+ "@logic": ["isa","person","#:Yuri 1"],
+ "@nl": "Yuri 1 does not activate the leg muscles of Yuri 1."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","leg muscle","?:Y"],
+            ["-has part", "#:Yuri 1", "?:Y", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+            ["-event", "activate", "#:Yuri 1", "?:Y", "?:E", ["$ctxt","present","W0","?:Fv15","?:Fv16"]],
+            ["-typical", "?:E", ["$ctxt","present","W0","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "Yuri 1 does not activate the leg muscles of Yuri 1."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "spring", "#:Yuri 1", "sk7", "sk6", ["$ctxt","?:Fv22","?:Fv21","?:Fv17","?:Fv18"]],
+            ["isa","professional basketball player","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "spring", "#:Yuri 1", "sk7", "sk6", ["$ctxt","?:Fv26","?:Fv25","?:Fv17","?:Fv18"]],
+            ["isa","american national","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["event", "spring", "#:Yuri 1", "sk7", "sk6", ["$ctxt","?:Fv30","?:Fv29","?:Fv17","?:Fv18"]],
+            ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has direction", "sk6", "into the air", ["$ctxt","?:Fv32","?:Fv31","?:Fv17","?:Fv18"]],
+            ["isa","professional basketball player","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has direction", "sk6", "into the air", ["$ctxt","?:Fv36","?:Fv35","?:Fv17","?:Fv18"]],
+            ["isa","american national","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has direction", "sk6", "into the air", ["$ctxt","?:Fv40","?:Fv39","?:Fv17","?:Fv18"]],
+            ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "straight", "sk6", "none", "?:Fv134", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["isa","professional basketball player","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "straight", "sk6", "none", "?:Fv135", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["isa","american national","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has degree property", "straight", "sk6", "none", "?:Fv136", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["typical", "sk6", ["$ctxt","?:Fv46","?:Fv45","?:Fv17","?:Fv18"]],
+            ["isa","professional basketball player","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["typical", "sk6", ["$ctxt","?:Fv50","?:Fv49","?:Fv17","?:Fv18"]],
+            ["isa","american national","#:Yuri 1"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["typical", "sk6", ["$ctxt","?:Fv54","?:Fv53","?:Fv17","?:Fv18"]],
+            ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-event", "spring", "#:Yuri 1", "?:Davp3", "?:E", ["$ctxt","?:Fv56","?:Fv55","?:Fv17","?:Fv18"]],
+            ["-has direction", "?:E", "into the air", ["$ctxt","?:Fv58","?:Fv57","?:Fv17","?:Fv18"]],
+            ["-has degree property", "straight", "?:E", "none", "?:Fv137", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-typical", "?:E", ["$ctxt","?:Fv60","?:Fv59","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","professional basketball player","#:Yuri 1"],
+            ["-isa","american national","#:Yuri 1"],
+            ["-has property", "American", "#:Yuri 1", ["$ctxt","present","?:Fv19","?:Fv17","?:Fv18"]],
+            ["$defq0"]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","leg muscle","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "straight", "?:Br1", "none", "?:Fv138", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "straight", "?:Br1", "none", "?:Fv139", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "straight", "?:Br1", "none", "?:Fv140", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "American", "#:Yuri 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "American", "#:Yuri 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "If Yuri 1 does not leap straight into the air, then is Yuri 1 an American professional basketball player?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","professional basketball player","$some_professional_basketball_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","professional basketball player","$some_not_professional_basketball_player"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","American national","$some_American_national"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","American national","$some_not_American_national"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","leg muscle","$some_leg_muscle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","leg muscle","$some_not_leg_muscle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "straight", "$some_straight_entity", "none", "?:Fv141", ["$ctxt","?:Fv96","?:Fv93","?:Fv94","?:Fv95"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "straight", "$some_not_straight_entity", "none", "?:Fv142", ["$ctxt","?:Fv104","?:Fv101","?:Fv102","?:Fv103"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","American national","?:X"], ["isa","national","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","American","?:X"], ["-isa","national","?:X"], ["isa","American national","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","leg muscle","?:X"], ["isa","muscle","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","leg","?:X"], ["-isa","muscle","?:X"], ["isa","leg muscle","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","professional basketball player","?:X"], ["isa","player","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","professional basketball","?:X"],
+            ["-isa","player","?:X"],
+            ["isa","professional basketball player","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-20T12:33:53Z"
+}

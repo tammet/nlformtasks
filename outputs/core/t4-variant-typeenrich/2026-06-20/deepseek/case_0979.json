@@ -1,0 +1,155 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 979,
+  "input_text": "John works at the hospital every day. Where does John work?",
+  "expected_answer": "At the hospital.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John works at the hospital every day.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 works at the hospital 2.",
+          "type": "real",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "hospital 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "work",
+              "mode": "habitual",
+              "roles": {"actor": "John 1", "location": "hospital 2", "location_prep": "at"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Where does John work?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity does John 1 work in?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "entity", "type": "generic", "wh_placeholder": true}
+          ],
+          "actions": [{"root": "work", "mode": "habitual", "roles": {"actor": "John 1", "location": "entity"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","hospital","hospital 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","work"],
+              ["has actor","E","John 1"],
+              ["has location","E","hospital 2","at"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","work"],
+            ["has actor","E","John 1"],
+            ["has location","E","X","in"],
+            ["typical","E"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","hospital","#:hospital 2"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","work","?:Cu5"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu6"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S1",
+ "@logic": ["has location","sk0_activity","#:hospital 2","at","?:Cu7"],
+ "@nl": "John 1 works at the hospital 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:_Prep","?:X"], ["isa", "activity", ["sk1","?:X","?:_Prep"]]],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:_Prep","?:X"], ["has type", ["sk1","?:X","?:_Prep"], "work", "?:Cu10"]],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:_Prep","?:X"],
+            ["has actor", ["sk1","?:X","?:_Prep"], "#:John 1", "?:Cu11"]
+           ],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:_Prep","?:X"],
+            ["has location", ["sk1","?:X","?:_Prep"], "?:X", "?:_Prep", "?:Cu12"]
+           ],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0","?:_Prep","?:X"],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","work","?:Cu14"],
+            ["-has actor","?:E","#:John 1","?:Cu14"],
+            ["-has location","?:E","?:X","?:_Prep","?:Cu14"],
+            ["$defq0","?:_Prep","?:X"]
+           ],
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:Rel","?:X"],
+ "@askvars": 2,
+ "@where_query": true,
+ "@nl": "Which entity does John 1 work in?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","hospital","$some_hospital"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-19T04:39:27Z"
+}

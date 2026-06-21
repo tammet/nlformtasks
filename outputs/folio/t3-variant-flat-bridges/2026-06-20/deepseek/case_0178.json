@@ -1,0 +1,284 @@
+{
+  "test_name": "folio_v2_prenorm_flat_bridges",
+  "case_id": 178,
+  "input_text": "The summer Olympic games is a sporting event. The last summer Olympic games was in Tokyo. The United States won the most medals in Tokyo. The United States won the most medals in the last summer Olympic games?",
+  "expected_answer": "True.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The summer Olympic games is a sporting event.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The summer Olympic Games 1 is a sporting event.",
+          "type": "real",
+          "entities": [{"id": "Summer Olympic Games 1", "type": "concrete", "category": "event"}]
+        }
+      ]
+    },
+    {
+      "raw": "The last summer Olympic games was in Tokyo.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "The last summer Olympic Games 2 was in Tokyo 1.",
+          "type": "real",
+          "entities": [{"id": "Summer Olympic Games 2", "type": "concrete", "category": "event"},
+            {
+              "id": "Tokyo 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Tokyo"
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The United States won the most medals in the last summer Olympic games.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "The United States 1 won the most medals in the last summer Olympic Games 2.",
+          "type": "real",
+          "entities": [{
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "Summer Olympic Games 2", "type": "concrete", "category": "event"},
+            {"id": "medals", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "win",
+              "mode": "event",
+              "roles": {"actor": "United States 1", "location": "Summer Olympic Games 2", "target": "medals"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The United States won the most medals in the last summer Olympic games?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Did the United States 1 win the most medals in the last summer Olympic Games 2?",
+          "type": "query",
+          "entities": [{
+              "id": "United States 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/United_States"
+            },
+            {"id": "Summer Olympic Games 2", "type": "concrete", "category": "event"},
+            {"id": "medals", "type": "generic", "category": "artifact"}
+          ],
+          "actions": [{
+              "root": "win",
+              "mode": "event",
+              "roles": {"actor": "United States 1", "location": "Summer Olympic Games 2", "target": "medals"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id", "S1", ["holds", "W0", ["isa","sporting event","Summer Olympic Games 1"]]],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","Summer Olympic Games","Summer Olympic Games 2"],
+            ["isa","Tokyo","https://en.wikipedia.org/wiki/Tokyo"],
+            ["is rel2","in","Summer Olympic Games 2","https://en.wikipedia.org/wiki/Tokyo"]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","United States","https://en.wikipedia.org/wiki/United_States"],
+            ["isa","Summer Olympic Games","Summer Olympic Games 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","win"],
+                ["has actor","E","https://en.wikipedia.org/wiki/United_States"],
+                ["has location","E","Summer Olympic Games 2","in"],
+                ["exists", "Y", ["and", ["isa","medal","Y"], ["has target","E","Y"]]],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","United States","https://en.wikipedia.org/wiki/United_States"],
+          ["isa","Summer Olympic Games","Summer Olympic Games 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","win"],
+              ["has actor","E","https://en.wikipedia.org/wiki/United_States"],
+              ["has location","E","Summer Olympic Games 2","in"],
+              ["exists", "Y", ["and", ["isa","medal","Y"], ["has target","E","Y"]]],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","place","#:Tokyo 1"],
+ "@nl": "The last summer Olympic Games 2 was in Tokyo 1."},
+{"@name": "entity_S3",
+ "@logic": ["isa","place","#:United States 1"],
+ "@nl": "The United States 1 won the most medals in the last summer Olympic Games 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","sporting event","#:Summer Olympic Games 1"],
+ "@nl": "The summer Olympic Games 1 is a sporting event."},
+{"@name": "sent_S2",
+ "@logic": ["isa","summer olympic games","#:Summer Olympic Games 2"],
+ "@nl": "The last summer Olympic Games 2 was in Tokyo 1."},
+{"@name": "sent_S2",
+ "@logic": ["isa","tokyo","https://en.wikipedia.org/wiki/Tokyo"],
+ "@nl": "The last summer Olympic Games 2 was in Tokyo 1."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "in", "#:Summer Olympic Games 2", "https://en.wikipedia.org/wiki/Tokyo", ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The last summer Olympic Games 2 was in Tokyo 1."},
+{"@name": "sent_S3",
+ "@logic": ["isa","united states","https://en.wikipedia.org/wiki/United_States"],
+ "@nl": "The United States 1 won the most medals in the last summer Olympic Games 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","summer olympic games","#:Summer Olympic Games 2"],
+ "@nl": "The United States 1 won the most medals in the last summer Olympic Games 2."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "win", "https://en.wikipedia.org/wiki/United_States", ["eventprop","$target","medal"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+ "@nl": "The United States 1 won the most medals in the last summer Olympic Games 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","united states","https://en.wikipedia.org/wiki/United_States"]],
+ "@nl": "Did the United States 1 win the most medals in the last summer Olympic Games 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","summer olympic games","#:Summer Olympic Games 2"]],
+ "@nl": "Did the United States 1 win the most medals in the last summer Olympic Games 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "win", "https://en.wikipedia.org/wiki/United_States", ["eventprop","$target","medal"], ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the last summer Olympic Games 2?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","united states","https://en.wikipedia.org/wiki/United_States"],
+            ["-isa","summer olympic games","#:Summer Olympic Games 2"],
+            ["-is rel2", "win", "https://en.wikipedia.org/wiki/United_States", ["eventprop","$target","medal"], ["$ctxt","past","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did the United States 1 win the most medals in the last summer Olympic Games 2?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Did the United States 1 win the most medals in the last summer Olympic Games 2?"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","Summer Olympic Games","?:X"], ["isa","Games","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","Summer Olympic","?:X"],
+            ["-isa","Games","?:X"],
+            ["isa","Summer Olympic Games","?:X"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","United States","?:X"], ["isa","States","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","United","?:X"], ["-isa","States","?:X"], ["isa","United States","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","sporting event","?:X"], ["isa","event","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","sporting","?:X"], ["-isa","event","?:X"], ["isa","sporting event","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S4","assumption",1], [["-isa","united states","https://en.wikipedia.org/wiki/United_States"], ["-isa","summer olympic games","#:Summer Olympic Games 2"], ["$defq0"], ["-is rel2", "win", "https://en.wikipedia.org/wiki/United_States", ["eventprop","$target","medal"], ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [2, ["in","sent_S3","assumption",1], [["is rel2", "win", "https://en.wikipedia.org/wiki/United_States", ["eventprop","$target","medal"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [4, ["mp", [1,3], 2, 3, "fromga", 1], [["-isa","united states","https://en.wikipedia.org/wiki/United_States"], ["-isa","summer olympic games","#:Summer Olympic Games 2"]]],
+          [5, ["in","sent_S3","assumption",1], [["isa","united states","https://en.wikipedia.org/wiki/United_States"]]],
+          [6, ["mp",4,5,"fromga",1], [["-isa","summer olympic games","#:Summer Olympic Games 2"]]],
+          [7, ["in","sent_S3","assumption",1], [["isa","summer olympic games","#:Summer Olympic Games 2"]]],
+          [8, ["simp",6,7,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The United States won the most medals in the last summer Olympic games.",
+"  (2) The United States won the most medals in the last summer Olympic games?",
+"Proof steps (by contradiction):",
+"  (1) If United States is an united states and United States is win of medal then answer holds  [sentence 2]",
+"  (2) United States is win of medal  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) United States is not an united states  [from steps 1, 2, 3]",
+"  (5) United States is an united states  [sentence 1]",
+"  (6) Summer Olympic Games 2 is not a summer olympic games  [from steps 4, 5]",
+"  (7) Summer Olympic Games 2 is a summer olympic games  [sentence 1]",
+"  (8) Contradiction  [from steps 6, 7]"
+],
+  "timestamp": "2026-06-19T00:07:55Z"
+}

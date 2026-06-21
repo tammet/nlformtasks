@@ -1,0 +1,185 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1472,
+  "input_text": "Bears eat all berries. John is a bear. John eats all berries?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Bears eat all berries.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Bears eat all berries.",
+          "type": "strict_rule",
+          "entities": [{"id": "bears", "type": "generic", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "bears", "target": "berries"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John eats all berries?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Does John 1 eat all berries?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "berries", "type": "generic", "scope": "dependent", "category": "plant"}
+          ],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "John 1", "target": "berries"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["forall","Y",
+            ["implies",
+              ["and", ["isa","bear","X"], ["isa","berry","Y"]],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["has target","E","Y"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["holds", "W0", ["isa","bear","John 1"]]],
+    ["@id","S3",
+      ["question",
+        ["forall","Y",
+          ["implies",
+            ["isa","berry","Y"],
+            ["normally",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","eat"],
+                  ["has actor","E","John 1"],
+                  ["has target","E","Y"],
+                  ["typical","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["-isa","berry","?:Y"], ["isa", "activity", ["sk0","?:X","?:Y"]]],
+ "@nl": "Bears eat all berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","berry","?:Y"],
+            ["has type", ["sk0","?:X","?:Y"], "eat", "?:Cu3"]
+           ],
+ "@nl": "Bears eat all berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","berry","?:Y"],
+            ["has actor", ["sk0","?:X","?:Y"], "?:X", "?:Cu4"]
+           ],
+ "@nl": "Bears eat all berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-isa","berry","?:Y"],
+            ["has target", ["sk0","?:X","?:Y"], "?:Y", "?:Cu5"]
+           ],
+ "@nl": "Bears eat all berries."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"], ["-isa","berry","?:Y"]],
+ "@nl": "Bears eat all berries."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a bear."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","berry","skq_S3_berry"],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk1_activity"]],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has type","sk1_activity","eat","?:Cu10"]],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has actor","sk1_activity","#:John 1","?:Cu11"]],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has target","sk1_activity","skq_S3_berry","?:Cu12"]],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0"],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","eat","?:Cu14"],
+            ["-has actor","?:E","#:John 1","?:Cu14"],
+            ["-has target","?:E","skq_S3_berry","?:Cu14"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 eat all berries?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","berry","$some_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","berry","$some_not_berry"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-19T02:51:20Z"
+}

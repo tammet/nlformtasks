@@ -1,0 +1,287 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1422,
+  "input_text": "Red cars do not have trunks. Cars have trunks. John is a red car. John has a trunk?",
+  "expected_answer": false,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Red cars do not have trunks.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Red cars do not have trunks.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent", "category": "artifact"}
+          ],
+          "adjectives": [["red","none","car"]]
+        }
+      ]
+    },
+    {
+      "raw": "Cars have trunks.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Cars have trunks.",
+          "type": "normal_rule",
+          "entities": [{"id": "cars", "type": "generic", "category": "artifact"},
+            {"id": "trunks", "type": "generic", "scope": "dependent", "category": "artifact"}
+          ],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "John is a red car.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a red car 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"}
+          ],
+          "adjectives": [["red","none","car"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John has a trunk?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Does John 1 have a trunk?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "trunk", "type": "generic", "scope": "dependent", "category": "artifact"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","car","X"], ["has degree property","red","X","none","car"]],
+              ["normally",
+                ["not", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","car","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["=","John 1","car 2"],
+            ["isa","car","car 2"],
+            ["has degree property","red","car 2","none","car"]
+          ]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S4",
+      ["question", ["exists", "Y", ["and", ["isa","trunk","Y"], ["has part","John 1","Y"]]]]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a red car 2."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","car","?:X"],
+            ["-has property", "red", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-isa","trunk","?:Y"],
+            ["-has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","car",2], ["has part", "?:X", "?:Y", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]
+           ],
+ "@nl": "Red cars do not have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"], ["isa", "trunk", ["sk0","?:X"]]],
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","car","?:X"],
+            ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","car",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Cars have trunks."},
+{"@name": "sent_S3",
+ "@logic": ["=","#:John 1","#:car 2"],
+ "@nl": "John 1 is a red car 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 is a red car 2."},
+{"@name": "sent_S3",
+ "@logic": ["has property", "red", "#:car 2", ["$ctxt","present","W0","?:Fv9","?:Fv10"]],
+ "@nl": "John 1 is a red car 2."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","trunk","sk1_trunk"]],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has part", "#:John 1", "sk1_trunk", ["$ctxt","present","?:Fv17","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-has part", "#:John 1", "?:Y", ["$ctxt","present","?:Fv20","?:Fv11","?:Fv12"]],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","trunk","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has part", "#:John 1", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has part", "#:John 1", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Does John 1 have a trunk?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","car","$some_not_car"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","trunk","$some_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","trunk","$some_not_trunk"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "red", "$some_not_red_car", ["$ctxt","?:Fv42","?:Fv39","?:Fv40","?:Fv41"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv21","?:Fv22","?:Fv23"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv21","?:Fv22","?:Fv23"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has property", "red", "?:X", ["$ctxt","past","?:Fv24","?:Fv25","?:Fv26"]],
+            ["has property", "red", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]],
+            ["$block", 0, ["$not", ["has property", "red", "?:X", ["$ctxt","present","?:Fv24","?:Fv25","?:Fv26"]]]]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", ["$","car",1], ["$not", ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]],
+          ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:car 2"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]
+        ],
+        "confidence": 0.9702,
+        "positive proof": [[1, ["in","sent_S2","assumption",0.98], [["$block", ["$","car",1], ["$not", ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has part", "?:X", ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","car","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","car","#:car 2"]]],
+          [3, ["mp", [1,2], 2, "fromassumption", 0.98], [["$block", ["$","car",1], ["$not", ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S4","assumption",0.99], [["$block", 0, ["$not", ["has part", "#:John 1", "?:0", ["$ctxt","present","?:1","?:2","?:3"]]]], ["-has part", "#:John 1", "?:0", ["$ctxt","past","?:1","?:2","?:3"]], ["has part", "#:John 1", "?:0", ["$ctxt","present","?:1","?:2","?:3"]]]],
+          [5, ["in","sent_S3","assumption",1], [["=","#:John 1","#:car 2"]]],
+          [6, ["simp",4,5,5,"fromassumption",0.99], [["$block", 0, ["$not", ["has part", "#:John 1", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]], ["-has part", "#:car 2", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["has part", "#:car 2", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [7, ["mp", [3,1], [6,1], "fromassumption", 0.9702], [["$block", ["$","car",1], ["$not", ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","past","?:X","?:Y","?:Z"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:car 2"], ["$ctxt","present","?:X","?:Y","?:Z"]]]], ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","present","?:X","?:Y","?:Z"]]]],
+          [8, ["in","sent_S4","assumption",1], [["$defq0"], ["-has part", "#:John 1", "?:0", ["$ctxt","present","?:1","?:2","?:3"]], ["-isa","trunk","?:0"]]],
+          [9, ["simp",8,5,"fromassumption",1], [["$defq0"], ["-has part", "#:car 2", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-isa","trunk","?:X"]]],
+          [10, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [11, ["mp", [7,2], [9,1], 10, "fromga", 0.9702], [["-isa", "trunk", ["sk0","#:car 2"]], ["$block", ["$","car",1], ["$not", ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:car 2"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]],
+          [12, ["in","sent_S2","assumption",1], [["isa", "trunk", ["sk0","?:X"]], ["-isa","car","?:X"]]],
+          [13, ["mp", [12,1], 2, "fromassumption", 1], [["isa", "trunk", ["sk0","#:car 2"]]]],
+          [14, ["simp",11,13,"fromga",0.9702], [["$block", ["$","car",1], ["$not", ["has part", "#:car 2", ["sk0","#:car 2"], ["$ctxt","past","?:X3","?:Y3","?:Z3"]]]], ["$block", 0, ["$not", ["has part", "#:John 1", ["sk0","#:car 2"], ["$ctxt","present","?:X3","?:Y3","?:Z3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 97%.",
+"Sentences used:",
+"  (1) Cars have trunks.",
+"  (2) John is a red car.",
+"  (3) John has a trunk?",
+"Proof steps:",
+"  (1) If some X is a car then normally X has the trunk sk0 of X as a part  [sentence 1, confidence 98%]",
+"  (2) The car B is a car  [sentence 2]",
+"  (3) Normally the car B has the trunk sk0 of car 2 as a part  [from steps 1, 2, confidence 98%]",
+"  (4) If John has some E1 as a part then normally John has E1 as a part  [sentence 3, confidence 99%]",
+"  (5) John equals the car B  [sentence 2]",
+"  (6) If the car B has some X as a part then the car B has X as a part, except when John does not have X as a part  [from steps 4, 5, 5, confidence 99%]",
+"  (7) The car B has the trunk sk0 of car 2 as a part, except when the car B does not have sk0 of car 2 as a part and John does not have sk0 of car 2 as a part  [from steps 3, 6, confidence 97%]",
+"  (8) If John has some E1 as a part and E1 is a trunk then answer holds  [sentence 3]",
+"  (9) If the car B has some X as a part and X is a trunk then answer holds  [from steps 8, 5]",
+"  (10) assume for contradiction: the answer is no  [from question]",
+"  (11) sk0 of car 2 is not a trunk, except when the car B does not have sk0 of car 2 as a part and John does not have sk0 of car 2 as a part  [from steps 7, 9, 10, confidence 97%]",
+"  (12) If some X is a car then the trunk sk0 of X is a trunk  [sentence 1]",
+"  (13) The trunk sk0 of car 2 is a trunk  [from steps 12, 2]",
+"  (14) Outstanding exception: the car B does not have the trunk sk0 of car 2 as a part and John does not have sk0 of car 2 as a part  [from steps 11, 13, confidence 97%]",
+"Exceptions checked and not holding:",
+"  car B does not have the trunk sk0 of car 2 as a part",
+"  John does not have the trunk sk0 of car 2 as a part"
+],
+  "timestamp": "2026-06-19T22:57:29Z"
+}

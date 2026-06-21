@@ -1,0 +1,103 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 630,
+  "input_text": "Paul, a carpenter, carried a box. Paul is a plumber?",
+  "expected_answer": null,
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Paul, a carpenter, carried a box.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Paul 1 carried a box 2.",
+          "type": "situation",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"},
+            {"id": "box 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "carry", "mode": "event", "roles": {"target": "box 2"}}],
+          "pre_state": "W0",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "Paul 1 is a carpenter.",
+          "type": "situation",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Paul is a plumber?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is Paul 1 a plumber?",
+          "type": "query",
+          "entities": [{"id": "Paul 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","Paul 1"],
+            ["isa","box","box 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","carry"],
+                ["has actor","E","Paul 1"],
+                ["has target","E","box 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds", "W0", ["and", ["isa","person","Paul 1"], ["isa","carpenter","Paul 1"]]],
+        ["state time","W0","past"]
+      ]
+    ],
+    ["@id", "S3", ["question", ["isa","plumber","Paul 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Paul 1"],
+ "@nl": "Paul 1 carried a box 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","box","#:box 2"],
+ "@nl": "Paul 1 carried a box 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "carry", "#:Paul 1", ["eventprop","$target","#:box 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Paul 1 carried a box 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Paul 1"],
+ "@nl": "Paul 1 is a carpenter."},
+{"@name": "sent_S2",
+ "@logic": ["isa","carpenter","#:Paul 1"],
+ "@nl": "Paul 1 is a carpenter."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","plumber","#:Paul 1"]],
+ "@nl": "Is Paul 1 a plumber?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","plumber","#:Paul 1"], ["$defq0"]],
+ "@nl": "Is Paul 1 a plumber?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is Paul 1 a plumber?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T17:33:06Z"
+}

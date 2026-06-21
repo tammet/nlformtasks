@@ -1,0 +1,223 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1394,
+  "input_text": "If a bear who is big is strong, it is nice. John is a big bear. John is strong. John is nice?",
+  "expected_answer": "Likely true",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "If a bear who is big is strong, it is nice.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "If a bear is big and strong, the bear is nice.",
+          "type": "normal_rule",
+          "entities": [{"id": "bear", "type": "generic", "category": "animal"}],
+          "adjectives": [["big","none","bear"], ["strong","none","bear"], ["nice","none","bear"]],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "John is a big bear.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "John 1 is a big bear.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "bear", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["big","none","bear"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is strong.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is strong.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["strong","none","bear"]],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "John is nice?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Is John 1 nice?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["nice","none","bear"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and",
+                ["isa","bear","X"],
+                ["has degree property","big","X","none","bear"],
+                ["has degree property","strong","X","none","bear"]
+              ],
+              ["normally", ["has degree property","nice","X","none","bear"]]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","bear","John 1"], ["has degree property","big","John 1","none","bear"]]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","bear","John 1"], ["has degree property","strong","John 1","none","bear"]]
+        ],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and", ["isa","bear","John 1"], ["has degree property","nice","John 1","none","bear"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S2",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bear","?:X"],
+            ["-has degree property","big","?:X","none","bear","?:Cu2"],
+            ["-has degree property","strong","?:X","none","bear","?:Cu2"],
+            ["has degree property","good","?:X","none","bear","?:Cu2"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "If a bear is big and strong, the bear is nice."},
+{"@name": "sent_S2",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S2",
+ "@logic": ["has degree property","big","#:John 1","none","bear","?:Cu4"],
+ "@nl": "John 1 is a big bear."},
+{"@name": "sent_S3",
+ "@logic": ["isa","bear","#:John 1"],
+ "@nl": "John 1 is strong."},
+{"@name": "sent_S3",
+ "@logic": ["has degree property","strong","#:John 1","none","bear","?:Cu6"],
+ "@nl": "John 1 is strong."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","bear","#:John 1"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has degree property","good","#:John 1","none","bear","?:Cu8"]],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","bear","#:John 1"],
+            ["-has degree property","good","#:John 1","none","bear","?:Cu9"],
+            ["$defq0"]
+           ],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 nice?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bear","$some_not_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","big","$some_not_big_bear","none","bear","?:Cu12"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","strong","$some_not_strong_bear","none","bear","?:Cu13"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property","good","$some_nice_bear","none","bear","?:Cu14"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","bear","$some_nice_bear"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property","good","$some_not_nice_bear","none","bear","?:Cu16"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","big","?:X","none","?:Fv53","?:Cu17"],
+            ["has degree property","big","?:X","none","?:Fv54","?:Cu17"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"},
+{"@name": "frm_stable_persist",
+ "@logic": [["-has degree property","strong","?:X","none","?:Fv56","?:Cu19"],
+            ["has degree property","strong","?:X","none","?:Fv57","?:Cu19"]
+           ],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_stable_persist]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.9], [["-has degree property","big","?:X","none","bear","?:Y"], ["-has degree property","strong","?:X","none","bear","?:Y"], ["has degree property","good","?:X","none","bear","?:Y"], ["-isa","bear","?:X"]]],
+          [2, ["in","sent_S2","assumption",1], [["has degree property","big","#:John 1","none","bear","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",0.9], [["-isa","bear","#:John 1"], ["-has degree property","strong","#:John 1","none","bear","?:X3"], ["has degree property","good","#:John 1","none","bear","?:X3"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","bear","#:John 1"]]],
+          [5, ["simp",3,4,"fromassumption",0.9], [["-has degree property","strong","#:John 1","none","bear","?:X"], ["has degree property","good","#:John 1","none","bear","?:X"]]],
+          [6, ["in","sent_S3","assumption",1], [["has degree property","strong","#:John 1","none","bear","?:X"]]],
+          [7, ["mp",5,6,"fromassumption",0.9], [["has degree property","good","#:John 1","none","bear","?:X"]]],
+          [8, ["in","sent_S4","assumption",1], [["-isa","bear","#:John 1"], ["$defq0"], ["-has degree property","good","#:John 1","none","bear","?:X"]]],
+          [9, ["in","sent_S4","goal",1], [["-$defq0"]]],
+          [10, ["mp", 7, [8,2], 9, "fromga", 0.9], [["-isa","bear","#:John 1"]]],
+          [11, ["simp",10,4,"fromga",0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) If a bear who is big is strong, it is nice.",
+"  (2) John is a big bear.",
+"  (3) John is strong.",
+"  (4) John is nice?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a big bear and X is a strong bear and X is a bear then X is a good bear  [sentence 1, confidence 90%]",
+"  (2) John is a big bear  [sentence 2]",
+"  (3) If John is a bear and John is a strong bear then John is a good bear  [from steps 1, 2, confidence 90%]",
+"  (4) John is a bear  [sentence 3]",
+"  (5) If John is a strong bear then John is a good bear  [from steps 3, 4, confidence 90%]",
+"  (6) John is a strong bear  [sentence 3]",
+"  (7) John is a good bear  [from steps 5, 6, confidence 90%]",
+"  (8) If John is a bear and John is a good bear then answer holds  [sentence 4]",
+"  (9) assume for contradiction: the answer is no  [from question]",
+"  (10) John is not a bear  [from steps 7, 8, 9, confidence 90%]",
+"  (11) Contradiction  [from steps 10, 4, confidence 90%]"
+],
+  "timestamp": "2026-06-19T04:24:52Z"
+}

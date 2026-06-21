@@ -1,0 +1,244 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 281,
+  "input_text": "Elephant's head is green. Elephant's head is green?",
+  "expected_answer": "Probably true",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Elephant's head is green.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "An elephant 1's head 2 is green.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephant", "type": "generic", "category": "animal"},
+            {"id": "head", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["green","none","head"]],
+          "definites": [["head of","head","elephant"]],
+          "confidence": 0.99
+        },
+        {
+          "unit_id": "S2",
+          "text": "The head 2 is the head of an elephant 1.",
+          "type": "normal_rule",
+          "entities": [{"id": "elephant", "type": "generic", "category": "animal"},
+            {"id": "head", "type": "generic", "scope": "dependent"}
+          ],
+          "definites": [["head of","head","elephant"]]
+        }
+      ]
+    },
+    {
+      "raw": "Elephant's head is green?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Is an elephant's head green?",
+          "type": "query",
+          "entities": [{"id": "elephant", "type": "generic", "category": "animal"},
+            {"id": "head", "type": "generic", "scope": "dependent"}
+          ],
+          "adjectives": [["green","none","head"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally",
+                ["exists","Y",
+                  ["and",
+                    ["isa","head","Y"],
+                    ["has part","X","Y"],
+                    ["has degree property","green","Y","none","head"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.99],
+        ["@definite","S1","W0","head of","elephant","head"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","elephant","X"],
+              ["normally", ["exists", "Y", ["and", ["isa","head","Y"], ["has part","X","Y"]]]]
+            ]
+          ]
+        ],
+        ["@definite","S2","W0","head of","elephant","head"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["forall","X",
+          ["implies",
+            ["isa","elephant","X"],
+            ["normally",
+              ["exists","Y",
+                ["and",
+                  ["isa","head","Y"],
+                  ["has part","X","Y"],
+                  ["has degree property","green","Y","none","head"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "head", ["$theof1","head","?:X","?:Cu1"]]],
+ "@nl": "An elephant 1's head 2 is green."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has part", "?:X", ["$theof1","head","?:X","?:Cu2"], "?:Cu2"]
+           ],
+ "@nl": "An elephant 1's head 2 is green."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","elephant","?:X"],
+            ["has property", "green", ["$theof1","head","?:X","?:Cu3"], "?:Cu3"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "An elephant 1's head 2 is green."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["isa", "head", ["sk1","?:X"]]],
+ "@nl": "The head 2 is the head of an elephant 1."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","elephant","?:X"], ["has part", "?:X", ["sk1","?:X"], "?:Cu5"]],
+ "@nl": "The head 2 is the head of an elephant 1."},
+{"@name": "sent_S3",
+ "@sourcetype": "question_subject",
+ "@logic": ["isa","elephant","skq_S3_elephant"],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","head","sk2_head"]],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has part","skq_S3_elephant","sk2_head","?:Cu8"]],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","green","sk2_head","?:Cu9"]],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","head","?:Y"],
+            ["-has part","skq_S3_elephant","?:Y","?:Cu10"],
+            ["-has property","green","?:Y","?:Cu10"],
+            ["$defq0"]
+           ],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "frm_theof",
+ "@logic": ["has part", "?:X", ["$theof1","head","?:X","?:Cu11"], "?:Cu11"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_haspart_bridge",
+ "@logic": [["-isa","head","?:Y"],
+            ["-have","?:X","?:Y","?:Ctxt"],
+            ["has part","?:X","?:Y","?:Ctxt"]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: sent_haspart_bridge]"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Is an elephant's head green?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:X", ["$theof1","head","?:X","?:Cu13"], "?:Cu13"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "?:X", ["$theof1","head","?:X","?:Cu14"], "?:Cu14"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "head of", ["$theof1","head","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "head", ["$theof1","head","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","elephant","$some_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","elephant","$some_not_elephant"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","head","$some_head"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","head","$some_not_head"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property","green","$some_green_head","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","head","$some_green_head"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","green","$some_not_green_head","?:Cu23"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S1","assumption",0.98], [["has property", "green", ["$theof1","head","?:X","?:Y"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [2, ["in","sent_S3","assumption",1], [["isa","elephant","skq_S3_elephant"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.98], [["has property", "green", ["$theof1","head","skq_S3_elephant","?:X"], "?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["$defq0"], ["-has property","green","?:X","?:Y"], ["-has part","skq_S3_elephant","?:X","?:Y"], ["-isa","head","?:X"]]],
+          [5, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [6, ["mp", 3, [4,1], 5, "fromga", 0.98], [["-has part", "skq_S3_elephant", ["$theof1","head","skq_S3_elephant","?:X3"], "?:X3"], ["-isa", "head", ["$theof1","head","skq_S3_elephant","?:X3"]]]],
+          [7, ["in","sent_S1","assumption",1], [["has part", "?:X", ["$theof1","head","?:X","?:Y"], "?:Y"], ["-isa","elephant","?:X"]]],
+          [8, ["mp", [7,1], 2, "fromassumption", 1], [["has part", "skq_S3_elephant", ["$theof1","head","skq_S3_elephant","?:X3"], "?:X3"]]],
+          [9, ["in","sent_S1","assumption",1], [["isa", "head", ["$theof1","head","?:X","?:Y"]], ["-isa","elephant","?:X"]]],
+          [10, ["mp", [9,1], 2, "fromassumption", 1], [["isa", "head", ["$theof1","head","skq_S3_elephant","?:X3"]]]],
+          [11, ["simp",6,8,10,"fromga",0.98], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Elephant's head is green.",
+"  (2) Elephant's head is green?",
+"Proof steps (by contradiction):",
+"  (1) If some X is an elephant then X's head is green  [sentence 1, confidence 98%]",
+"  (2) Skq_S3_elephant is an elephant  [sentence 2]",
+"  (3) The head of skq_S3_elephant is green  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is green and skq_S3_elephant has X as a part and X is a head then answer holds  [sentence 2]",
+"  (5) assume for contradiction: the answer is no  [from question]",
+"  (6) If skq_S3_elephant has the head of skq_S3_elephant as a part then the head of skq_S3_elephant is not a head  [from steps 3, 4, 5, confidence 98%]",
+"  (7) If some X is an elephant then X has X's head as a part  [sentence 1]",
+"  (8) Skq_S3_elephant has the head of skq_S3_elephant as a part  [from steps 7, 2]",
+"  (9) If some X is an elephant then X's head is a head  [sentence 1]",
+"  (10) The head of skq_S3_elephant is a head  [from steps 9, 2]",
+"  (11) Contradiction  [from steps 6, 8, 10, confidence 98%]"
+],
+  "timestamp": "2026-06-19T04:37:13Z"
+}

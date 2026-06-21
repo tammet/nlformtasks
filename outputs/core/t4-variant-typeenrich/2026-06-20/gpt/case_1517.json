@@ -1,0 +1,104 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1517,
+  "input_text": "It is false that John is a child of Mike. John is a child of Mike?",
+  "expected_answer": false,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "It is false that John is a child of Mike.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 is not a child of Mike 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John is a child of Mike?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is John 1 a child of Mike 2?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "Mike 2", "type": "concrete", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","John 1"],
+          ["isa","person","Mike 2"],
+          ["not", ["is rel2","child of","John 1","Mike 2"]]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["question", ["is rel2","child of","John 1","Mike 2"]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 is not a child of Mike 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:Mike 2"],
+ "@nl": "John 1 is not a child of Mike 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is not a child of Mike 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "John 1 is not a child of Mike 2."},
+{"@name": "sent_S1",
+ "@logic": ["-is rel2","child of","#:John 1","#:Mike 2","?:Cu5"],
+ "@nl": "John 1 is not a child of Mike 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["is rel2","child of","#:John 1","#:Mike 2","?:Cu6"]],
+ "@nl": "Is John 1 a child of Mike 2?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2","child of","#:John 1","#:Mike 2","?:Cu7"], ["$defq0"]],
+ "@nl": "Is John 1 a child of Mike 2?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is John 1 a child of Mike 2?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S2","assumption",1], [["-$defq0"], ["is rel2","child of","#:John 1","#:Mike 2","?:X"]]],
+          [2, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [3, ["mp",1,2,"fromga",1], [["is rel2","child of","#:John 1","#:Mike 2","?:X"]]],
+          [4, ["in","sent_S1","assumption",1], [["-is rel2","child of","#:John 1","#:Mike 2","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) It is false that John is a child of Mike.",
+"  (2) John is a child of Mike?",
+"Proof steps (by contradiction):",
+"  (1) If answer holds then John is child of Mike  [sentence 2]",
+"  (2) Answer holds  [assumption]",
+"  (3) John is child of Mike  [from steps 1, 2]",
+"  (4) John is not child of Mike  [sentence 1]",
+"  (5) Contradiction  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T02:51:31Z"
+}

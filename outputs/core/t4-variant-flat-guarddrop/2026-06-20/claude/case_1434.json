@@ -1,0 +1,397 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1434,
+  "input_text": "Birds fly and eat. Baby birds do not fly. John is a baby bird. Mike and Eve are birds.\n    Who eats?",
+  "expected_answer": ["John, Mike and Eve.","John, Mike, and Eve.","Mike and Eve."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Eve, Mike and John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds fly and eat.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.95
+        },
+        {
+          "unit_id": "S2",
+          "text": "Birds eat.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "eat", "mode": "habitual"}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Baby birds do not fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Baby birds cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "baby birds", "type": "generic", "subtype": "compound", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 is a baby bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike and Eve are birds.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Mike 2 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "animal"}]
+        },
+        {
+          "unit_id": "S6",
+          "text": "Eve 3 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Eve 3", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Who eats?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Which entity eats?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "actions": [{"root": "eat", "mode": "habitual"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","baby bird","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","baby bird","John 1"]]],
+    ["@id", "S5", ["holds", "W0", ["isa","bird","Mike 2"]]],
+    ["@id", "S6", ["holds", "W0", ["isa","bird","Eve 3"]]],
+    ["@id","S7",
+      ["ask","X",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","eat"],
+              ["has actor","E","X"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"],
+            ["has property", "eat", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]]]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Birds eat."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","baby bird","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Baby birds cannot fly."},
+{"@name": "sent_S4",
+ "@logic": ["isa","baby bird","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S5",
+ "@logic": ["isa","bird","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S6",
+ "@logic": ["isa","bird","#:Eve 3"],
+ "@nl": "Eve 3 is a bird."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["has property", "eat", "?:X", ["$ctxt","?:Fv22","?:Fv21","?:Fv19","?:Fv20"]]
+           ],
+ "@nl": "Which entity eats?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-has property", "eat", "?:X", ["$ctxt","?:Fv22","?:Fv21","?:Fv19","?:Fv20"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity eats?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity eats?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bird","$some_not_baby_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "fly", "$some_fly", ["$ctxt","?:Fv35","?:Fv32","?:Fv33","?:Fv34"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "fly", "$some_not_fly", ["$ctxt","?:Fv39","?:Fv36","?:Fv37","?:Fv38"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "eat", "$some_eat", ["$ctxt","?:Fv43","?:Fv40","?:Fv41","?:Fv42"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "eat", "$some_not_eat", ["$ctxt","?:Fv47","?:Fv44","?:Fv45","?:Fv46"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bird","?:X"], ["isa","bird","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bird","?:X"], ["isa","baby bird","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv23"], ["has type","?:E","go","?:Fv23"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "pop_what",
+ "@logic": ["isa","baby bird","$some_baby_bird"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","$some_eat"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["has property", "eat", "$some_eat", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","$some_eat"]]],
+          [4, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","$some_eat"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_baby_bird"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_baby_bird", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","pop_what","assumption",1], [["isa","baby bird","$some_baby_bird"]]],
+          [2, ["in","compound_sub","assumption",1], [["-isa","baby bird","?:X"], ["isa","bird","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","bird","$some_baby_bird"]]],
+          [4, ["in","sent_S2","assumption",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [5, ["mp", 3, [4,2], "fromassumption", 0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_baby_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "eat", "$some_baby_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.98], [["$defq0","$some_baby_bird"], ["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_baby_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [8, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [9, ["mp",7,8,"fromga",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_baby_bird", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","$some_baby_bird"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:John 1"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:John 1", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S4","assumption",1], [["isa","baby bird","#:John 1"]]],
+          [2, ["in","compound_sub","assumption",1], [["-isa","baby bird","?:X"], ["isa","bird","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","bird","#:John 1"]]],
+          [4, ["in","sent_S2","assumption",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [5, ["mp", 3, [4,2], "fromassumption", 0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "eat", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [6, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [7, ["mp", [5,1], 6, "fromassumption", 0.98], [["$defq0","#:John 1"], ["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:John 1", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [8, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [9, ["mp",7,8,"fromga",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:John 1", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","#:John 1"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_bird"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_bird", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","pop_what","assumption",1], [["isa","bird","$some_bird"]]],
+          [2, ["in","sent_S2","assumption",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "eat", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.98], [["$defq0","$some_bird"], ["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_bird", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [6, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "$some_bird", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","$some_bird"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:Eve 3"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Eve 3", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S6","assumption",1], [["isa","bird","#:Eve 3"]]],
+          [2, ["in","sent_S2","assumption",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Eve 3", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "eat", "#:Eve 3", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.98], [["$defq0","#:Eve 3"], ["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Eve 3", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [6, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Eve 3", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","#:Eve 3"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","#:Mike 2"]],
+        "blockers": [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Mike 2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]]
+        ],
+        "confidence": 0.98,
+        "positive proof": [[1, ["in","sent_S5","assumption",1], [["isa","bird","#:Mike 2"]]],
+          [2, ["in","sent_S2","assumption",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]]]], ["has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [3, ["mp", 1, [2,2], "fromassumption", 0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Mike 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]], ["has property", "eat", "#:Mike 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [4, ["in","sent_S7","assumption",1], [["-has property", "eat", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["$defq0","?:X"]]],
+          [5, ["mp", [3,1], 4, "fromassumption", 0.98], [["$defq0","#:Mike 2"], ["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Mike 2", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]]]],
+          [6, ["in","sent_S7","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",0.98], [["$block", ["$","bird",1], ["$not", ["has property", "eat", "#:Mike 2", ["$ctxt","?:X3","?:Y3","?:Z3","?:U3"]]]], ["$ans","#:Mike 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Eve:",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Birds fly and eat.",
+"  (2) Mike and Eve are birds.",
+"  (3) Who eats?",
+"Proof steps:",
+"  (1) Eve is a bird  [sentence 2]",
+"  (2) If some X is a bird then normally X is eat  [sentence 1, confidence 98%]",
+"  (3) Normally Eve is eat  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is eat then X is the answer  [sentence 3]",
+"  (5) Eve is the answer, except when Eve is not eat  [from steps 3, 4, confidence 98%]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) Eve is an answer, except when Eve is not eat  [from steps 5, 6, confidence 98%]",
+"Exceptions checked and not holding:",
+"  Eve is not eat",
+"",
+"Mike:",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Birds fly and eat.",
+"  (2) Mike and Eve are birds.",
+"  (3) Who eats?",
+"Proof steps:",
+"  (1) Mike is a bird  [sentence 2]",
+"  (2) If some X is a bird then normally X is eat  [sentence 1, confidence 98%]",
+"  (3) Normally Mike is eat  [from steps 1, 2, confidence 98%]",
+"  (4) If some X is eat then X is the answer  [sentence 3]",
+"  (5) Mike is the answer, except when Mike is not eat  [from steps 3, 4, confidence 98%]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) Mike is an answer, except when Mike is not eat  [from steps 5, 6, confidence 98%]",
+"Exceptions checked and not holding:",
+"  Mike is not eat",
+"",
+"John:",
+"Confidence 98%.",
+"Sentences used:",
+"  (1) Birds fly and eat.",
+"  (2) John is a baby bird.",
+"  (3) Who eats?",
+"Knowledge used:",
+"  If some X is a baby bird then X is a bird. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) John is a baby bird  [sentence 2]",
+"  (2) If some X is a baby bird then X is a bird  [background knowledge]",
+"  (3) John is a bird  [from steps 1, 2]",
+"  (4) If some X is a bird then normally X is eat  [sentence 1, confidence 98%]",
+"  (5) Normally John is eat  [from steps 3, 4, confidence 98%]",
+"  (6) If some X is eat then X is the answer  [sentence 3]",
+"  (7) John is the answer, except when John is not eat  [from steps 5, 6, confidence 98%]",
+"  (8) technical answer unwrap step  [from question]",
+"  (9) John is an answer, except when John is not eat  [from steps 7, 8, confidence 98%]",
+"Exceptions checked and not holding:",
+"  John is not eat"
+],
+  "timestamp": "2026-06-19T07:59:48Z"
+}

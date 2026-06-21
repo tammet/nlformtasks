@@ -1,0 +1,150 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1556,
+  "input_text": "John smokes tobacco with a probability 0.8. John smokes what?",
+  "expected_answer": ["Likely a tobacco","Tobacco."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "John smokes tobacco with a probability 0.8.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 smokes tobacco.",
+          "type": "normal_rule",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "tobacco", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{"root": "smoke", "mode": "habitual", "roles": {"target": "tobacco"}}],
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "raw": "John smokes what?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Which entity does John 1 smoke?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "entity", "type": "generic", "wh_placeholder": true}
+          ],
+          "actions": [{"root": "smoke", "mode": "habitual", "roles": {"actor": "John 1", "target": "entity"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["normally",
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","smoke"],
+                ["has actor","E","John 1"],
+                ["has target","E","tobacco"],
+                ["typical","E"]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.8]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["normally",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","smoke"],
+              ["has actor","E","John 1"],
+              ["has target","E","X"],
+              ["typical","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S1",
+ "@logic": ["has type","sk0_activity","smoke","?:Cu4"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S1",
+ "@logic": ["has actor","sk0_activity","#:John 1","?:Cu5"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S1",
+ "@logic": ["isa","tobacco","sk1_tobacco"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S1",
+ "@logic": ["has target","sk0_activity","sk1_tobacco","?:Cu7"],
+ "@nl": "John 1 smokes tobacco."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa", "activity", ["sk2","?:X"]]],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has type", ["sk2","?:X"], "smoke", "?:Cu10"]],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has actor", ["sk2","?:X"], "#:John 1", "?:Cu11"]],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["has target", ["sk2","?:X"], "?:X", "?:Cu12"]],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": ["-$defq0","?:X"],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","activity","?:E"],
+            ["-has type","?:E","smoke","?:Cu14"],
+            ["-has actor","?:E","#:John 1","?:Cu14"],
+            ["-has target","?:E","?:X","?:Cu14"],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Which entity does John 1 smoke?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "pop_what",
+ "@logic": ["isa","tobacco","$some_tobacco"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","man","$some_man"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "evidence below limit"},
+  "timestamp": "2026-06-19T02:45:05Z"
+}

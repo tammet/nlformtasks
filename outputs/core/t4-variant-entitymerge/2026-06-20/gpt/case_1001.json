@@ -1,0 +1,201 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 1001,
+  "input_text": "Mary called the boy in the kitchen. The boy was in the kitchen?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Probably true.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Mary called the boy in the kitchen.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Mary 1 called the boy 2 in the kitchen 3.",
+          "type": "situation",
+          "entities": [{"id": "Mary 1", "type": "concrete", "category": "person"},
+            {"id": "boy 2", "type": "concrete", "category": "person"},
+            {"id": "kitchen 3", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "call",
+              "mode": "event",
+              "roles": {"actor": "Mary 1", "target": "boy 2", "location": "kitchen 3", "location_prep": "in"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "The boy was in the kitchen?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Was the boy 2 in the kitchen 3?",
+          "type": "query",
+          "entities": [{"id": "boy 2", "type": "concrete", "category": "person"},
+            {"id": "kitchen 3", "type": "concrete", "category": "place"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage_1_retries": ["sanity #1: entity_used_as_location"],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Mary 1"],
+          ["isa","person","boy 2"],
+          ["isa","kitchen","kitchen 3"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","call"],
+              ["has actor","E","Mary 1"],
+              ["has target","E","boy 2"],
+              ["has location","E","kitchen 3","in"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["question",
+        ["and",
+          ["isa","person","boy 2"],
+          ["isa","kitchen","kitchen 3"],
+          ["@time", "past", ["is rel2","in","boy 2","kitchen 3"]]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","boy","#:boy 2"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 1"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:boy 2"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","kitchen","#:kitchen 3"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["has type", "sk0_activity", "call", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["has actor", "sk0_activity", "#:Mary 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["has target", "sk0_activity", "#:boy 2", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["has location", "sk0_activity", "#:kitchen 3", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0_activity", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Mary 1 called the boy 2 in the kitchen 3."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:boy 2"]],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","kitchen","#:kitchen 3"]],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:boy 2"],
+            ["-isa","kitchen","#:kitchen 3"],
+            ["-is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0"]
+           ],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Was the boy 2 in the kitchen 3?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "blockers": [["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]
+        ],
+        "confidence": 0.9,
+        "positive proof": [[1, ["in","frm_51","axiom",0.9], [["$block", 0, ["$not", ["is rel2","?:X","?:Y","?:Z","?:U"]]], ["-has location","?:V","?:Z","?:X","?:U"], ["is rel2","?:X","?:Y","?:Z","?:U"], ["-has target","?:V","?:Y","?:U"]]],
+          [2, ["in","sent_S1","assumption",1], [["has location", "sk0_activity", "#:kitchen 3", "in", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 0.9], [["$block", 0, ["$not", ["is rel2", "in", "?:X", "#:kitchen 3", ["$ctxt","past","W0","?:Y","?:Z"]]]], ["is rel2", "in", "?:X", "#:kitchen 3", ["$ctxt","past","W0","?:Y","?:Z"]], ["-has target", "sk0_activity", "?:X", ["$ctxt","past","W0","?:Y","?:Z"]]]],
+          [4, ["in","sent_S1","assumption",1], [["has target", "sk0_activity", "#:boy 2", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [5, ["mp", [3,2], 4, "fromassumption", 0.9], [["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X","?:Y"]]]], ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [6, ["in","sent_S2","assumption",1], [["-isa","person","#:boy 2"], ["-isa","kitchen","#:kitchen 3"], ["$defq0"], ["-is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","?:X","?:Y","?:Z"]]]],
+          [7, ["in","sent_S2","goal",1], [["-$defq0"]]],
+          [8, ["mp", [5,1], [6,3], 7, "fromga", 0.9], [["-isa","person","#:boy 2"], ["-isa","kitchen","#:kitchen 3"], ["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X","?:Y"]]]]]],
+          [9, ["in","sent_S1","assumption",1], [["isa","person","#:boy 2"]]],
+          [10, ["mp",8,9,"fromga",0.9], [["-isa","kitchen","#:kitchen 3"], ["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X","?:Y"]]]]]],
+          [11, ["in","sent_S1","assumption",1], [["isa","kitchen","#:kitchen 3"]]],
+          [12, ["mp",10,11,"fromga",0.9], [["$block", 0, ["$not", ["is rel2", "in", "#:boy 2", "#:kitchen 3", ["$ctxt","past","W0","?:X3","?:Y3"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Mary called the boy in the kitchen.",
+"  (2) The boy was in the kitchen?",
+"Knowledge used:",
+"  If an event V takes place some X some Z and V targets some Y then normally Y is in relation X to Z. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If an event V takes place some X some Z and V targets some Y then normally Y is in relation X to Z  [background knowledge, confidence 90%]",
+"  (2) The event act1 takes place in the kitchen C  [sentence 1]",
+"  (3) If the event act1 targets some X then normally X is in the kitchen C  [from steps 1, 2, confidence 90%]",
+"  (4) The event act1 targets the boy B  [sentence 1]",
+"  (5) Normally the boy B is in the kitchen C  [from steps 3, 4, confidence 90%]",
+"  (6) If the boy B is a person and the boy B is in the kitchen C then answer holds  [sentence 2]",
+"  (7) assume for contradiction: the answer is no  [from question]",
+"  (8) The boy B is not a person, except when the boy B is not in the kitchen C  [from steps 5, 6, 7, confidence 90%]",
+"  (9) The boy B is a person  [sentence 1]",
+"  (10) Outstanding exception: the boy B is not in the kitchen C  [from steps 8, 9, confidence 90%]",
+"  (11) The kitchen C is a kitchen  [sentence 1]",
+"  (12) Outstanding exception: the boy B is not in the kitchen C  [from steps 10, 11, confidence 90%]",
+"Exceptions checked and not holding:",
+"  boy B is not in kitchen C"
+],
+  "timestamp": "2026-06-19T00:21:08Z"
+}

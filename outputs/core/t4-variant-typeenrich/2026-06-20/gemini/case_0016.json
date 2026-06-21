@@ -1,0 +1,121 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 16,
+  "input_text": "John has a car or does not have a car?",
+  "expected_answer": true,
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John has a car or does not have a car?",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Does John 1 have a car or not have a car?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["question",
+        ["and",
+          ["isa","person","John 1"],
+          ["or",
+            ["exists", "X", ["and", ["isa","car","X"], ["have","John 1","X"]]],
+            ["not", ["exists", "Y", ["and", ["isa","car","Y"], ["have","John 1","Y"]]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "entity_S1",
+ "@logic": ["isa","man","#:John 1"],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:John 1"]],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["isa","car","sk0_car"],
+            ["-isa","car","?:Y"],
+            ["-have","#:John 1","?:Y","?:Cu4"]
+           ],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["have","#:John 1","sk0_car","?:Cu5"],
+            ["-isa","car","?:Y"],
+            ["-have","#:John 1","?:Y","?:Cu5"]
+           ],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"],
+            ["-isa","car","?:X"],
+            ["-have","#:John 1","?:X","?:Cu6"],
+            ["$defq0"]
+           ],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"], ["isa","car","sk1_car"], ["$defq0"]],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:John 1"], ["have","#:John 1","sk1_car","?:Cu8"], ["$defq0"]],
+ "@nl": "Does John 1 have a car or not have a car?"},
+{"@name": "sent_S1",
+ "@question": ["$defq0"],
+ "@nl": "Does John 1 have a car or not have a car?"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["-have","#:John 1","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [2, ["in","entity_S1","assumption",1], [["isa","person","#:John 1"]]],
+          [3, ["in","sent_S1","goal",1], [["-$defq0"]]],
+          [4, ["mp",1,2,3,"fromga",1], [["-have","#:John 1","?:X","?:Y"], ["-isa","car","?:X"]]],
+          [5, ["in","sent_S1","assumption",1], [["-isa","person","#:John 1"], ["$defq0"], ["have","#:John 1","sk1_car","?:X"]]],
+          [6, ["mp",5,2,3,"fromga",1], [["have","#:John 1","sk1_car","?:X"]]],
+          [7, ["in","sent_S1","assumption",1], [["-isa","person","#:John 1"], ["isa","car","sk1_car"], ["$defq0"]]],
+          [8, ["mp",7,2,3,"fromga",1], [["isa","car","sk1_car"]]],
+          [9, ["mp",4,6,8,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) John has a car or does not have a car?",
+"Knowledge used:",
+"  John is a person. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) If John is a person and John has some X and X is a car then answer holds  [sentence 1]",
+"  (2) John is a person  [background knowledge]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) John does not have X  [from steps 1, 2, 3]",
+"  (5) If John is a person then answer holds or John has some car car2  [sentence 1]",
+"  (6) John has car2  [from steps 5, 2, 3]",
+"  (7) If John is a person then car2 is a car or answer holds  [sentence 1]",
+"  (8) Car2 is a car  [from steps 7, 2, 3]",
+"  (9) Contradiction  [from steps 4, 6, 8]"
+],
+  "timestamp": "2026-06-19T02:52:42Z"
+}

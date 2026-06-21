@@ -1,0 +1,395 @@
+{
+  "test_name": "folio_v2_ultracoarse2_existfold",
+  "case_id": 182,
+  "input_text": "No one nice to animals is also mean to animals. Some grumpy people are mean to animals. All animal lovers are nice to animals. All pet owners love animals. Tom is a pet owner. Tom is a grumpy person?",
+  "expected_answer": "Unknown.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "Likely false.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "No one nice to animals is also mean to animals.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "No person who is nice to animals is also mean to animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "person", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice","none","person"], ["mean","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Some grumpy people are mean to animals.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some grumpy people are mean to animals.",
+          "type": "normal_rule",
+          "entities": [{"id": "people", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["grumpy","none","person"], ["mean","none","person"]],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "All people who love animals are nice to animals.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All people who love animals are nice to animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "people", "type": "generic", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["nice","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "All pet owners love animals.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All pet owners love animals.",
+          "type": "strict_rule",
+          "entities": [{"id": "pet owners", "type": "generic", "subtype": "compound", "category": "person"},
+            {"id": "animals", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Tom is a pet owner.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Tom 1 is a pet owner.",
+          "type": "situation",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"}]
+        }
+      ]
+    },
+    {
+      "raw": "Tom is a grumpy person?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Is Tom 1 a grumpy person?",
+          "type": "query",
+          "entities": [{"id": "Tom 1", "type": "concrete", "category": "person"}],
+          "adjectives": [["grumpy","none","person"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["forall","Y",
+                ["implies",
+                  ["isa","animal","Y"],
+                  ["has degree rel2","nice to","X","Y","none","person"]
+                ]
+              ]
+            ],
+            ["not",
+              ["forall","Z",
+                ["implies",
+                  ["isa","animal","Z"],
+                  ["has degree rel2","mean to","X","Z","none","person"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["and", ["isa","person","X"], ["has degree property","grumpy","X","none","person"]],
+              ["normally",
+                ["forall","Y",
+                  ["implies",
+                    ["isa","animal","Y"],
+                    ["has degree rel2","mean to","X","Y","none","person"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","person","X"],
+              ["forall", "Y", ["implies", ["isa","animal","Y"], ["is rel2","love","X","Y"]]]
+            ],
+            ["forall","Z",
+              ["implies",
+                ["isa","animal","Z"],
+                ["has degree rel2","nice to","X","Z","none","person"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","pet owner","X"],
+            ["forall", "Y", ["implies", ["isa","animal","Y"], ["is rel2","love","X","Y"]]]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S5", ["holds", "W0", ["isa","pet owner","Tom 1"]]],
+    ["@id","S6",
+      ["question",
+        ["and", ["isa","person","Tom 1"], ["has degree property","grumpy","Tom 1","none","person"]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S5",
+ "@logic": ["isa","person","#:Tom 1"],
+ "@nl": "Tom 1 is a pet owner."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["isa", "animal", ["sk0","?:X"]],
+            ["isa", "animal", ["sk1","?:X"]]
+           ],
+ "@nl": "No person who is nice to animals is also mean to animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["isa", "animal", ["sk0","?:X"]],
+            ["-is rel2", "mean to", "?:X", ["sk1","?:X"], "?:Cu3"]
+           ],
+ "@nl": "No person who is nice to animals is also mean to animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-is rel2", "nice to", "?:X", ["sk0","?:X"], "?:Cu4"],
+            ["isa", "animal", ["sk1","?:X"]]
+           ],
+ "@nl": "No person who is nice to animals is also mean to animals."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","person","?:X"],
+            ["-is rel2", "nice to", "?:X", ["sk0","?:X"], "?:Cu5"],
+            ["-is rel2", "mean to", "?:X", ["sk1","?:X"], "?:Cu5"]
+           ],
+ "@nl": "No person who is nice to animals is also mean to animals."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","person","?:X"],
+            ["-has property","grumpy","?:X","?:Cu6"],
+            ["-isa","animal","?:Y"],
+            ["is rel2","mean to","?:X","?:Y","?:Cu6"]
+           ],
+ "@confidence": 0.98,
+ "@nl": "Some grumpy people are mean to animals."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["isa", "animal", ["sk2","?:X"]],
+            ["-isa","animal","?:Z"],
+            ["is rel2","nice to","?:X","?:Z","?:Cu7"]
+           ],
+ "@nl": "All people who love animals are nice to animals."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","person","?:X"],
+            ["-is rel2", "love", "?:X", ["sk2","?:X"], "?:Cu8"],
+            ["-isa","animal","?:Z"],
+            ["is rel2","nice to","?:X","?:Z","?:Cu8"]
+           ],
+ "@nl": "All people who love animals are nice to animals."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","pet owner","?:X"],
+            ["-isa","animal","?:Y"],
+            ["is rel2","love","?:X","?:Y","?:Cu9"]
+           ],
+ "@nl": "All pet owners love animals."},
+{"@name": "sent_S5",
+ "@logic": ["isa","pet owner","#:Tom 1"],
+ "@nl": "Tom 1 is a pet owner."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","person","#:Tom 1"]],
+ "@nl": "Is Tom 1 a grumpy person?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["has property","grumpy","#:Tom 1","?:Cu12"]],
+ "@nl": "Is Tom 1 a grumpy person?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-isa","person","#:Tom 1"], ["-has property","grumpy","#:Tom 1","?:Cu13"], ["$defq0"]],
+ "@nl": "Is Tom 1 a grumpy person?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Is Tom 1 a grumpy person?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","person","$some_not_person"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","animal","$some_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","pet owner","$some_not_pet_owner"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["has property","grumpy","$some_grumpy","?:Cu20"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-has property","grumpy","$some_not_grumpy","?:Cu21"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","pet owner","?:X"], ["isa","owner","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","pet","?:X"], ["-isa","owner","?:X"], ["isa","pet owner","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 0.922368,
+        "negative proof": [[1, ["in","sent_S4","assumption",1], [["is rel2","love","?:X","?:Y","?:Z"], ["-isa","pet owner","?:X"], ["-isa","animal","?:Y"]]],
+          [2, ["in","sent_S5","assumption",1], [["isa","pet owner","#:Tom 1"]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["is rel2","love","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["is rel2","nice to","?:X","?:Y","?:Z"], ["isa", "animal", ["sk2","?:X"]], ["-isa","person","?:X"], ["-isa","animal","?:Y"]]],
+          [5, ["in","sent_S6","assumption",1], [["-$defq0"], ["isa","person","#:Tom 1"]]],
+          [6, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [7, ["mp",5,6,"fromga",1], [["isa","person","#:Tom 1"]]],
+          [8, ["mp", [4,2], 7, "fromga", 1], [["isa", "animal", ["sk2","#:Tom 1"]], ["is rel2","nice to","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [9, ["in","sent_S1","assumption",1], [["isa", "animal", ["sk0","?:X"]], ["isa", "animal", ["sk1","?:X"]], ["-isa","person","?:X"]]],
+          [10, ["mp", [9,2], 7, "fromga", 1], [["isa", "animal", ["sk0","#:Tom 1"]], ["isa", "animal", ["sk1","#:Tom 1"]]]],
+          [11, ["mp", [8,2], 10, "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]], ["isa", "animal", ["sk2","#:Tom 1"]], ["is rel2", "nice to", "#:Tom 1", ["sk0","#:Tom 1"], "?:X"]]],
+          [12, ["in","sent_S1","assumption",1], [["-is rel2", "nice to", "?:X", ["sk0","?:X"], "?:Y"], ["isa", "animal", ["sk1","?:X"]], ["-isa","person","?:X"]]],
+          [13, ["mp", [11,2], 12, 7, "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]], ["isa", "animal", ["sk2","#:Tom 1"]]]],
+          [14, ["mp", [3,1], [13,1], "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]], ["is rel2", "love", "#:Tom 1", ["sk2","#:Tom 1"], "?:X"]]],
+          [15, ["in","sent_S3","assumption",1], [["-is rel2", "love", "?:X", ["sk2","?:X"], "?:Y"], ["is rel2","nice to","?:X","?:Z","?:Y"], ["-isa","person","?:X"], ["-isa","animal","?:Z"]]],
+          [16, ["mp", [14,1], 15, 7, "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]], ["is rel2","nice to","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [17, ["mp", [16,2], 10, "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]], ["is rel2", "nice to", "#:Tom 1", ["sk0","#:Tom 1"], "?:X"]]],
+          [18, ["mp", [17,1], 12, 7, "fromga", 1], [["isa", "animal", ["sk1","#:Tom 1"]]]],
+          [19, ["in","sent_S2","assumption",0.98], [["is rel2","mean to","?:X","?:Y","?:Z"], ["-has property","grumpy","?:X","?:Z"], ["-isa","person","?:X"], ["-isa","animal","?:Y"]]],
+          [20, ["in","sent_S6","assumption",1], [["-$defq0"], ["has property","grumpy","#:Tom 1","?:X"]]],
+          [21, ["mp",20,6,"fromga",1], [["has property","grumpy","#:Tom 1","?:X"]]],
+          [22, ["mp", [19,1], 21, 7, "fromga", 0.98], [["is rel2","mean to","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [23, ["mp", 18, [22,1], "fromga", 0.98], [["is rel2", "mean to", "#:Tom 1", ["sk1","#:Tom 1"], "?:X"]]],
+          [24, ["in","sent_S1","assumption",1], [["-is rel2", "mean to", "?:X", ["sk1","?:X"], "?:Y"], ["isa", "animal", ["sk0","?:X"]], ["-isa","person","?:X"]]],
+          [25, ["mp",23,24,7,"fromga",0.98], [["isa", "animal", ["sk0","#:Tom 1"]]]],
+          [26, ["mp", 25, [8,2], "fromga", 0.98], [["isa", "animal", ["sk2","#:Tom 1"]], ["is rel2", "nice to", "#:Tom 1", ["sk0","#:Tom 1"], "?:X"]]],
+          [27, ["in","sent_S1","assumption",1], [["-is rel2", "nice to", "?:X", ["sk0","?:X"], "?:Y"], ["-is rel2", "mean to", "?:X", ["sk1","?:X"], "?:Y"], ["-isa","person","?:X"]]],
+          [28, ["mp", [26,1], 27, 7, "fromga", 0.98], [["isa", "animal", ["sk2","#:Tom 1"]], ["-is rel2", "mean to", "#:Tom 1", ["sk1","#:Tom 1"], "?:X3"]]],
+          [29, ["simp",28,23,"fromga",0.9604], [["isa", "animal", ["sk2","#:Tom 1"]]]],
+          [30, ["mp", 29, [3,1], "fromga", 0.9604], [["is rel2", "love", "#:Tom 1", ["sk2","#:Tom 1"], "?:X"]]],
+          [31, ["mp",30,15,7,"fromga",0.9604], [["is rel2","nice to","#:Tom 1","?:X","?:Y"], ["-isa","animal","?:X"]]],
+          [32, ["mp", [31,1], 25, "fromga", 0.941192], [["is rel2", "nice to", "#:Tom 1", ["sk0","#:Tom 1"], "?:X"]]],
+          [33, ["mp",32,27,7,"fromga",0.941192], [["-is rel2", "mean to", "#:Tom 1", ["sk1","#:Tom 1"], "?:X3"]]],
+          [34, ["simp",33,23,"fromga",0.922368], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 92%.",
+"Sentences used:",
+"  (1) No one nice to animals is also mean to animals.",
+"  (2) Some grumpy people are mean to animals.",
+"  (3) All people who love animals are nice to animals.",
+"  (4) All pet owners love animals.",
+"  (5) Tom is a pet owner.",
+"  (6) Tom is a grumpy person?",
+"Proof steps (by contradiction):",
+"  (1) If some X is a pet owner and some Y is an animal then X loves Y  [sentence 4]",
+"  (2) Tom is a pet owner  [sentence 5]",
+"  (3) If some X is an animal then Tom loves X  [from steps 1, 2]",
+"  (4) If some X is a person and some Y is an animal then X is nice to Y or the animal sk2 of X is an animal  [sentence 3]",
+"  (5) If answer holds then Tom is a person  [sentence 6]",
+"  (6) Answer holds  [assumption]",
+"  (7) Tom is a person  [from steps 5, 6]",
+"  (8) If some X is an animal then the animal sk2 of Tom 1 is an animal or Tom is nice to X  [from steps 4, 7]",
+"  (9) If some X is a person then the animal sk0 of X is an animal or the animal sk1 of X is an animal  [sentence 1]",
+"  (10) The animal sk0 of Tom 1 is an animal or the animal sk1 of Tom 1 is an animal  [from steps 9, 7]",
+"  (11) The animal sk1 of Tom 1 is an animal or the animal sk2 of Tom 1 is an animal or Tom is nice to the animal sk0 of Tom 1  [from steps 8, 10]",
+"  (12) If some X is nice to the animal sk0 of X and X is a person then the animal sk1 of X is an animal  [sentence 1]",
+"  (13) The animal sk1 of Tom 1 is an animal or the animal sk2 of Tom 1 is an animal  [from steps 11, 12, 7]",
+"  (14) The animal sk1 of Tom 1 is an animal or Tom loves the animal sk2 of Tom 1  [from steps 3, 13]",
+"  (15) If some X loves the animal sk2 of X and X is a person and some Z is an animal then X is nice to Z  [sentence 3]",
+"  (16) If some X is an animal then the animal sk1 of Tom 1 is an animal or Tom is nice to X  [from steps 14, 15, 7]",
+"  (17) The animal sk1 of Tom 1 is an animal or Tom is nice to the animal sk0 of Tom 1  [from steps 16, 10]",
+"  (18) The animal sk1 of Tom 1 is an animal  [from steps 17, 12, 7]",
+"  (19) If some X is grumpy and X is a person and some Y is an animal then X is mean to Y  [sentence 2, confidence 98%]",
+"  (20) If answer holds then Tom is grumpy  [sentence 6]",
+"  (21) Tom is grumpy  [from steps 20, 6]",
+"  (22) If some X is an animal then Tom is mean to X  [from steps 19, 21, 7, confidence 98%]",
+"  (23) Tom is mean to the animal sk1 of Tom 1  [from steps 18, 22, confidence 98%]",
+"  (24) If some X is mean to the animal sk1 of X and X is a person then the animal sk0 of X is an animal  [sentence 1]",
+"  (25) The animal sk0 of Tom 1 is an animal  [from steps 23, 24, 7, confidence 98%]",
+"  (26) The animal sk2 of Tom 1 is an animal or Tom is nice to the animal sk0 of Tom 1  [from steps 25, 8, confidence 98%]",
+"  (27) If some person X is nice to the animal sk0 of X then X is not mean to sk1 of X  [sentence 1]",
+"  (28) If Tom is mean to the animal sk1 of Tom 1 then the animal sk2 of Tom 1 is an animal  [from steps 26, 27, 7, confidence 98%]",
+"  (29) The animal sk2 of Tom 1 is an animal  [from steps 28, 23, confidence 96%]",
+"  (30) Tom loves the animal sk2 of Tom 1  [from steps 29, 3, confidence 96%]",
+"  (31) If some X is an animal then Tom is nice to X  [from steps 30, 15, 7, confidence 96%]",
+"  (32) Tom is nice to the animal sk0 of Tom 1  [from steps 31, 25, confidence 94%]",
+"  (33) Tom is not mean to sk1 of Tom 1  [from steps 32, 27, 7, confidence 94%]",
+"  (34) Contradiction  [from steps 33, 23, confidence 92%]"
+],
+  "timestamp": "2026-06-20T10:44:43Z"
+}

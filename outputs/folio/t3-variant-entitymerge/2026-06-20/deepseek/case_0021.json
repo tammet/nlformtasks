@@ -1,0 +1,607 @@
+{
+  "test_name": "folio_v2_prenorm_entitymerge",
+  "case_id": 21,
+  "input_text": "All rabbits that can be spotted near the campus are cute. Some turtles can be spotted near the campus. The only animals that can be spotted near the campus are rabbits and squirrels. If something is skittish, then it is not calm. All the squirrels that can be spotted near the campus are skittish. Rockie can be spotted near the campus, and it is calm. If Rockie is cute and calm, then Rockie is a skittish turtle?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All rabbits that can be spotted near the campus are cute.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All rabbits that can be spotted near the campus are cute.",
+          "type": "strict_rule",
+          "entities": [{"id": "rabbits", "type": "generic", "category": "animal"},
+            {"id": "campus 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "spot",
+              "mode": "capability",
+              "roles": {"target": "rabbits", "location": "campus 1", "location_prep": "near"}
+            }
+          ],
+          "adjectives": [["cute","none","rabbit"]]
+        }
+      ]
+    },
+    {
+      "raw": "Some turtles can be spotted near the campus.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Some turtles can be spotted near the campus.",
+          "type": "normal_rule",
+          "confidence": 0.99,
+          "entities": [{"id": "turtles", "type": "generic", "category": "animal"},
+            {"id": "campus 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "spot",
+              "mode": "capability",
+              "roles": {"target": "turtles", "location": "campus 1", "location_prep": "near"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The only animals that can be spotted near the campus are rabbits and squirrels.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "If an animal can be spotted near the campus, then the animal is a rabbit or a squirrel.",
+          "type": "strict_rule",
+          "entities": [{"id": "animal", "type": "generic"},
+            {"id": "rabbits", "type": "generic", "category": "animal"},
+            {"id": "squirrels", "type": "generic", "category": "animal"},
+            {"id": "campus 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "spot",
+              "mode": "capability",
+              "roles": {"target": "animal", "location": "campus 1", "location_prep": "near"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "If something is skittish, then it is not calm.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "If something is skittish, then it is not calm.",
+          "type": "strict_rule",
+          "entities": [{"id": "entity", "type": "generic"}],
+          "adjectives": [["skittish","none","entity"], ["calm","none","none"]]
+        }
+      ]
+    },
+    {
+      "raw": "All the squirrels that can be spotted near the campus are skittish.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "All the squirrels that can be spotted near the campus are skittish.",
+          "type": "strict_rule",
+          "entities": [{"id": "squirrels", "type": "generic", "category": "animal"},
+            {"id": "campus 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "spot",
+              "mode": "capability",
+              "roles": {"target": "squirrels", "location": "campus 1", "location_prep": "near"}
+            }
+          ],
+          "adjectives": [["skittish","none","squirrel"]]
+        }
+      ]
+    },
+    {
+      "raw": "Rockie can be spotted near the campus, and it is calm.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Rockie 1 can be spotted near the campus.",
+          "type": "real",
+          "entities": [{"id": "Rockie 1", "type": "concrete", "category": "animal"},
+            {"id": "campus 1", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "spot",
+              "mode": "capability",
+              "roles": {"target": "Rockie 1", "location": "campus 1", "location_prep": "near"}
+            }
+          ]
+        },
+        {
+          "unit_id": "S7",
+          "text": "Rockie 1 is calm.",
+          "type": "real",
+          "entities": [{"id": "Rockie 1", "type": "concrete", "category": "animal"}],
+          "adjectives": [["calm","none","entity"]]
+        }
+      ]
+    },
+    {
+      "raw": "If Rockie is cute and calm, then Rockie is a skittish turtle?",
+      "units": [{
+          "unit_id": "S8",
+          "text": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?",
+          "type": "query",
+          "entities": [{"id": "Rockie 1", "type": "concrete", "category": "animal"},
+            {"id": "turtle", "type": "generic", "category": "animal"}
+          ],
+          "adjectives": [["cute","none","entity"], ["calm","none","entity"], ["skittish","none","turtle"]]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","rabbit","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","spot"],
+                  ["has target","E","X"],
+                  ["has location","E","campus 1","near"],
+                  ["capability","E"]
+                ]
+              ]
+            ],
+            ["has degree property","cute","X","none","rabbit"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["exists","X",
+            ["and",
+              ["isa","turtle","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","spot"],
+                  ["has target","E","X"],
+                  ["has location","E","campus 1","near"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","animal","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","spot"],
+                  ["has target","E","X"],
+                  ["has location","E","campus 1","near"],
+                  ["capability","E"]
+                ]
+              ]
+            ],
+            ["or", ["isa","rabbit","X"], ["isa","squirrel","X"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["has degree property","skittish","X","none","entity"],
+            ["not", ["has degree property","calm","X","none","none"]]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["and",
+              ["isa","squirrel","X"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","spot"],
+                  ["has target","E","X"],
+                  ["has location","E","campus 1","near"],
+                  ["capability","E"]
+                ]
+              ]
+            ],
+            ["has degree property","skittish","X","none","squirrel"]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","Rockie 1"],
+          ["isa","place","campus 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","spot"],
+              ["has target","E","Rockie 1"],
+              ["has location","E","campus 1","near"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["holds","W0",
+        ["and",
+          ["isa","animal","Rockie 1"],
+          ["has degree property","calm","Rockie 1","none","entity"]
+        ]
+      ]
+    ],
+    ["@id","S8",
+      ["question",
+        ["implies",
+          ["and",
+            ["has degree property","cute","Rockie 1","none","entity"],
+            ["has degree property","calm","Rockie 1","none","entity"]
+          ],
+          ["and",
+            ["isa","turtle","Rockie 1"],
+            ["has degree property","skittish","Rockie 1","none","turtle"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","campus","#:campus 1"],
+ "@nl": "All rabbits that can be spotted near the campus are cute."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","rabbit","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "spot", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has target", "?:E", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-has location", "?:E", "#:campus 1", "near", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["-capability","?:E"],
+            ["has degree property", "cute", "?:X", "none", "rabbit", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]
+           ],
+ "@nl": "All rabbits that can be spotted near the campus are cute."},
+{"@name": "sent_S2",
+ "@logic": ["isa","turtle","sk0_turtle"],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S2",
+ "@logic": ["isa","activity","sk1_activity"],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S2",
+ "@logic": ["has type", "sk1_activity", "spot", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S2",
+ "@logic": ["has target", "sk1_activity", "sk0_turtle", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S2",
+ "@logic": ["has location", "sk1_activity", "#:campus 1", "near", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S2",
+ "@logic": ["capability","sk1_activity"],
+ "@confidence": 0.9966,
+ "@nl": "Some turtles can be spotted near the campus."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","animal","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "spot", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-has target", "?:E", "?:X", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-has location", "?:E", "#:campus 1", "near", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["-capability","?:E"],
+            ["isa","rabbit","?:X"],
+            ["isa","squirrel","?:X"]
+           ],
+ "@nl": "If an animal can be spotted near the campus, then the animal is a rabbit or a squirrel."},
+{"@name": "sent_S4",
+ "@logic": [["-has property", "skittish", "?:X", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]],
+            ["-has degree property", "calm", "?:X", "none", "?:Fv112", ["$ctxt","?:Fv14","?:Fv13","?:Fv11","?:Fv12"]]
+           ],
+ "@nl": "If something is skittish, then it is not calm."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","squirrel","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "spot", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-has target", "?:E", "?:X", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-has location", "?:E", "#:campus 1", "near", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]],
+            ["-capability","?:E"],
+            ["has property", "skittish", "?:X", ["$ctxt","?:Fv18","?:Fv17","?:Fv15","?:Fv16"]]
+           ],
+ "@nl": "All the squirrels that can be spotted near the campus are skittish."},
+{"@name": "sent_S6",
+ "@logic": ["isa","animal","#:Rockie 1"],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["isa","place","#:campus 1"],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["isa","activity","sk2_activity"],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:Fv19","?:Fv20"]],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["has target", "sk2_activity", "#:Rockie 1", ["$ctxt","present","W0","?:Fv19","?:Fv20"]],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["has location", "sk2_activity", "#:campus 1", "near", ["$ctxt","present","W0","?:Fv19","?:Fv20"]],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S6",
+ "@logic": ["capability","sk2_activity"],
+ "@nl": "Rockie 1 can be spotted near the campus."},
+{"@name": "sent_S7",
+ "@logic": ["isa","animal","#:Rockie 1"],
+ "@nl": "Rockie 1 is calm."},
+{"@name": "sent_S7",
+ "@logic": ["has degree property", "calm", "#:Rockie 1", "none", "?:Fv113", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+ "@nl": "Rockie 1 is calm."},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree property", "cute", "#:Rockie 1", "none", "?:Fv114", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["-has degree property", "calm", "#:Rockie 1", "none", "?:Fv115", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["isa","turtle","#:Rockie 1"]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-has degree property", "cute", "#:Rockie 1", "none", "?:Fv116", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["-has degree property", "calm", "#:Rockie 1", "none", "?:Fv117", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["has degree property", "cute", "#:Rockie 1", "none", "?:Fv118", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["$defq0"]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["has degree property", "calm", "#:Rockie 1", "none", "?:Fv119", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["$defq0"]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question",
+ "@logic": [["-isa","turtle","#:Rockie 1"],
+            ["-has property", "skittish", "#:Rockie 1", ["$ctxt","present","?:Fv25","?:Fv23","?:Fv24"]],
+            ["$defq0"]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@question": ["$defq0"],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "calm", "#:Rockie 1", "none", "?:Fv120", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "calm", "#:Rockie 1", "none", "?:Fv121", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "calm", "#:Rockie 1", "none", "?:Fv122", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has degree property", "cute", "#:Rockie 1", "none", "?:Fv123", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has degree property", "cute", "#:Rockie 1", "none", "?:Fv124", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has degree property", "cute", "#:Rockie 1", "none", "?:Fv125", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S8",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "skittish", "#:Rockie 1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "If Rockie 1 is cute and calm, then is Rockie 1 a skittish turtle?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","rabbit","$some_rabbit"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","rabbit","$some_not_rabbit"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","turtle","$some_turtle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","turtle","$some_not_turtle"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","animal","$some_not_animal"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["isa","squirrel","$some_squirrel"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","squirrel","$some_not_squirrel"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "cute", "$some_cute_rabbit", "none", "rabbit", ["$ctxt","?:Fv71","?:Fv68","?:Fv69","?:Fv70"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","rabbit","$some_cute_rabbit"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "cute", "$some_not_cute_rabbit", "none", "rabbit", ["$ctxt","?:Fv79","?:Fv76","?:Fv77","?:Fv78"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "skittish", "$some_skittish_entity", ["$ctxt","?:Fv83","?:Fv80","?:Fv81","?:Fv82"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "skittish", "$some_not_skittish_entity", ["$ctxt","?:Fv91","?:Fv88","?:Fv89","?:Fv90"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["has degree property", "calm", "$some_calm", "none", "?:Fv126", ["$ctxt","?:Fv95","?:Fv92","?:Fv93","?:Fv94"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-has degree property", "calm", "$some_not_calm", "none", "?:Fv127", ["$ctxt","?:Fv99","?:Fv96","?:Fv97","?:Fv98"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "skittish", "$some_skittish_squirrel", ["$ctxt","?:Fv103","?:Fv100","?:Fv101","?:Fv102"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","squirrel","$some_skittish_squirrel"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "skittish", "$some_not_skittish_squirrel", ["$ctxt","?:Fv111","?:Fv108","?:Fv109","?:Fv110"]],
+ "@nl": "[population: from input]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","place","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_excl_isa",
+ "@logic": [["-isa","animal","?:X"], ["-isa","place","?:Y"], ["-=","?:X","?:Y"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: frm_excl_isa]"},
+{"@name": "frm_positional_actor_loc",
+ "@logic": [["-has location","?:E","?:L","near","?:Fv31"],
+            ["-has actor","?:E","?:X","?:Fv31"],
+            ["has degree rel2","near","?:X","?:L","none","?:Fv128","?:Fv31"],
+            ["$block", 0, ["$not", ["has degree rel2","near","?:X","?:L","none","?:Fv129","?:Fv31"]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "[generated: frm_positional_actor_loc]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S1","assumption",1], [["has degree property", "cute", "?:X", "none", "rabbit", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has location", "?:W", "#:campus 1", "near", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has type", "?:W", "spot", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has target", "?:W", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","rabbit","?:X"], ["-isa","activity","?:W"], ["-capability","?:W"]]],
+          [2, ["in","sent_S6","assumption",1], [["has location", "sk2_activity", "#:campus 1", "near", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","activity","sk2_activity"], ["-capability","sk2_activity"], ["has degree property", "cute", "?:X3", "none", "rabbit", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["-has target", "sk2_activity", "?:X3", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["-isa","rabbit","?:X3"]]],
+          [4, ["in","sent_S6","assumption",1], [["isa","activity","sk2_activity"]]],
+          [5, ["in","sent_S6","assumption",1], [["capability","sk2_activity"]]],
+          [6, ["simp",3,4,5,"fromassumption",1], [["has degree property", "cute", "?:X", "none", "rabbit", ["$ctxt","present","W0","?:Y","?:Z"]], ["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:Y","?:Z"]], ["-has target", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","rabbit","?:X"]]],
+          [7, ["in","sent_S6","assumption",1], [["has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [8, ["mp", [6,1], 7, "fromassumption", 1], [["has degree property", "cute", "?:X", "none", "rabbit", ["$ctxt","present","W0","?:Y","?:Z"]], ["-has target", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","rabbit","?:X"]]],
+          [9, ["in","sent_S6","assumption",1], [["has target", "sk2_activity", "#:Rockie 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [10, ["mp", [8,1], 9, "fromassumption", 1], [["-isa","rabbit","#:Rockie 1"], ["has degree property", "cute", "#:Rockie 1", "none", "rabbit", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [11, ["in","sent_S5","assumption",1], [["-has location", "?:X", "#:campus 1", "near", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["has property", "skittish", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has type", "?:X", "spot", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has target", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","squirrel","?:W"], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [12, ["mp",11,2,"fromassumption",1], [["-isa","activity","sk2_activity"], ["-capability","sk2_activity"], ["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["-has target", "sk2_activity", "?:X3", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["has property", "skittish", "?:X3", ["$ctxt","present","W0","?:Y3","?:Z3"]], ["-isa","squirrel","?:X3"]]],
+          [13, ["simp",12,4,5,"fromassumption",1], [["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:X","?:Y"]], ["-has target", "sk2_activity", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["has property", "skittish", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","squirrel","?:Z"]]],
+          [14, ["mp",13,7,"fromassumption",1], [["-has target", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["has property", "skittish", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","squirrel","?:X"]]],
+          [15, ["mp",14,9,"fromassumption",1], [["-isa","squirrel","#:Rockie 1"], ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [16, ["in","sent_S4","assumption",1], [["-has degree property", "calm", "?:X", "none", "?:Y", ["$ctxt","?:Z","?:U","?:V","?:W"]], ["-has property", "skittish", "?:X", ["$ctxt","?:Z","?:U","?:V","?:W"]]]],
+          [17, ["in","sent_S7","assumption",1], [["has degree property", "calm", "#:Rockie 1", "none", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]]]],
+          [18, ["mp",16,17,"fromassumption",1], [["-has property", "skittish", "#:Rockie 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [19, ["simp",15,18,"fromassumption",1], [["-isa","squirrel","#:Rockie 1"]]],
+          [20, ["in","sent_S3","assumption",1], [["-has location", "?:X", "#:campus 1", "near", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has type", "?:X", "spot", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has target", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","animal","?:W"], ["-isa","activity","?:X"], ["isa","squirrel","?:W"], ["isa","rabbit","?:W"], ["-capability","?:X"]]],
+          [21, ["mp",20,2,"fromassumption",1], [["-isa","activity","sk2_activity"], ["-capability","sk2_activity"], ["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-has target", "sk2_activity", "?:Z3", ["$ctxt","present","W0","?:X3","?:Y3"]], ["-isa","animal","?:Z3"], ["isa","squirrel","?:Z3"], ["isa","rabbit","?:Z3"]]],
+          [22, ["simp",21,4,5,"fromassumption",1], [["-has type", "sk2_activity", "spot", ["$ctxt","present","W0","?:X","?:Y"]], ["-has target", "sk2_activity", "?:Z", ["$ctxt","present","W0","?:X","?:Y"]], ["-isa","animal","?:Z"], ["isa","squirrel","?:Z"], ["isa","rabbit","?:Z"]]],
+          [23, ["mp",22,7,"fromassumption",1], [["-has target", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","animal","?:X"], ["isa","squirrel","?:X"], ["isa","rabbit","?:X"]]],
+          [24, ["mp",23,9,"fromassumption",1], [["-isa","animal","#:Rockie 1"], ["isa","rabbit","#:Rockie 1"], ["isa","squirrel","#:Rockie 1"]]],
+          [25, ["in","sent_S6","assumption",1], [["isa","animal","#:Rockie 1"]]],
+          [26, ["simp",24,25,"fromassumption",1], [["isa","rabbit","#:Rockie 1"], ["isa","squirrel","#:Rockie 1"]]],
+          [27, ["mp", 19, [26,1], "fromassumption", 1], [["isa","rabbit","#:Rockie 1"]]],
+          [28, ["simp",10,27,"fromassumption",1], [["has degree property", "cute", "#:Rockie 1", "none", "rabbit", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [29, ["in","sent_S8","assumption",1], [["-$defq0"], ["-has degree property", "cute", "#:Rockie 1", "none", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["-has degree property", "calm", "#:Rockie 1", "none", "?:V", ["$ctxt","present","?:Y","?:Z","?:U"]], ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","?:Y","?:Z","?:U"]]]],
+          [30, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [31, ["mp", 28, [29,1], 30, "fromga", 1], [["-has degree property", "calm", "#:Rockie 1", "none", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["has property", "skittish", "#:Rockie 1", ["$ctxt","present","W0","?:Y","?:Z"]]]],
+          [32, ["mp",31,17,"fromga",1], [["has property", "skittish", "#:Rockie 1", ["$ctxt","present","W0","?:X3","?:Y3"]]]],
+          [33, ["simp",32,18,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All rabbits that can be spotted near the campus are cute.",
+"  (2) The only animals that can be spotted near the campus are rabbits and squirrels.",
+"  (3) If something is skittish, then it is not calm.",
+"  (4) All the squirrels that can be spotted near the campus are skittish.",
+"  (5) Rockie can be spotted near the campus, and it is calm.",
+"  (6) If Rockie is cute and calm, then Rockie is a skittish turtle?",
+"Proof steps (by contradiction):",
+"  (1) If W takes place near the campus A and W is a spot event and W targets some X and X is a rabbit and W is an activity and W is a capability then X is a cute rabbit  [sentence 1]",
+"  (2) The event act2 takes place near the campus A  [sentence 5]",
+"  (3) If the event act2 is an activity and the act2 is a capability and the act2 is a spot event and the act2 targets some X3 and X3 is a rabbit then X3 is a cute rabbit  [from steps 1, 2]",
+"  (4) The event act2 is an activity  [sentence 5]",
+"  (5) The event act2 is a capability  [sentence 5]",
+"  (6) If the event act2 is a spot event and the act2 targets some X and X is a rabbit then X is a cute rabbit  [from steps 3, 4, 5]",
+"  (7) The event act2 is a spot event  [sentence 5]",
+"  (8) If the event act2 targets some X and X is a rabbit then X is a cute rabbit  [from steps 6, 7]",
+"  (9) The event act2 targets Rockie  [sentence 5]",
+"  (10) If Rockie is a rabbit then Rockie is a cute rabbit  [from steps 8, 9]",
+"  (11) If X takes place near the campus A and X is a spot event and X targets some W and W is a squirrel and X is an activity and X is a capability then W is skittish  [sentence 4]",
+"  (12) If the event act2 is an activity and the act2 is a capability and the act2 is a spot event and the act2 targets some X3 and X3 is a squirrel then X3 is skittish  [from steps 11, 2]",
+"  (13) If the event act2 is a spot event and the act2 targets some Z and Z is a squirrel then Z is skittish  [from steps 12, 4, 5]",
+"  (14) If the event act2 targets some X and X is a squirrel then X is skittish  [from steps 13, 7]",
+"  (15) If Rockie is a squirrel then Rockie is skittish  [from steps 14, 9]",
+"  (16) If some X is calm then X is not skittish  [sentence 3]",
+"  (17) Rockie is calm  [sentence 5]",
+"  (18) Rockie is not skittish  [from steps 16, 17]",
+"  (19) Rockie is not a squirrel  [from steps 15, 18]",
+"  (20) If X takes place near the campus A and X is a spot event and X targets some W and W is an animal and X is an activity and X is a capability then W is a squirrel or W is a rabbit  [sentence 2]",
+"  (21) If the event act2 is an activity and the act2 is a capability and the act2 is a spot event and the act2 targets some Z3 and Z3 is an animal then Z3 is a squirrel or Z3 is a rabbit  [from steps 20, 2]",
+"  (22) If the event act2 is a spot event and the act2 targets some Z and Z is an animal then Z is a squirrel or Z is a rabbit  [from steps 21, 4, 5]",
+"  (23) If the event act2 targets some X and X is an animal then X is a squirrel or X is a rabbit  [from steps 22, 7]",
+"  (24) If Rockie is an animal then Rockie is a rabbit or Rockie is a squirrel  [from steps 23, 9]",
+"  (25) Rockie is an animal  [sentence 5]",
+"  (26) Rockie is a rabbit or Rockie is a squirrel  [from steps 24, 25]",
+"  (27) Rockie is a rabbit  [from steps 19, 26]",
+"  (28) Rockie is a cute rabbit  [from steps 10, 27]",
+"  (29) If answer holds and Rockie is cute and Rockie is calm then Rockie is skittish  [sentence 6]",
+"  (30) Answer holds  [assumption]",
+"  (31) If Rockie is calm then Rockie is skittish  [from steps 28, 29, 30]",
+"  (32) Rockie is skittish  [from steps 31, 17]",
+"  (33) Contradiction  [from steps 32, 18]"
+],
+  "timestamp": "2026-06-18T21:39:13Z"
+}

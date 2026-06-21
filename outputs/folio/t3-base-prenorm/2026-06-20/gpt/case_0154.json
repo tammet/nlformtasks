@@ -1,0 +1,611 @@
+{
+  "test_name": "folio_v2_prenorm",
+  "case_id": 154,
+  "input_text": "All hydrocarbons are organic compounds . All alkanes are hydrocarbons All organic compounds are chemical compounds. All organic compounds contain carbon. No chemical compounds contain only one element. The mixture either both is a chemical compound and contains only one element, or neither. The mixture is an alkane and contains carbon?",
+  "expected_answer": "False.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "False.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "All hydrocarbons are organic compounds.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "All hydrocarbons are organic compounds.",
+          "type": "strict_rule",
+          "entities": [{"id": "hydrocarbons", "type": "generic"},
+            {"id": "organic compounds", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All alkanes are hydrocarbons.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "All alkanes are hydrocarbons.",
+          "type": "strict_rule",
+          "entities": [{"id": "alkanes", "type": "generic"}, {"id": "hydrocarbons", "type": "generic"}]
+        }
+      ]
+    },
+    {
+      "raw": "All organic compounds are chemical compounds.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "All organic compounds are chemical compounds.",
+          "type": "strict_rule",
+          "entities": [{"id": "organic compounds", "type": "generic"},
+            {"id": "chemical compounds", "type": "generic"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "All organic compounds contain carbon.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "All organic compounds contain carbon.",
+          "type": "strict_rule",
+          "entities": [{"id": "organic compounds", "type": "generic"},
+            {"id": "carbon", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "contain",
+              "mode": "habitual",
+              "roles": {"actor": "organic compounds", "target": "carbon"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "No chemical compounds contain only one element.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "No chemical compounds contain only one element.",
+          "type": "strict_rule",
+          "entities": [{"id": "chemical compounds", "type": "generic"}, {"id": "element", "type": "generic"}],
+          "actions": [{
+              "root": "contain",
+              "mode": "habitual",
+              "roles": {"actor": "chemical compounds", "target": "element"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The mixture either both is a chemical compound and contains only one element, or neither.",
+      "units": [{
+          "unit_id": "S6",
+          "text": "The mixture 1 either both is a chemical compound and contains only one element, or neither.",
+          "type": "situation",
+          "entities": [{"id": "mixture 1", "type": "concrete"},
+            {"id": "chemical compound", "type": "generic"},
+            {"id": "element", "type": "generic"}
+          ],
+          "actions": [{
+              "root": "contain",
+              "mode": "event",
+              "roles": {"actor": "mixture 1", "target": "element"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "The mixture is an alkane and contains carbon?",
+      "units": [{
+          "unit_id": "S7",
+          "text": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?",
+          "type": "query",
+          "entities": [{"id": "mixture 1", "type": "concrete"},
+            {"id": "alkane", "type": "generic"},
+            {"id": "carbon", "type": "generic", "scope": "kind", "category": "substance"}
+          ],
+          "actions": [{
+              "root": "contain",
+              "mode": "event",
+              "roles": {"actor": "mixture 1", "target": "carbon"}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["forall", "X", ["implies", ["isa","hydrocarbon","X"], ["isa","organic compound","X"]]]
+      ]
+    ],
+    ["@id","S2",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","alkane","X"], ["isa","hydrocarbon","X"]]]]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies", ["isa","organic compound","X"], ["isa","chemical compound","X"]]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","organic compound","X"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","contain"],
+                ["has actor","E","X"],
+                ["has target","E","carbon"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S5",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","chemical compound","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","contain"],
+                  ["has actor","E","X"],
+                  ["exists", "Y", ["and", ["isa","element","Y"], ["has target","E","Y"]]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S6",
+      ["holds","W0",
+        ["and",
+          ["isa","mixture","mixture 1"],
+          ["xor",
+            ["and",
+              ["isa","chemical compound","mixture 1"],
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","contain"],
+                  ["has actor","E","mixture 1"],
+                  ["exists", "Y", ["and", ["isa","element","Y"], ["has target","E","Y"]]]
+                ]
+              ]
+            ],
+            ["and",
+              ["not", ["isa","chemical compound","mixture 1"]],
+              ["not",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","contain"],
+                    ["has actor","E","mixture 1"],
+                    ["exists", "Y", ["and", ["isa","element","Y"], ["has target","E","Y"]]]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S7",
+      ["question",
+        ["and",
+          ["isa","alkane","mixture 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","contain"],
+              ["has actor","E","mixture 1"],
+              ["has target","E","carbon"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","hydrocarbon","?:X"], ["isa","organic compound","?:X"]],
+ "@nl": "All hydrocarbons are organic compounds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","alkane","?:X"], ["isa","hydrocarbon","?:X"]],
+ "@nl": "All alkanes are hydrocarbons."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","organic compound","?:X"], ["isa","chemical compound","?:X"]],
+ "@nl": "All organic compounds are chemical compounds."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"],
+            ["has type", ["sk0","?:X"], "contain", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"],
+            ["has actor", ["sk0","?:X"], "?:X", ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"], ["isa", "carbon", ["sk1","?:X"]]],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"],
+            ["has target", ["sk0","?:X"], ["sk1","?:X"], ["$ctxt","?:Fv16","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S4",
+ "@logic": [["-isa","organic compound","?:X"], ["actuality", ["sk0","?:X"]]],
+ "@nl": "All organic compounds contain carbon."},
+{"@name": "sent_S5",
+ "@logic": [["-isa","chemical compound","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-has actor", "?:E", "?:X", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","?:Fv20","?:Fv19","?:Fv17","?:Fv18"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "No chemical compounds contain only one element."},
+{"@name": "sent_S6",
+ "@logic": ["isa","mixture","#:mixture 1"],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","chemical compound","#:mixture 1"], ["-isa","chemical compound","#:mixture 1"]],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","activity","sk2_activity"], ["-isa","chemical compound","#:mixture 1"]],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","activity","sk2_activity"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has type", "sk2_activity", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","chemical compound","#:mixture 1"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has type", "sk2_activity", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has actor", "sk2_activity", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","chemical compound","#:mixture 1"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has actor", "sk2_activity", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","element","sk3_element"], ["-isa","chemical compound","#:mixture 1"]],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["isa","element","sk3_element"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has target", "sk2_activity", "sk3_element", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","chemical compound","#:mixture 1"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["has target", "sk2_activity", "sk3_element", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["actuality","sk2_activity"], ["-isa","chemical compound","#:mixture 1"]],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["actuality","sk2_activity"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["isa","activity","sk4_activity"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["has type", "sk4_activity", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["has actor", "sk4_activity", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["isa","element","sk5_element"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["has target", "sk4_activity", "sk5_element", ["$ctxt","present","W0","?:Fv21","?:Fv22"]]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S6",
+ "@logic": [["-isa","chemical compound","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-isa","element","?:Y"],
+            ["-has target", "?:E", "?:Y", ["$ctxt","present","W0","?:Fv21","?:Fv22"]],
+            ["-actuality","?:E"],
+            ["isa","chemical compound","#:mixture 1"],
+            ["actuality","sk4_activity"]
+           ],
+ "@nl": "The mixture 1 either both is a chemical compound and contains only one element, or neither."},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","alkane","#:mixture 1"]],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","activity","sk6_activity"]],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has type", "sk6_activity", "contain", ["$ctxt","?:Fv32","?:Fv31","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has actor", "sk6_activity", "#:mixture 1", ["$ctxt","?:Fv34","?:Fv33","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","carbon","sk7_carbon"]],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["has target", "sk6_activity", "sk7_carbon", ["$ctxt","?:Fv38","?:Fv37","?:Fv23","?:Fv24"]]
+           ],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["actuality","sk6_activity"]],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@sourcetype": "question",
+ "@logic": [["-isa","alkane","#:mixture 1"],
+            ["-isa","activity","?:E"],
+            ["-has type", "?:E", "contain", ["$ctxt","?:Fv44","?:Fv43","?:Fv23","?:Fv24"]],
+            ["-has actor", "?:E", "#:mixture 1", ["$ctxt","?:Fv46","?:Fv45","?:Fv23","?:Fv24"]],
+            ["-isa","carbon","?:Gobj1"],
+            ["-has target", "?:E", "?:Gobj1", ["$ctxt","?:Fv50","?:Fv49","?:Fv23","?:Fv24"]],
+            ["-actuality","?:E"],
+            ["$defq0"]
+           ],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S7",
+ "@question": ["$defq0"],
+ "@nl": "Is the mixture 1 an alkane and does the mixture 1 contain carbon?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","hydrocarbon","$some_hydrocarbon"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","hydrocarbon","$some_not_hydrocarbon"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","organic compound","$some_organic_compound"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","organic compound","$some_not_organic_compound"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["isa","alkane","$some_alkane"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","alkane","$some_not_alkane"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S4",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["isa","element","$some_element"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S5",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","element","$some_not_element"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","chemical compound","?:X"], ["-isa","simple","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","chemical","?:X"], ["isa","simple","?:X"], ["isa","chemical compound","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","organic compound","?:X"], ["-isa","simple","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","organic","?:X"], ["isa","simple","?:X"], ["isa","organic compound","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "confidence": 1,
+        "negative proof": [[1, ["in","sent_S5","assumption",1], [["-has type", "?:X", "contain", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has actor", "?:X", "?:W", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-has target", "?:X", "?:2006", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","chemical compound","?:W"], ["-isa","element","?:2006"], ["-isa","activity","?:X"], ["-actuality","?:X"]]],
+          [2, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["has type", "sk2_activity", "contain", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [3, ["in","sent_S1","assumption",1], [["-isa","hydrocarbon","?:X"], ["isa","organic compound","?:X"]]],
+          [4, ["in","sent_S2","assumption",1], [["-isa","alkane","?:X"], ["isa","hydrocarbon","?:X"]]],
+          [5, ["in","sent_S7","assumption",1], [["-$defq0"], ["isa","alkane","#:mixture 1"]]],
+          [6, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [7, ["mp",5,6,"fromga",1], [["isa","alkane","#:mixture 1"]]],
+          [8, ["mp",4,7,"fromga",1], [["isa","hydrocarbon","#:mixture 1"]]],
+          [9, ["mp",3,8,"fromga",1], [["isa","organic compound","#:mixture 1"]]],
+          [10, ["in","sent_S3","assumption",1], [["-isa","organic compound","?:X"], ["isa","chemical compound","?:X"]]],
+          [11, ["mp",9,10,"fromga",1], [["isa","chemical compound","#:mixture 1"]]],
+          [12, ["mp",2,11,"fromga",1], [["has type", "sk2_activity", "contain", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [13, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["isa","activity","sk2_activity"]]],
+          [14, ["mp",11,13,"fromga",1], [["isa","activity","sk2_activity"]]],
+          [15, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["actuality","sk2_activity"]]],
+          [16, ["mp",11,15,"fromga",1], [["actuality","sk2_activity"]]],
+          [17, ["mp",1,12,14,16,"fromga",1], [["-has actor", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-has target", "sk2_activity", "?:U", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","chemical compound","?:X"], ["-isa","element","?:U"]]],
+          [18, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["has actor", "sk2_activity", "#:mixture 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [19, ["mp",18,11,"fromga",1], [["has actor", "sk2_activity", "#:mixture 1", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [20, ["mp",17,19,11,"fromga",1], [["-has target", "sk2_activity", "?:X", ["$ctxt","present","W0","?:Y","?:Z"]], ["-isa","element","?:X"]]],
+          [21, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["has target", "sk2_activity", "sk3_element", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [22, ["mp",21,11,"fromga",1], [["has target", "sk2_activity", "sk3_element", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [23, ["in","sent_S6","assumption",1], [["-isa","chemical compound","#:mixture 1"], ["isa","element","sk3_element"]]],
+          [24, ["mp",23,11,"fromga",1], [["isa","element","sk3_element"]]],
+          [25, ["mp",20,22,24,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) All hydrocarbons are organic compounds.",
+"  (2) All alkanes are hydrocarbons.",
+"  (3) All organic compounds are chemical compounds.",
+"  (4) No chemical compounds contain only one element.",
+"  (5) The mixture either both is a chemical compound and contains only one element, or neither.",
+"  (6) The mixture is an alkane and contains carbon?",
+"Proof steps (by contradiction):",
+"  (1) If X is a contain event and some chemical compound W performs X and X targets some element E1 then X is not an activity  [sentence 4]",
+"  (2) If the mixture A is a chemical compound then the event act1 is a contain event  [sentence 5]",
+"  (3) If some X is a hydrocarbon then X is an organic compound  [sentence 1]",
+"  (4) If some X is an alkane then X is a hydrocarbon  [sentence 2]",
+"  (5) If answer holds then the mixture A is an alkane  [sentence 6]",
+"  (6) Answer holds  [assumption]",
+"  (7) The mixture A is an alkane  [from steps 5, 6]",
+"  (8) The mixture A is a hydrocarbon  [from steps 4, 7]",
+"  (9) The mixture A is an organic compound  [from steps 3, 8]",
+"  (10) If some X is an organic compound then X is a chemical compound  [sentence 3]",
+"  (11) The mixture A is a chemical compound  [from steps 9, 10]",
+"  (12) The event act1 is a contain event  [from steps 2, 11]",
+"  (13) If the mixture A is a chemical compound then the event act1 is an activity  [sentence 5]",
+"  (14) The event act1 is an activity  [from steps 11, 13]",
+"  (15) The mixture A is not a chemical compound  [sentence 5]",
+"  (16)   [from steps 11, 15]",
+"  (17) If some chemical compound X performs the event act1 then the act1 does not target U  [from steps 1, 12, 14, 16]",
+"  (18) If the mixture A is a chemical compound then the mixture A performs the event act1  [sentence 5]",
+"  (19) The mixture A performs the event act1  [from steps 18, 11]",
+"  (20) The act1 does not target X  [from steps 17, 19, 11]",
+"  (21) If the mixture A is a chemical compound then the event act1 targets some element ele1  [sentence 5]",
+"  (22) The event act1 targets ele1  [from steps 21, 11]",
+"  (23) If the mixture A is a chemical compound then ele1 is an element  [sentence 5]",
+"  (24) Ele1 is an element  [from steps 23, 11]",
+"  (25) Contradiction  [from steps 20, 22, 24]"
+],
+  "timestamp": "2026-06-18T19:29:58Z"
+}

@@ -1,0 +1,110 @@
+{
+  "test_name": "core_entitymerge",
+  "case_id": 635,
+  "input_text": "Dr. Smith, a surgeon, entered the room. Dr. Smith is a dentist?",
+  "expected_answer": null,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Unknown.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Dr. Smith, a surgeon, entered the room.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Dr. Smith 1, a surgeon, entered the room 2.",
+          "type": "situation",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person"},
+            {"id": "room 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "enter",
+              "mode": "event",
+              "roles": {"actor": "Dr. Smith 1", "destination": "room 2"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Dr. Smith is a dentist?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Is Dr. Smith 1 a dentist?",
+          "type": "query",
+          "entities": [{"id": "Dr. Smith 1", "type": "concrete", "category": "person"},
+            {"id": "dentist", "type": "generic", "category": "person"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Dr. Smith 1"],
+          ["isa","room","room 2"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","enter"],
+              ["has actor","E","Dr. Smith 1"],
+              ["has destination","E","room 2","at"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S2", ["question", ["isa","dentist","Dr. Smith 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","Dr. Smith 1"],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","room","#:room 2"],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","activity","sk0_activity"],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["has type", "sk0_activity", "enter", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["has actor", "sk0_activity", "Dr. Smith 1", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["has destination", "sk0_activity", "#:room 2", "at", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["has time", "sk0_activity", "past", "in", ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S1",
+ "@logic": ["actuality","sk0_activity"],
+ "@nl": "Dr. Smith 1, a surgeon, entered the room 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","dentist","Dr. Smith 1"]],
+ "@nl": "Is Dr. Smith 1 a dentist?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-isa","dentist","Dr. Smith 1"], ["$defq0"]],
+ "@nl": "Is Dr. Smith 1 a dentist?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0"],
+ "@nl": "Is Dr. Smith 1 a dentist?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-19T00:19:47Z"
+}

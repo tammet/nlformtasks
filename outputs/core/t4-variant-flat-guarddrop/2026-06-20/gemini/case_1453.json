@@ -1,0 +1,283 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1453,
+  "input_text": "Birds fly. Baby birds can not fly. John is a baby bird. Mike is a bird. Who does not fly?",
+  "expected_answer": "John",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "John.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Baby birds can not fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Baby birds cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "baby birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bird.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "John 1 is a baby bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "baby bird", "type": "generic", "category": "animal"}
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Mike 2 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "person"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ],
+          "time": "present"
+        }
+      ]
+    },
+    {
+      "raw": "Who does not fly?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Which entity does not fly?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","baby bird","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds", "W0", ["and", ["isa","person","John 1"], ["isa","baby bird","John 1"]]],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S4",
+      ["and",
+        ["holds", "W0", ["and", ["isa","person","Mike 2"], ["isa","bird","Mike 2"]]],
+        ["state time","W0","present"]
+      ]
+    ],
+    ["@id","S5",
+      ["ask","X",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","X"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"],
+            ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]],
+            ["$block", ["$","bird",1], ["$not", ["has property", "fly", "?:X", ["$ctxt","?:Fv4","?:Fv3","?:Fv1","?:Fv2"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","baby bird","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Baby birds cannot fly."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S3",
+ "@logic": ["isa","baby bird","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S4",
+ "@logic": ["isa","person","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bird","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-has property", "fly", "?:X", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]]
+           ],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["has property", "fly", "?:X", ["$ctxt","present","?:Fv15","?:Fv13","?:Fv14"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@who_query": true,
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.99,
+ "@logic": [["-has property", "fly", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["has property", "fly", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Which entity does not fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S2",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bird","$some_not_baby_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["has property", "fly", "$some_fly", ["$ctxt","?:Fv29","?:Fv26","?:Fv27","?:Fv28"]],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-has property", "fly", "$some_not_fly", ["$ctxt","?:Fv33","?:Fv30","?:Fv31","?:Fv32"]],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bird","?:X"], ["isa","bird","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bird","?:X"], ["isa","baby bird","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv17"], ["has type","?:E","go","?:Fv17"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "pop_what",
+ "@logic": ["isa","bird","$some_bird"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","baby bird","$some_baby_bird"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:John 1"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","baby bird","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","baby bird","?:X"], ["$defq0","?:X"]]],
+          [4, ["in","sent_S3","assumption",1], [["isa","baby bird","#:John 1"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","#:John 1"]]],
+          [6, ["in","sent_S5","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:John 1"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_baby_bird"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S2","assumption",1], [["-has property", "fly", "?:X", ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","baby bird","?:X"]]],
+          [2, ["in","sent_S5","assumption",1], [["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["-isa","baby bird","?:X"], ["$defq0","?:X"]]],
+          [4, ["in","pop_what","assumption",1], [["isa","baby bird","$some_baby_bird"]]],
+          [5, ["mp",3,4,"fromassumption",1], [["$defq0","$some_baby_bird"]]],
+          [6, ["in","sent_S5","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","$some_baby_bird"]]]
+        ]
+      },
+      {
+        "answer": [["$ans","$some_not_fly"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-has property", "fly", "$some_not_fly", ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [2, ["in","sent_S5","assumption",1], [["has property", "fly", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","$some_not_fly"]]],
+          [4, ["in","sent_S5","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","$some_not_fly"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Baby birds can not fly.",
+"  (2) John is a baby bird.",
+"  (3) Who does not fly?",
+"Proof steps:",
+"  (1) X is not fly  [sentence 1]",
+"  (2) Some X is fly or X is the answer  [sentence 3]",
+"  (3) If some X is a baby bird then X is the answer  [from steps 1, 2]",
+"  (4) John is a baby bird  [sentence 2]",
+"  (5) John is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) John is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T09:29:17Z"
+}

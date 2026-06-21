@@ -1,0 +1,183 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 293,
+  "input_text": "John saw the car of Mary. Mary had a car?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "True.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "John saw the car of Mary.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 saw the car 2 of Mary 3.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "Mary 3", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{"root": "see", "mode": "event", "roles": {"target": "car 2"}}],
+          "definites": [["car of","car 2","Mary 3"]],
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The car 2 is the car of Mary 3.",
+          "type": "situation",
+          "entities": [{"id": "car 2", "type": "concrete", "category": "artifact"},
+            {"id": "Mary 3", "type": "concrete", "category": "person"}
+          ],
+          "definites": [["car of","car 2","Mary 3"]],
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Mary had a car?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Did Mary 3 have a car?",
+          "type": "query",
+          "entities": [{"id": "Mary 3", "type": "concrete", "category": "person"},
+            {"id": "car", "type": "generic", "category": "artifact"}
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","car","car 2"],
+            ["isa","person","Mary 3"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","see"],
+                ["has actor","E","John 1"],
+                ["has target","E","car 2"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["@definite","S1","W0","car of","Mary 3","car 2"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["and", ["isa","car","car 2"], ["isa","person","Mary 3"], ["have","Mary 3","car 2"]]
+        ],
+        ["@definite","S2","W0","car of","Mary 3","car 2"]
+      ]
+    ],
+    ["@id","S3",
+      ["question",
+        ["exists", "X", ["and", ["isa","car","X"], ["@time", "past", ["have","Mary 3","X"]]]]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","car","#:car 2"],
+ "@nl": "John 1 saw the car 2 of Mary 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 saw the car 2 of Mary 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa", "car", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "John 1 saw the car 2 of Mary 3."},
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:Mary 3"],
+ "@nl": "John 1 saw the car 2 of Mary 3."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "show", "#:John 1", ["eventprop", "$target", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 saw the car 2 of Mary 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa", "car", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]]],
+ "@nl": "The car 2 is the car of Mary 3."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Mary 3"],
+ "@nl": "The car 2 is the car of Mary 3."},
+{"@name": "sent_S2",
+ "@logic": ["have", "#:Mary 3", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "The car 2 is the car of Mary 3."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","car","sk0_car"]],
+ "@nl": "Did Mary 3 have a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["have", "#:Mary 3", "sk0_car", ["$ctxt","past","?:Fv11","?:Fv5","?:Fv6"]]],
+ "@nl": "Did Mary 3 have a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","car","?:X"],
+            ["-have", "#:Mary 3", "?:X", ["$ctxt","past","?:Fv14","?:Fv5","?:Fv6"]],
+            ["$defq0"]
+           ],
+ "@nl": "Did Mary 3 have a car?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0"],
+ "@nl": "Did Mary 3 have a car?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.97,
+ "@logic": [["-have", "#:Mary 3", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["have", "#:Mary 3", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["have", "#:Mary 3", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Did Mary 3 have a car?"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Mary 3", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["have", "#:Mary 3", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:Fv3","?:Fv4"]], ["$ctxt","past","W0","?:Fv3","?:Fv4"]],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["is rel2", "car of", ["$theof1","car","?:S","?:C"], "?:S", "?:C"],
+ "@nl": "[generated: frm_theof]"},
+{"@name": "frm_theof",
+ "@logic": ["isa", "car", ["$theof1","car","?:S","?:C"]],
+ "@nl": "[generated: frm_theof]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_theof","assumption",1], [["have", "#:Mary 3", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:X","?:Y"]], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S3","assumption",1], [["$defq0"], ["-have", "#:Mary 3", "?:X", ["$ctxt","past","?:Y","?:Z","?:U"]], ["-isa","car","?:X"]]],
+          [3, ["in","sent_S3","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["-isa", "car", ["$theof1", "car", "#:Mary 3", ["$ctxt","past","W0","?:X","?:Y"]]]]],
+          [5, ["in","frm_theof","assumption",1], [["isa", "car", ["$theof1","car","?:X","?:Y"]]]],
+          [6, ["mp",4,5,"fromga",1], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) Mary had a car?",
+"Knowledge used:",
+"  Mary has Mary's car. Why: assumed basic knowledge.",
+"  X's car is a car. Why: assumed basic knowledge.",
+"Proof steps (by contradiction):",
+"  (1) Mary has Mary's car  [background knowledge]",
+"  (2) If Mary has some X and X is a car then answer holds  [sentence 1]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) Mary's car is not a car  [from steps 1, 2, 3]",
+"  (5) X's car is a car  [background knowledge]",
+"  (6) Contradiction  [from steps 4, 5]"
+],
+  "timestamp": "2026-06-18T15:37:24Z"
+}

@@ -1,0 +1,119 @@
+{
+  "test_name": "core_flat_guarddrop",
+  "case_id": 1240,
+  "input_text": "\"Riga is outside America. Riga is not in what?",
+  "expected_answer": "America.",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "America.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "\"Riga is outside America.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Riga 1 is outside America 2.",
+          "type": "real",
+          "entities": [{
+              "id": "Riga 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Riga"
+            },
+            {"id": "America 2", "type": "concrete", "category": "place"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Riga is not in what?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Riga 1 is not in which entity?",
+          "type": "query",
+          "entities": [{
+              "id": "Riga 1",
+              "type": "concrete",
+              "category": "place",
+              "url": "https://en.wikipedia.org/wiki/Riga"
+            },
+            {"id": "entity", "type": "generic", "wh_placeholder": true}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["not", ["is rel2","in","https://en.wikipedia.org/wiki/Riga","America 2"]]]
+    ],
+    ["@id", "S2", ["ask", "X", ["not", ["is rel2","in","https://en.wikipedia.org/wiki/Riga","X"]]]]
+  ],
+  "clauses": [
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:Riga 1"],
+ "@nl": "Riga 1 is outside America 2."},
+{"@name": "entity_S1",
+ "@logic": ["isa","place","#:America 2"],
+ "@nl": "Riga 1 is outside America 2."},
+{"@name": "sent_S1",
+ "@logic": ["-is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "#:America 2", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Riga 1 is outside America 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["-is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:X", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]]
+           ],
+ "@nl": "Riga 1 is not in which entity?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:X", ["$ctxt","present","?:Fv5","?:Fv3","?:Fv4"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Riga 1 is not in which entity?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@what_query": true,
+ "@nl": "Riga 1 is not in which entity?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question_bridge",
+ "@confidence": 0.95,
+ "@logic": [["-is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:Br1", ["$ctxt","past","?:W","?:L","?:K"]],
+            ["is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]],
+            ["$block", 0, ["$not", ["is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:Br1", ["$ctxt","present","?:W","?:L","?:K"]]]]
+           ],
+ "@nl": "Riga 1 is not in which entity?"},
+{"@name": "pop_what",
+ "@logic": ["isa","place","$some_place"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:America 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S1","assumption",1], [["-is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "#:America 2", ["$ctxt","present","W0","?:X","?:Y"]]]],
+          [2, ["in","sent_S2","assumption",1], [["is rel2", "in", "https://en.wikipedia.org/wiki/Riga", "?:X", ["$ctxt","present","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["$defq0","#:America 2"]]],
+          [4, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [5, ["mp",3,4,"fromga",1], [["$ans","#:America 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) \"Riga is outside America.",
+"  (2) Riga is not in what?",
+"Proof steps:",
+"  (1) Riga is not in America  [sentence 1]",
+"  (2) Riga is in some X or X is the answer  [sentence 2]",
+"  (3) America is the answer  [from steps 1, 2]",
+"  (4) technical answer unwrap step  [from question]",
+"  (5) America is an answer  [from steps 3, 4]"
+],
+  "timestamp": "2026-06-19T08:04:43Z"
+}

@@ -1,0 +1,167 @@
+{
+  "test_name": "core_flatevents",
+  "case_id": 1294,
+  "input_text": "During 1800, John jumped in a house. Where did John jump?",
+  "expected_answer": "In a house",
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "The house.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "During 1800, John jumped in a house.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "John 1 jumped in a house 2.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "person"},
+            {"id": "house 2", "type": "concrete", "category": "place"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "house 2", "location_prep": "in"}
+            }
+          ],
+          "time": "1800",
+          "time_prep": "during",
+          "state_tense": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did John jump?",
+      "units": [{
+          "unit_id": "S2",
+          "text": "In which entity did John 1 jump?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "John 1", "type": "concrete", "category": "person"}
+          ],
+          "actions": [{
+              "root": "jump",
+              "mode": "event",
+              "roles": {"actor": "John 1", "location": "entity", "location_prep": "in"}
+            }
+          ],
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","person","John 1"],
+            ["isa","house","house 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","jump"],
+                ["has actor","E","John 1"],
+                ["has location","E","house 2","in"],
+                ["has time","E","1800","during"]
+              ]
+            ]
+          ]
+        ],
+        ["state time","W0","1800"]
+      ]
+    ],
+    ["@id","S2",
+      ["ask","X",
+        ["exists","E",
+          ["and",
+            ["isa","activity","E"],
+            ["has type","E","jump"],
+            ["has actor","E","John 1"],
+            ["has location","E","X","in"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","person","#:John 1"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","house","#:house 2"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","1800","W0","?:Fv1","?:Fv2"]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["=", ["$theof1","time","W0","?:Fv3"], ["$datetime",1800]],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S1",
+ "@logic": ["is_past_world","W0"],
+ "@nl": "John 1 jumped in a house 2."},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Fv6","?:Fv4","?:Fv5"]]
+           ],
+ "@nl": "In which entity did John 1 jump?"},
+{"@name": "sent_S2",
+ "@sourcetype": "question",
+ "@logic": [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Fv6","?:Fv4","?:Fv5"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "In which entity did John 1 jump?"},
+{"@name": "sent_S2",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "In which entity did John 1 jump?"},
+{"@name": "pop_what",
+ "@logic": ["isa","person","$some_person"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","house","$some_house"],
+ "@nl": "[population: class witnesses for what-query]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"unit\"], \"query_preference\": 0} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:house 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","frm_106","axiom",1], [["-is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["is rel2", "?:X", "?:Y", "?:Z", ["$ctxt","past","?:V","?:W","?:2006"]], ["-is_past_world","?:V"]]],
+          [2, ["in","sent_S2","assumption",1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$defq0","?:X"]]],
+          [3, ["in","sent_S2","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [4, ["mp", [2,1], 3, "fromga", 1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","past","?:Y","?:Z","?:U"]], ["$ans","?:X"]]],
+          [5, ["mp", [1,1], 4, "fromga", 1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-is_past_world","?:Z"], ["$ans","?:X"]]],
+          [6, ["in","sent_S1","assumption",1], [["is_past_world","W0"]]],
+          [7, ["mp", [5,1], 6, "fromga", 1], [["-is rel2", "jump", "#:John 1", ["eventprop","$location","?:X"], ["$ctxt","?:Y","W0","?:Z","?:U"]], ["$ans","?:X"]]],
+          [8, ["in","sent_S1","assumption",1], [["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","1800","W0","?:X","?:Y"]]]],
+          [9, ["mp",1,8,"fromassumption",1], [["-is_past_world","W0"], ["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","past","W0","?:X3","?:Y3"]]]],
+          [10, ["simp",9,6,"fromassumption",1], [["is rel2", "jump", "#:John 1", ["eventprop","$location","#:house 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [11, ["mp",7,10,"fromga",1], [["$ans","#:house 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) During 1800, John jumped in a house.",
+"  (2) Where did John jump?",
+"Knowledge used:",
+"  If some Y is in relation X to some Z and a situation V is in the past then Y was in relation X to Z before V. Why: assumed basic knowledge.",
+"Proof steps:",
+"  (1) If some Y is in relation X to some Z and a situation V is in the past then Y was in relation X to Z before V  [background knowledge]",
+"  (2) If John is jump of X then some X is the answer  [sentence 2]",
+"  (3) technical answer unwrap step  [from question]",
+"  (4) If John is jump of X then X is an answer  [from steps 2, 3]",
+"  (5) If John is jump of X and a situation Z is in the past then X is an answer  [from steps 1, 4]",
+"  (6) The situation W0 is in the past  [sentence 1]",
+"  (7) If John is jump of X then X is an answer  [from steps 5, 6]",
+"  (8) John is jump of house B  [sentence 1]",
+"  (9) If the situation W0 is in the past then John is jump of house B  [from steps 1, 8]",
+"  (10) John is jump of house B  [from steps 9, 6]",
+"  (11) The house is an answer  [from steps 7, 10]"
+],
+  "timestamp": "2026-06-18T15:46:11Z"
+}

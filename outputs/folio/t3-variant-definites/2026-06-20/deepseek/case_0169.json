@@ -1,0 +1,163 @@
+{
+  "test_name": "folio_v2_prenorm_definites",
+  "case_id": 169,
+  "input_text": "Heinrich Schmidt was a German politician. Heinrich Schmidt was also a member of the Prussian State Parliament and the Nazi Reichstag. No politicians are part of the Nazi Reichstag?",
+  "expected_answer": "False.",
+  "llm_name": "deepseek",
+  "llm_version": "deepseek-v4-flash",
+  "answer": "Unknown.",
+  "correctness": false,
+  "stage1": [{
+      "raw": "Heinrich Schmidt was a German politician.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Heinrich Schmidt 1 was a German politician.",
+          "type": "real",
+          "entities": [{
+              "id": "Heinrich Schmidt 1",
+              "type": "concrete",
+              "category": "person",
+              "url": "https://en.wikipedia.org/wiki/Heinrich_Schmidt_(politician)"
+            }
+          ],
+          "adjectives": [["German","none","person"]]
+        }
+      ]
+    },
+    {
+      "raw": "Heinrich Schmidt was also a member of the Prussian State Parliament and the Nazi Reichstag.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Heinrich Schmidt 1 was a member of the Prussian State Parliament 2.",
+          "type": "real",
+          "entities": [{"id": "Heinrich Schmidt 1", "type": "concrete", "category": "person"},
+            {"id": "Prussian State Parliament 2", "type": "concrete", "category": "organization"}
+          ]
+        },
+        {
+          "unit_id": "S3",
+          "text": "Heinrich Schmidt 1 was a member of the Nazi Reichstag 3.",
+          "type": "real",
+          "entities": [{"id": "Heinrich Schmidt 1", "type": "concrete", "category": "person"},
+            {"id": "Nazi Reichstag 3", "type": "concrete", "category": "organization"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "No politicians are members of the Nazi Reichstag?",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Are no politicians members of the Nazi Reichstag 3?",
+          "type": "query",
+          "entities": [{"id": "politicians", "type": "generic", "category": "person"},
+            {"id": "members", "type": "generic", "category": "person"},
+            {"id": "Nazi Reichstag 3", "type": "concrete", "category": "organization"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds","W0",
+        ["and",
+          ["isa","politician","https://en.wikipedia.org/wiki/Heinrich_Schmidt_(politician)"],
+          ["has degree property","German","https://en.wikipedia.org/wiki/Heinrich_Schmidt_(politician)","none","person"]
+        ]
+      ]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Heinrich Schmidt 1"],
+          ["isa","organization","Prussian State Parliament 2"],
+          ["is rel2","member of","Heinrich Schmidt 1","Prussian State Parliament 2"]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["and",
+          ["isa","person","Heinrich Schmidt 1"],
+          ["isa","organization","Nazi Reichstag 3"],
+          ["is rel2","member of","Heinrich Schmidt 1","Nazi Reichstag 3"]
+        ]
+      ]
+    ],
+    ["@id","S4",
+      ["question",
+        ["and",
+          ["isa","organization","Nazi Reichstag 3"],
+          ["forall","X",
+            ["implies",
+              ["isa","politician","X"],
+              ["not", ["is rel2","member of","X","Nazi Reichstag 3"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","politician","https://en.wikipedia.org/wiki/Heinrich_Schmidt_(politician)"],
+ "@nl": "Heinrich Schmidt 1 was a German politician."},
+{"@name": "sent_S1",
+ "@logic": ["has property", "German", "https://en.wikipedia.org/wiki/Heinrich_Schmidt_(politician)", ["$ctxt","present","W0","?:Fv1","?:Fv2"]],
+ "@nl": "Heinrich Schmidt 1 was a German politician."},
+{"@name": "sent_S2",
+ "@logic": ["isa","person","#:Heinrich Schmidt 1"],
+ "@nl": "Heinrich Schmidt 1 was a member of the Prussian State Parliament 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","organization","#:Prussian State Parliament 2"],
+ "@nl": "Heinrich Schmidt 1 was a member of the Prussian State Parliament 2."},
+{"@name": "sent_S2",
+ "@logic": ["is rel2", "member of", "#:Heinrich Schmidt 1", "#:Prussian State Parliament 2", ["$ctxt","present","W0","?:Fv3","?:Fv4"]],
+ "@nl": "Heinrich Schmidt 1 was a member of the Prussian State Parliament 2."},
+{"@name": "sent_S3",
+ "@logic": ["isa","person","#:Heinrich Schmidt 1"],
+ "@nl": "Heinrich Schmidt 1 was a member of the Nazi Reichstag 3."},
+{"@name": "sent_S3",
+ "@logic": ["isa","organization","#:Nazi Reichstag 3"],
+ "@nl": "Heinrich Schmidt 1 was a member of the Nazi Reichstag 3."},
+{"@name": "sent_S3",
+ "@logic": ["is rel2", "member of", "#:Heinrich Schmidt 1", "#:Nazi Reichstag 3", ["$ctxt","present","W0","?:Fv5","?:Fv6"]],
+ "@nl": "Heinrich Schmidt 1 was a member of the Nazi Reichstag 3."},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","organization","#:Nazi Reichstag 3"]],
+ "@nl": "Are no politicians members of the Nazi Reichstag 3?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","politician","?:X"],
+            ["-is rel2", "member of", "?:X", "#:Nazi Reichstag 3", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]]
+           ],
+ "@nl": "Are no politicians members of the Nazi Reichstag 3?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","organization","#:Nazi Reichstag 3"],
+            ["isa","politician","sk0_politician"],
+            ["$defq0"]
+           ],
+ "@nl": "Are no politicians members of the Nazi Reichstag 3?"},
+{"@name": "sent_S4",
+ "@sourcetype": "question",
+ "@logic": [["-isa","organization","#:Nazi Reichstag 3"],
+            ["is rel2", "member of", "sk0_politician", "#:Nazi Reichstag 3", ["$ctxt","?:Fv10","?:Fv9","?:Fv7","?:Fv8"]],
+            ["$defq0"]
+           ],
+ "@nl": "Are no politicians members of the Nazi Reichstag 3?"},
+{"@name": "sent_S4",
+ "@question": ["$defq0"],
+ "@nl": "Are no politicians members of the Nazi Reichstag 3?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","politician","$some_not_politician"],
+ "@nl": "[population: from input]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {"result": "no information"},
+  "timestamp": "2026-06-18T23:07:41Z"
+}

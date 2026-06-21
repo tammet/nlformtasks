@@ -1,0 +1,322 @@
+{
+  "test_name": "core_typeenrich",
+  "case_id": 1429,
+  "input_text": "Birds fly and eat. Baby birds do not fly. John is a baby bird. Mike is a bird.\n    John does not fly?",
+  "expected_answer": true,
+  "llm_name": "gpt",
+  "llm_version": "gpt-5.1",
+  "answer": "Possibly true (confidence 0.1).",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Birds fly and eat.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "birds"}}],
+          "confidence": 0.95
+        },
+        {
+          "unit_id": "S2",
+          "text": "Birds eat.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "eat", "mode": "habitual", "roles": {"actor": "birds"}}],
+          "confidence": 0.99
+        }
+      ]
+    },
+    {
+      "raw": "Baby birds do not fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Baby birds cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "baby birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "baby birds"}}]
+        }
+      ]
+    },
+    {
+      "raw": "John is a baby bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "John 1 is a baby bird.",
+          "type": "situation",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"},
+            {"id": "baby bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Mike 2 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Mike 2", "type": "concrete", "category": "animal"},
+            {"id": "bird", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "John does not fly?",
+      "units": [{
+          "unit_id": "S6",
+          "text": "Can John 1 not fly?",
+          "type": "query",
+          "entities": [{"id": "John 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability", "roles": {"actor": "John 1"}}]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S1",0.95]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","eat"],
+                    ["has actor","E","X"],
+                    ["typical","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S2",0.99]
+      ]
+    ],
+    ["@id","S3",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","baby bird","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","baby bird","John 1"]]],
+    ["@id", "S5", ["holds", "W0", ["isa","bird","Mike 2"]]],
+    ["@id","S6",
+      ["question",
+        ["not",
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","fly"],
+              ["has actor","E","John 1"],
+              ["capability","E"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "entity_S4",
+ "@logic": ["isa","animal","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "entity_S5",
+ "@logic": ["isa","animal","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk0","?:X"]]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk0","?:X"], "fly", "?:Cu4"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk0","?:X"], "?:X", "?:Cu5"]],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S1",
+ "@logic": [["-isa","bird","?:X"], ["capability", ["sk0","?:X"]]],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["isa", "activity", ["sk1","?:X"]]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["has type", ["sk1","?:X"], "eat", "?:Cu8"]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","bird","?:X"], ["has actor", ["sk1","?:X"], "?:X", "?:Cu9"]],
+ "@nl": "Birds eat."},
+{"@name": "sent_S2",
+ "@logic": ["-isa","bird","?:X"],
+ "@confidence": 0.98,
+ "@nl": "Birds eat."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","baby bird","?:X"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu11"],
+            ["-has actor","?:E","?:X","?:Cu11"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Baby birds cannot fly."},
+{"@name": "sent_S4",
+ "@logic": ["isa","baby bird","#:John 1"],
+ "@nl": "John 1 is a baby bird."},
+{"@name": "sent_S5",
+ "@logic": ["isa","bird","#:Mike 2"],
+ "@nl": "Mike 2 is a bird."},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"],
+            ["-isa","activity","?:E"],
+            ["-has type","?:E","fly","?:Cu14"],
+            ["-has actor","?:E","#:John 1","?:Cu14"],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["isa","activity","sk2_activity"], ["$defq0"]],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has type","sk2_activity","fly","?:Cu16"], ["$defq0"]],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["has actor","sk2_activity","#:John 1","?:Cu17"], ["$defq0"]],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S6",
+ "@sourcetype": "question",
+ "@logic": [["capability","sk2_activity"], ["$defq0"]],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S6",
+ "@question": ["$defq0"],
+ "@nl": "Can John 1 not fly?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","activity","$some_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","activity","$some_not_activity"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S3",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","baby bird","$some_not_baby_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "compound_sub",
+ "@logic": [["-isa","baby bird","?:X"], ["isa","bird","?:X"]],
+ "@nl": "[generated: compound_sub]"},
+{"@name": "compound_comp",
+ "@logic": [["-isa","baby","?:X"], ["-isa","bird","?:X"], ["isa","baby bird","?:X"]],
+ "@confidence": 0.95,
+ "@nl": "[generated: compound_comp]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv33"], ["has type","?:E","go","?:Fv33"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": true,
+        "confidence": 0.1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-has type","?:X","fly","?:Y"], ["-has actor","?:X","?:Z","?:Y"], ["-isa","baby bird","?:Z"], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [2, ["in","sent_S6","assumption",1], [["$defq0"], ["has type","sk2_activity","fly","?:X"]]],
+          [3, ["in","sent_S6","goal",1], [["-$defq0"]]],
+          [4, ["mp", 1, [2,1], 3, "fromga", 1], [["-isa","activity","sk2_activity"], ["-capability","sk2_activity"], ["-has actor","sk2_activity","?:X","?:Y"], ["-isa","baby bird","?:X"]]],
+          [5, ["in","sent_S6","assumption",1], [["isa","activity","sk2_activity"], ["$defq0"]]],
+          [6, ["mp",4,5,3,"fromga",1], [["-capability","sk2_activity"], ["-has actor","sk2_activity","?:X","?:Y"], ["-isa","baby bird","?:X"]]],
+          [7, ["in","sent_S6","assumption",1], [["capability","sk2_activity"], ["$defq0"]]],
+          [8, ["mp",6,7,3,"fromga",1], [["-has actor","sk2_activity","?:X","?:Y"], ["-isa","baby bird","?:X"]]],
+          [9, ["in","sent_S6","assumption",1], [["$defq0"], ["has actor","sk2_activity","#:John 1","?:X"]]],
+          [10, ["mp", 8, [9,1], 3, "fromga", 1], [["-isa","baby bird","#:John 1"]]],
+          [11, ["in","sent_S4","assumption",1], [["isa","baby bird","#:John 1"]]],
+          [12, ["simp",10,11,"fromga",1], false]
+        ],
+        "negative proof": [[1, ["in","compound_sub","assumption",1], [["-isa","baby bird","?:X"], ["isa","bird","?:X"]]],
+          [2, ["in","sent_S4","assumption",1], [["isa","baby bird","#:John 1"]]],
+          [3, ["mp",1,2,"fromassumption",1], [["isa","bird","#:John 1"]]],
+          [4, ["in","sent_S1","assumption",1], [["has type", ["sk0","?:X"], "fly", "?:Y"], ["-isa","bird","?:X"]]],
+          [5, ["mp", 3, [4,1], "fromassumption", 1], [["has type", ["sk0","#:John 1"], "fly", "?:X"]]],
+          [6, ["in","sent_S6","assumption",1], [["-$defq0"], ["-has type","?:X","fly","?:Y"], ["-has actor","?:X","#:John 1","?:Y"], ["-isa","activity","?:X"], ["-capability","?:X"]]],
+          [7, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [8, ["mp", 5, [6,1], 7, "fromga", 1], [["-isa", "activity", ["sk0","#:John 1"]], ["-capability", ["sk0","#:John 1"]], ["-has actor", ["sk0","#:John 1"], "#:John 1", "?:X3"]]],
+          [9, ["in","sent_S1","assumption",1], [["has actor", ["sk0","?:X"], "?:X", "?:Y"], ["-isa","bird","?:X"]]],
+          [10, ["mp", 3, [9,1], "fromassumption", 1], [["has actor", ["sk0","#:John 1"], "#:John 1", "?:X3"]]],
+          [11, ["in","sent_S1","assumption",1], [["isa", "activity", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [12, ["mp", 3, [11,1], "fromassumption", 1], [["isa", "activity", ["sk0","#:John 1"]]]],
+          [13, ["in","sent_S1","assumption",0.9], [["capability", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [14, ["mp", 3, [13,1], "fromassumption", 0.9], [["capability", ["sk0","#:John 1"]]]],
+          [15, ["simp",8,10,12,14,"fromga",0.9], false]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 10%.",
+"Sentences used:",
+"  (1) Baby birds do not fly.",
+"  (2) John is a baby bird.",
+"  (3) John does not fly?",
+"Proof steps (by contradiction):",
+"  (1) If X is a fly event and some baby bird Z performs X and X is an activity then X is not a capability  [sentence 1]",
+"  (2) Answer holds or the event act1 is a fly event  [sentence 3]",
+"  (3) assume for contradiction: the answer is no  [from question]",
+"  (4) If the event act1 is an activity and some baby bird X performs the act1 then the act1 is not a capability  [from steps 1, 2, 3]",
+"  (5) The event act1 is an activity or answer holds  [sentence 3]",
+"  (6) If some baby bird X performs the event act1 then the act1 is not a capability  [from steps 4, 5, 3]",
+"  (7) The event act1 is a capability or answer holds  [sentence 3]",
+"  (8) X does not perform the act1  [from steps 6, 7, 3]",
+"  (9) Answer holds or John performs the event act1  [sentence 3]",
+"  (10) John is not a baby bird  [from steps 8, 9, 3]",
+"  (11) John is a baby bird  [sentence 2]",
+"  (12) Contradiction  [from steps 10, 11]"
+],
+  "timestamp": "2026-06-19T02:51:08Z"
+}

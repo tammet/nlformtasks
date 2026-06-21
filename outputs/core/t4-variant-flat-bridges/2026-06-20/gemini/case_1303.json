@@ -1,0 +1,230 @@
+{
+  "test_name": "core_flat_bridges",
+  "case_id": 1303,
+  "input_text": "The cat sat on the mat and purred. Where did the cat sit?",
+  "expected_answer": "On the mat.",
+  "llm_name": "gemini",
+  "llm_version": "gemini-2.5-flash",
+  "answer": "The mat.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "The cat sat on the mat and purred.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "The cat 1 sat on the mat 2.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"},
+            {"id": "mat 2", "type": "concrete", "category": "artifact"}
+          ],
+          "actions": [{"root": "sit", "mode": "event", "roles": {"location": "mat 2", "location_prep": "on"}}],
+          "pre_state": "W0",
+          "next_state": "W1",
+          "time": "past"
+        },
+        {
+          "unit_id": "S2",
+          "text": "The cat 1 purred.",
+          "type": "situation",
+          "entities": [{"id": "cat 1", "type": "concrete", "category": "animal"}],
+          "actions": [{"root": "purr", "mode": "event"}],
+          "pre_state": "W1",
+          "next_state": "W2",
+          "time": "past"
+        }
+      ]
+    },
+    {
+      "raw": "Where did the cat sit?",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Which entity did the cat 1 sit on?",
+          "type": "query",
+          "entities": [{"id": "entity", "type": "generic", "wh_placeholder": true},
+            {"id": "cat 1", "type": "concrete", "category": "animal"}
+          ],
+          "actions": [{"root": "sit", "mode": "event", "roles": {"location": "entity", "location_prep": "on"}}],
+          "pre_state": "W0",
+          "time": "past"
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["and",
+        ["holds","W0",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["isa","mat","mat 2"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","sit"],
+                ["has actor","E","cat 1"],
+                ["has location","E","mat 2","on"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W0","W1"]
+      ]
+    ],
+    ["@id","S2",
+      ["and",
+        ["holds","W1",
+          ["and",
+            ["isa","cat","cat 1"],
+            ["exists","E",
+              ["and",
+                ["isa","activity","E"],
+                ["has type","E","purr"],
+                ["has actor","E","cat 1"],
+                ["has time","E","past","in"]
+              ]
+            ]
+          ]
+        ],
+        ["next","W1","W2"]
+      ]
+    ],
+    ["@id","S3",
+      ["ask","X",
+        ["and",
+          ["isa","cat","cat 1"],
+          ["exists","E",
+            ["and",
+              ["isa","activity","E"],
+              ["has type","E","sit"],
+              ["has actor","E","cat 1"],
+              ["has location","E","X","on"],
+              ["has time","E","past","in"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["isa","mat","#:mat 2"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["is rel2", "sit", "#:cat 1", ["eventprop","$location","#:mat 2"], ["$ctxt","past","W0","?:Fv1","?:Fv2"]],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S1",
+ "@logic": ["next","W0","W1"],
+ "@nl": "The cat 1 sat on the mat 2."},
+{"@name": "sent_S2",
+ "@logic": ["isa","cat","#:cat 1"],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S2",
+ "@logic": ["has property", "purr", "#:cat 1", ["$ctxt","past","W1","?:Fv3","?:Fv4"]],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S2",
+ "@logic": ["next","W1","W2"],
+ "@nl": "The cat 1 purred."},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"], ["isa","cat","#:cat 1"]],
+ "@nl": "Which entity did the cat 1 sit on?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0","?:X"],
+            ["is rel2", "sit", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]]
+           ],
+ "@nl": "Which entity did the cat 1 sit on?"},
+{"@name": "sent_S3",
+ "@sourcetype": "question",
+ "@logic": [["-isa","cat","#:cat 1"],
+            ["-is rel2", "sit", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Fv5","?:Fv6"]],
+            ["$defq0","?:X"]
+           ],
+ "@nl": "Which entity did the cat 1 sit on?"},
+{"@name": "sent_S3",
+ "@question": ["$defq0","?:X"],
+ "@askvars": 1,
+ "@nl": "Which entity did the cat 1 sit on?"},
+{"@name": "frm_carrier_lift",
+ "@logic": [["-isa","mat","?:X","?:Fv12"], ["isa","carrier","?:X","?:Fv12"]],
+ "@nl": "[generated: frm_carrier_lift]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["isa", "activity", ["$ev_of","?:Vre","?:Are","?:Ore"]]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has type", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Vre", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has actor", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Are", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_rel2_event",
+ "@logic": [["-is rel2","?:Vre","?:Are","?:Ore","?:Cre"],
+            ["has target", ["$ev_of","?:Vre","?:Are","?:Ore"], "?:Ore", "?:Cre"]
+           ],
+ "@nl": "[generated: frm_rel2_event]"},
+{"@name": "frm_event_rel2",
+ "@logic": [["-isa","activity","?:Ere"],
+            ["-has type","?:Ere","?:Vre","?:Cre"],
+            ["-has actor","?:Ere","?:Are","?:Cre"],
+            ["-has target","?:Ere","?:Ore","?:Cre"],
+            ["is rel2","?:Vre","?:Are","?:Ore","?:Cre"]
+           ],
+ "@nl": "[generated: frm_event_rel2]"},
+{"@name": "pop_what",
+ "@logic": ["isa","cat","$some_cat"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "pop_what",
+ "@logic": ["isa","mat","$some_mat"],
+ "@nl": "[population: class witnesses for what-query]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W0","W1"],
+ "@nl": "[generated: frm_world_geom]"},
+{"@name": "frm_world_geom",
+ "@sourcetype": "world_geometry",
+ "@logic": ["next","W1","W2"],
+ "@nl": "[generated: frm_world_geom]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": [["$ans","#:mat 2"]],
+        "confidence": 1,
+        "positive proof": [[1, ["in","sent_S3","assumption",1], [["-isa","cat","#:cat 1"], ["-is rel2", "sit", "#:cat 1", ["eventprop","$location","?:X"], ["$ctxt","past","W0","?:Y","?:Z"]], ["$defq0","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["is rel2", "sit", "#:cat 1", ["eventprop","$location","#:mat 2"], ["$ctxt","past","W0","?:X","?:Y"]]]],
+          [3, ["mp", [1,1], 2, "fromassumption", 1], [["-isa","cat","#:cat 1"], ["$defq0","#:mat 2"]]],
+          [4, ["in","sent_S2","assumption",1], [["isa","cat","#:cat 1"]]],
+          [5, ["simp",3,4,"fromassumption",1], [["$defq0","#:mat 2"]]],
+          [6, ["in","sent_S3","goal",1], [["-$defq0","?:X"], ["$ans","?:X"]]],
+          [7, ["mp",5,6,"fromga",1], [["$ans","#:mat 2"]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Sentences used:",
+"  (1) The cat sat on the mat and purred.",
+"  (2) Where did the cat sit?",
+"Proof steps:",
+"  (1) If the cat A is sit of X then some X is the answer  [sentence 2]",
+"  (2) The cat A is sit of mat B  [sentence 1]",
+"  (3) The mat B is the answer  [from steps 1, 2]",
+"  (4) The cat A is a cat  [sentence 1]",
+"  (5) The mat B is the answer  [from steps 3, 4]",
+"  (6) technical answer unwrap step  [from question]",
+"  (7) The mat is an answer  [from steps 5, 6]"
+],
+  "timestamp": "2026-06-19T22:48:41Z"
+}

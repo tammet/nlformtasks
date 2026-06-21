@@ -1,0 +1,247 @@
+{
+  "test_name": "core_davidson_fix",
+  "case_id": 1428,
+  "input_text": "Penguins are birds. Penguins do not fly. Birds fly. Mike is a bird. Mike is a penguin?",
+  "expected_answer": ["Likely false.","Probably false."],
+  "llm_name": "claude",
+  "llm_version": "claude-sonnet-4-6",
+  "answer": "Likely false.",
+  "correctness": true,
+  "stage1": [{
+      "raw": "Penguins are birds.",
+      "units": [{
+          "unit_id": "S1",
+          "text": "Penguins are birds.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"},
+            {"id": "birds", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    },
+    {
+      "raw": "Penguins do not fly.",
+      "units": [{
+          "unit_id": "S2",
+          "text": "Penguins cannot fly.",
+          "type": "strict_rule",
+          "entities": [{"id": "penguins", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}]
+        }
+      ]
+    },
+    {
+      "raw": "Birds fly.",
+      "units": [{
+          "unit_id": "S3",
+          "text": "Birds can fly.",
+          "type": "normal_rule",
+          "entities": [{"id": "birds", "type": "generic", "category": "animal"}],
+          "actions": [{"root": "fly", "mode": "capability"}],
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a bird.",
+      "units": [{
+          "unit_id": "S4",
+          "text": "Mike 1 is a bird.",
+          "type": "situation",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "animal"}]
+        }
+      ]
+    },
+    {
+      "raw": "Mike is a penguin?",
+      "units": [{
+          "unit_id": "S5",
+          "text": "Is Mike 1 a penguin?",
+          "type": "query",
+          "entities": [{"id": "Mike 1", "type": "concrete", "category": "animal"},
+            {"id": "penguin", "type": "generic", "category": "animal"}
+          ]
+        }
+      ]
+    }
+  ],
+  "stage2": ["and",
+    ["@id","S1",
+      ["holds", "W0", ["forall", "X", ["implies", ["isa","penguin","X"], ["isa","bird","X"]]]]
+    ],
+    ["@id","S2",
+      ["holds","W0",
+        ["forall","X",
+          ["implies",
+            ["isa","penguin","X"],
+            ["not",
+              ["exists","E",
+                ["and",
+                  ["isa","activity","E"],
+                  ["has type","E","fly"],
+                  ["has actor","E","X"],
+                  ["capability","E"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    ["@id","S3",
+      ["and",
+        ["holds","W0",
+          ["forall","X",
+            ["implies",
+              ["isa","bird","X"],
+              ["normally",
+                ["exists","E",
+                  ["and",
+                    ["isa","activity","E"],
+                    ["has type","E","fly"],
+                    ["has actor","E","X"],
+                    ["capability","E"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["@p","S3",0.95]
+      ]
+    ],
+    ["@id", "S4", ["holds", "W0", ["isa","bird","Mike 1"]]],
+    ["@id", "S5", ["question", ["isa","penguin","Mike 1"]]]
+  ],
+  "clauses": [
+{"@name": "sent_S1",
+ "@logic": [["-isa","penguin","?:X"], ["isa","bird","?:X"]],
+ "@nl": "Penguins are birds."},
+{"@name": "sent_S2",
+ "@logic": [["-isa","penguin","?:X"],
+            ["-event", "fly", "?:X", "?:Davp1", "?:E", ["$ctxt","?:Fv8","?:Fv7","?:Fv5","?:Fv6"]],
+            ["-capability","?:E"]
+           ],
+ "@nl": "Penguins cannot fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"],
+            ["event", "fly", "?:X", ["sk1","?:X"], ["sk0","?:X"], ["$ctxt","?:Fv12","?:Fv11","?:Fv9","?:Fv10"]]
+           ],
+ "@nl": "Birds can fly."},
+{"@name": "sent_S3",
+ "@logic": [["-isa","bird","?:X"],
+            ["capability", ["sk0","?:X"]],
+            ["$block", ["$","bird",1], ["$not", ["capability", ["sk0","?:X"]]]]
+           ],
+ "@confidence": 0.9,
+ "@nl": "Birds can fly."},
+{"@name": "sent_S4",
+ "@logic": ["isa","bird","#:Mike 1"],
+ "@nl": "Mike 1 is a bird."},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-$defq0"], ["isa","penguin","#:Mike 1"]],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S5",
+ "@sourcetype": "question",
+ "@logic": [["-isa","penguin","#:Mike 1"], ["$defq0"]],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S5",
+ "@question": ["$defq0"],
+ "@nl": "Is Mike 1 a penguin?"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["isa","penguin","$some_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","penguin","$some_not_penguin"],
+ "@nl": "[population: from input]"},
+{"@name": "sent_S1",
+ "@sourcetype": "populate",
+ "@logic": ["-isa","bird","$some_not_bird"],
+ "@nl": "[population: from input]"},
+{"@name": "frm_syn",
+ "@logic": [["-has type","?:E","fly","?:Fv23"], ["has type","?:E","go","?:Fv23"]],
+ "@confidence": 0.52,
+ "@nl": "[generated: frm_syn]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"], ["isa","activity","?:Eev"]],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has type","?:Eev","?:Vev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has actor","?:Eev","?:Aev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["has target","?:Eev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event",
+ "@logic": [["-event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"],
+            ["is rel2","?:Vev","?:Aev","?:Oev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event]"},
+{"@name": "frm_event_rev",
+ "@logic": [["-isa","activity","?:Eev"],
+            ["-has type","?:Eev","?:Vev","?:Cev"],
+            ["-has actor","?:Eev","?:Aev","?:Cev"],
+            ["-has target","?:Eev","?:Oev","?:Cev"],
+            ["event","?:Vev","?:Aev","?:Oev","?:Eev","?:Cev"]
+           ],
+ "@nl": "[generated: frm_event_rev]"}
+],
+  "gk_command": "/opt/nlpsolver/llmpipe/../gk/gk /opt/nlpsolver/llmpipe/axioms_std.js -strategytext {\"strategy\": [\"negative_pref\", \"posunitpara\"], \"query_preference\": 1} -seconds 2 <gk-input> -defaults -confidence 0.1 -keepconfidence 0.1 --datafolder /opt/nlpsolver/llmpipe/../gk",
+  "proof": {
+    "result": "answer found",
+    "answers": [{
+        "answer": false,
+        "blockers": [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:Mike 1"]]]]],
+        "confidence": 0.9,
+        "negative proof": [[1, ["in","sent_S3","assumption",0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","?:X"]]]], ["capability", ["sk0","?:X"]], ["-isa","bird","?:X"]]],
+          [2, ["in","sent_S1","assumption",1], [["-isa","penguin","?:X"], ["isa","bird","?:X"]]],
+          [3, ["in","sent_S5","assumption",1], [["-$defq0"], ["isa","penguin","#:Mike 1"]]],
+          [4, ["in","$auto_negated_question","goal",1], [["$defq0"]]],
+          [5, ["mp",3,4,"fromga",1], [["isa","penguin","#:Mike 1"]]],
+          [6, ["mp",2,5,"fromga",1], [["isa","bird","#:Mike 1"]]],
+          [7, ["in","sent_S3","assumption",1], [["event", "fly", "?:X", ["sk1","?:X"], ["sk0","?:X"], ["$ctxt","?:Y","?:Z","?:U","?:V"]], ["-isa","bird","?:X"]]],
+          [8, ["mp", [7,1], 6, "fromga", 1], [["event", "fly", "#:Mike 1", ["sk1","#:Mike 1"], ["sk0","#:Mike 1"], ["$ctxt","?:X","?:Y","?:Z","?:U"]]]],
+          [9, ["in","sent_S2","assumption",1], [["-event", "fly", "?:X", "?:Y", "?:Z", ["$ctxt","?:U","?:V","?:W","?:2006"]], ["-isa","penguin","?:X"], ["-capability","?:Z"]]],
+          [10, ["mp",8,9,5,"fromga",1], [["-capability", ["sk0","#:Mike 1"]]]],
+          [11, ["mp", [1,2], 6, 10, "fromga", 0.9], [["$block", ["$","bird",1], ["$not", ["capability", ["sk0","#:Mike 1"]]]]]]
+        ]
+      }
+    ]
+  },
+  "nl_proof": [
+"Explained:",
+"",
+"Confidence 90%.",
+"Sentences used:",
+"  (1) Penguins are birds.",
+"  (2) Penguins do not fly.",
+"  (3) Birds fly.",
+"  (4) Mike is a penguin?",
+"Proof steps:",
+"  (1) If some X is a bird then normally the event sk0 of X is a capability  [sentence 3, confidence 90%]",
+"  (2) If some X is a penguin then X is a bird  [sentence 1]",
+"  (3) If answer holds then Mike is a penguin  [sentence 4]",
+"  (4) Answer holds  [assumption]",
+"  (5) Mike is a penguin  [from steps 3, 4]",
+"  (6) Mike is a bird  [from steps 2, 5]",
+"  (7) If some X is a bird then X fly the event sk1 of X  [sentence 3]",
+"  (8) Mike fly the event sk1 of Mike 1  [from steps 7, 6]",
+"  (9) If some penguin X fly some Y then Z is not a capability  [sentence 2]",
+"  (10) sk0 of Mike 1 is not a capability  [from steps 8, 9, 5]",
+"  (11) Outstanding exception: the event sk0 of Mike 1 is not a capability  [from steps 1, 6, 10, confidence 90%]",
+"Exceptions checked and not holding:",
+"  the event sk0 of Mike 1 is not a capability"
+],
+  "timestamp": "2026-06-20T10:39:17Z"
+}
