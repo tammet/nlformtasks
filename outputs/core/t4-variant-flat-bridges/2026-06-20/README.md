@@ -6,7 +6,7 @@
 - Pipeline: `nlpsolver` @ git tag **`lpar-2026-06-22`** (reproduce at this tag; `main` will have moved on)
 - Test file: `tests/core/core_tests.py` (run against `llmpipe/tests/tests_core.py` in the pipeline repo)
 - Command: `python3 runtests.py tests/tests_core.py -llm <llm> -flatevents -bridges`
-- Post-translation flags: `(none — default two-stage)` — see `../../../pipeline-snapshot/ENCODINGS.md` §6
+- Post-translation flags: `-flatevents -bridges` — see `../../../pipeline-snapshot/ENCODINGS.md` §6
 - Prompts: default two-stage, snapshot in `../../../pipeline-snapshot/prompts/`
 - Static axioms + encoding scheme: `../../../pipeline-snapshot/axioms_std.js`, `../../../pipeline-snapshot/ENCODINGS.md`
 
