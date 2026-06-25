@@ -69,7 +69,7 @@ baselines use all four backends.
 | **T3** | FOLIO, definite-description terms | `outputs/folio/t3-variant-definites` | `-prenorm -definites` |
 | **T3** | FOLIO, + guard removal | `outputs/folio/t3-variant-flat-guarddrop` | `-prenorm -flatevents -guarddrop` |
 | **T3** | FOLIO, + extra bridges | `outputs/folio/t3-variant-flat-bridges` | `-prenorm -flatevents -bridges` |
-| **T3** | FOLIO abstraction (best row) | `outputs/folio/t3-abstraction-full` | `-prenorm -ultracoarse2` |
+| **T3** | FOLIO abstraction (best row) | `outputs/folio/t3-abstraction-full` | `-prenorm -ultracoarse` |
 | **T5** | NLFT proof-length base / davidson / existfold / both | `outputs/core/t1-baseline-full`, `t5-prooflen-davidson`, `t5-prooflen-existfold`, `t5-prooflen-davidson-existfold` | *(none)* / `-davidson` / `-existfold -nocrossstage` / `-davidson -existfold -nocrossstage` |
 | **T5** | FOLIO proof-length base / davidson / existfold / both | `outputs/folio/t5-prooflen-base`, `t5-prooflen-davidson`, `t5-prooflen-existfold`, `t5-prooflen-davidson-existfold` | `-nocrossstage` / `-davidson -nocrossstage` / `-existfold -nocrossstage` / `-davidson -existfold -nocrossstage` |
 | **T6** | NLFT long cases (864, 618, 785) | core `t1-baseline-full` + `t5-prooflen-davidson` + `t5-prooflen-existfold` | as T5 |

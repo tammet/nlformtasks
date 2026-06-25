@@ -39,7 +39,7 @@ python3 runtests.py <test-file> -llm <gpt|claude|gemini|deepseek> <flags>
 python3 runtests.py tests/tests_core.py -llm claude
 
 # FOLIO abstraction (T3 best row)
-python3 runtests.py tests/tests_folio_v2.py -llm claude -prenorm -ultracoarse2
+python3 runtests.py tests/tests_folio_v2.py -llm claude -prenorm -ultracoarse
 
 # FOLIO compact-Davidsonian proof-length run (T5)
 python3 runtests.py tests/tests_folio_v2.py -llm claude -davidson -nocrossstage
