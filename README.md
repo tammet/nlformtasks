@@ -1,4 +1,15 @@
-# nlformtasks
+# nlformtasks — NeSy 2026 paper artifact
+
+> **This tree is the frozen data artifact for the NeSy 2026 paper** *Converting Language to Logic:
+> Pipeline Shape for Prover-Checked Commonsense Question Answering* (Tammet, Vompa, Mättas). It
+> holds all nine runs behind the paper — the 16 core pipeline-shape × LLM cells, four FOLIO
+> pipeline configurations, and the no-prover direct-answer reference — with per-case parses,
+> clause lists, proofs, prompt/axiom snapshots, and `eval/matrix.py`, which regenerates the
+> paper's result tables from the committed outputs alone.
+>
+> Cite it as tag **`nesy-2026`** (branch `paper-nesy-2026`). It is ~30,000 files and ~300 MB
+> checked out. The repository's `main` branch carries the test sets and one recorded run only,
+> and is a ~8 MB clone — use that if you want the test cases rather than the paper data.
 
 Natural-language → formal-logic test cases, LLM pipeline results, and analysis for the
 `nlpsolver` semantic parser.
