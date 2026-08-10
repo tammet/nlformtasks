@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-08-10 — NeSy 2026 paper artifact split out; test sets completed
+
+- The full NeSy 2026 paper data (nine runs: the 16 core pipeline-shape × LLM cells, four FOLIO
+  pipeline configurations, and the direct-answer reference) is published as a frozen artifact on
+  branch `paper-nesy-2026`, tag `nesy-2026` — roughly 30,000 files, kept off `main` so that a
+  clone of `main` stays small.
+- Added `tests/core/core_tests_challenging.py` (341-case hard subset; the ≥2-errors group of the
+  paper's 16-cell grid).
+- Added `tests/folio/` — the Yale FOLIO v2 benchmark, **third-party data**, redistributed
+  unmodified under its upstream MIT license with full attribution and provenance. Not our data
+  and not Apache-2.0.
+- `eval/summarize.py` updated to the paper-artifact version: adds `--subset`, reads an optional
+  `provenance.json`, keeps working on this branch's run layout.
+
 ## 2026-06-04 — initial repository
 
 - Created the repository structure: `tests/`, `outputs/`, `eval/`, `summaries/`.

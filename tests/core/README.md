@@ -14,6 +14,16 @@ complex.
   published run. Each row keeps its `core_tests.py` id, so the subset is graded against the same
   `outputs/core/<run-id>/case_NNNN.json` files — no separate outputs. Its header comment records
   the per-phase type targets.
+- `core_tests_challenging.py` — the 341-case **challenging subset**. A case is challenging if it
+  is answered wrong at least twice across the 16 (pipeline-shape × LLM) cells of the experiment
+  grid (shapes: two-stage, single-full-examples, single-minimal-examples, single-full-no-examples;
+  models: gpt, claude, gemini, deepseek). It is the `≥2 total-errors` group of the difficulty
+  distribution. Like the 100-subset it keeps the original ids and is graded against the same
+  per-run `outputs/core/.../case_NNNN.json` files — no separate run. Regenerate any run's
+  challenging-subset score with `eval/summarize.py <run-dir> --subset
+  tests/core/core_tests_challenging.py`. The other 15 grid cells that define the subset are not on
+  this branch — they are in the `nesy-2026` paper artifact, along with `eval/matrix.py`, which
+  prints the whole shape-by-model matrix.
 
 ## Expected-answer semantics
 
